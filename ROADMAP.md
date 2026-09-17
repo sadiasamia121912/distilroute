@@ -51,6 +51,14 @@ queries are sent in batches of 20 with the 77 intent names in the prompt, every 
 appended to a JSONL checkpoint, and re-running picks up where it stopped. Once labelled, the
 API is never needed again — the label files are committed.
 
+**Measured limits (2026-09-17, `x-ratelimit-*` headers on gpt-oss-120b):** 8,000 tokens/min,
+1,000 requests/day, and an unadvertised ~200k tokens/day (waits jumped to minutes at 207k).
+With descriptions the prompt is ~1,350 fixed + ~27 tokens per query, so batch size sets the
+daily throughput: batch 20 ≈ 94 tok/query ≈ 2,000 queries/day; batch 50 ≈ 54 ≈ 3,700/day;
+batch 100 ≈ 40 ≈ 5,000/day. Bigger batches must pass the 200-query accuracy gate first.
+Plan: label a 3,000-row train subset first (1b.3 wants subsets anyway), start students on it,
+keep filling in the rest daily.
+
 Why not local (Ollama)? This laptop is 8 GB RAM / no GPU: a 3B model would be a weak teacher
 and a 70B one does not fit. See `docs/teacher.md` once written.
 
