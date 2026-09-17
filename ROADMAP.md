@@ -82,7 +82,7 @@ The user's brief: as advanced as possible at $0. These are the levers, ordered b
 must be decided. 1b.1 has to land *before* 1.6 because relabelling 10k rows on a rate-limited
 free tier costs a day.
 
-- [ ] **1b.1 Soft labels.** Teacher returns its **top-3 ranked intents** per query, same call
+- [x] **1b.1 Soft labels.** _(gated 2026-09-18: top-1 unchanged at 0.905, gold in top-3 for 96 %; +25 % tokens. Adopted.)_ Teacher returns its **top-3 ranked intents** per query, same call
   count, ~2× output tokens. Students train on a soft target (rank-weighted, Hinton-style
   distillation) as well as the hard top-1; report both. Gate: top-1 accuracy on the 200-query
   sample must not drop vs. the single-label prompt.
@@ -140,6 +140,13 @@ free tier costs a day.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
+
+**2026-09-18 (gates)** — Same 200 queries: v1 0.885 → **v2 0.905** (macro-F1 0.851 → 0.882);
+top-3 keeps top-1 at 0.905 with gold in the list 96 % of the time; batch 50 and 100 both drop
+to 0.885 — rejected, the teacher is the ceiling. Config: **v2 + top-3 + batch 20**, ~140
+tokens/query → ~1,400 queries/day on Groq alone (~9 days). Proposed: Cerebras free tier serves
+the same gpt-oss-120b with a far larger daily allowance; add as a provider, gate agreement on
+the same 200, then split the work. Test split relabelling started on Groq meanwhile.
 
 **2026-09-17 (descriptions v2)** — Partial v1 test labels (2,460) read 0.943 but the file is
 sorted by intent, so that is optimistic; what it did show was four intents at 0–35 % because
