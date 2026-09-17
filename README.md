@@ -20,7 +20,7 @@ _Status: in progress — see [ROADMAP.md](ROADMAP.md)._
 | TF-IDF + logistic regression | teacher labels | — | — | — |
 | SetFit (MiniLM) | teacher labels | — | — | — |
 | DistilBERT | teacher labels | — | — | — |
-| Teacher: Llama 3.3 70B (zero-shot) | — | — | — | — |
+| Teacher: gpt-oss-120b (zero-shot, Groq) | — | ~0.89 on 200 | — | — |
 
 All accuracies are against the human labels on the untouched 3,080-query test split. The
 student never sees a human label; "gold" rows are the supervised reference.
