@@ -10,7 +10,7 @@ that end to end on [Banking77](https://github.com/PolyAI-LDN/task-specific-datas
 (13k real banking-app queries, 77 intents) for **$0**, using free-tier hosted LLMs as the
 teacher.
 
-_Status: in progress — see [ROADMAP.md](ROADMAP.md)._
+_Status: in progress — full description in [docs/PROJECT.md](docs/PROJECT.md), task list in [ROADMAP.md](ROADMAP.md)._
 
 ## Results so far
 
