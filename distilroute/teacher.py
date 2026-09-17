@@ -179,8 +179,14 @@ class Teacher:
     # ---------------------------------------------------------------- labelling
 
     def label_batch(self, queries: list[str]) -> list[LabelResult]:
-        """Label one batch. Items the batch answer missed or mangled are retried one at a time."""
+        """Label one batch. Items the batch answer missed or mangled are retried one at a time.
+
+        A wholly empty answer (reasoning model ran out of budget, transient garbage) is
+        re-asked once as a batch first — far cheaper than N single-item retries.
+        """
         parsed = self._ask(queries)
+        if len(queries) > 1 and all(v[0] is None for v in parsed.values()):
+            parsed = self._ask(queries)
         results: list[LabelResult] = []
         for i, q in enumerate(queries, start=1):
             label, raw, ranked = parsed[i]

@@ -156,3 +156,17 @@ def test_label_batch_carries_ranked_list():
     )
     res = t.label_batch(["a"])
     assert res[0].label == "top_up_failed" and res[0].ranked == ["top_up_failed", "card_arrival"]
+
+
+def test_empty_batch_answer_is_reasked_once_as_a_batch():
+    answers = iter(["", '{"1": "card_arrival", "2": "exchange_rate"}'])
+    calls: list[dict] = []
+
+    def transport(payload: dict) -> tuple[str, dict]:
+        calls.append(payload)
+        return next(answers), {}
+
+    t = Teacher(labels=LABELS, provider="groq", transport=transport)
+    res = t.label_batch(["a", "b"])
+    assert [r.label for r in res] == ["card_arrival", "exchange_rate"]
+    assert len(calls) == 2 and calls[1]["messages"][1]["content"] == "1. a\n2. b"
