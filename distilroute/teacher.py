@@ -258,6 +258,13 @@ class Teacher:
         if PROVIDERS[self.provider]["style"] == "openai":
             # Reasoning models can spend the whole budget thinking and return content: null;
             # an empty answer parses to "unparsed" and the per-item retry takes over.
+            if "choices" not in body:
+                # OpenRouter can answer 200 with {"error": {...}} when the upstream fails
+                # or throttles; both are worth a retry.
+                err = body.get("error", body)
+                if isinstance(err, dict) and err.get("code") == 429:
+                    raise RateLimited(None)
+                raise requests.RequestException(f"no choices in response: {str(err)[:200]}")
             text = body["choices"][0]["message"].get("content") or ""
             usage = body.get("usage", {})
         else:
