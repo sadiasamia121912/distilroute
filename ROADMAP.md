@@ -86,6 +86,15 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [ ] **4.1** README results table, résumé bullet numbers into `../tabaudit/AI_ML_Portfolio_Projects.md`.
 - [ ] **4.2** Public repo, LinkedIn post.
 
+## Phase 5 — Stretch: prove it is a method, not a banking demo  (optional, ~1 day)
+
+- [ ] Second dataset from a very different domain (toxic-comment detection or news topics),
+  run through the *same* scripts with only a download script + descriptions file added;
+  second results table. Answers "does this only work for banking?" with a number.
+- **Scope, on the record:** distillation into a fixed-label classifier covers "read a short
+  text, pick a bucket" — routing, moderation, triage, sentiment. It does not cover free-text
+  outputs (summaries, replies). The README says so.
+
 ---
 
 ## Rules of thumb
