@@ -71,7 +71,8 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [x] **1.3** `scripts/label.py`: resumable labelling with JSONL checkpoint, rate-limit backoff, `--split test|train --limit N`. _(2026-09-17)_
 - [x] **1.4** Get a Groq key (free, https://console.groq.com) → `.env` as `GROQ_API_KEY`. _(2026-09-17)_
 - [x] **1.4b** Teacher config comparison on 200 test queries (`data/labels/test.cmp_*.jsonl`) — see Protocol. _(2026-09-17)_
-- [ ] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
+- [~] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
+  _2026-09-17: v1 run stopped at 2,460 (kept as `test.v1_partial.jsonl`; file is intent-sorted so it covers ~60 of 77 intents — not a random sample). It exposed that 33 descriptions mis-described the dataset's actual intent semantics (`get_physical_card` = PIN questions, 0 % correct). v2 descriptions written from TRAIN examples. Next: `scripts/gates.ps1` (v2 / top-3 / batch 50 / batch 100 on the 200-query sample), then relabel test with the winner._
 - [ ] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`.
 - [ ] **1.7** Self-agreement run: 300 test queries relabelled → `docs/teacher.md` (accuracy, macro-F1, self-agreement, confusion pairs, parse-failure rate, wall-clock and calls used).
 
@@ -139,6 +140,13 @@ free tier costs a day.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
+
+**2026-09-17 (descriptions v2)** — Partial v1 test labels (2,460) read 0.943 but the file is
+sorted by intent, so that is optimistic; what it did show was four intents at 0–35 % because
+the *names* mislead (`get_physical_card` is about the PIN). Wrote v2 descriptions from three
+random train examples per intent (33 changed), stopped the v1 run to save budget for the v2
+gates. Budget maths: ~200k tokens/day → gates (80k) tomorrow, then test at batch ≥50 (~170k),
+then a 3k train subset, then the rest.
 
 **2026-09-17 (teacher online)** — First smoke run 404'd: Groq's free catalogue no longer has
 Llama; switched to `openai/gpt-oss-120b` and made non-429 4xx fail fast instead of retrying.
