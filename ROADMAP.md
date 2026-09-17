@@ -67,6 +67,28 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [ ] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`.
 - [ ] **1.7** Self-agreement run: 300 test queries relabelled → `docs/teacher.md` (accuracy, macro-F1, self-agreement, confusion pairs, parse-failure rate, wall-clock and calls used).
 
+## Phase 1b — Make it advanced, for free  (decided 2026-09-17)
+
+The user's brief: as advanced as possible at $0. These are the levers, ordered by when they
+must be decided. 1b.1 has to land *before* 1.6 because relabelling 10k rows on a rate-limited
+free tier costs a day.
+
+- [ ] **1b.1 Soft labels.** Teacher returns its **top-3 ranked intents** per query, same call
+  count, ~2× output tokens. Students train on a soft target (rank-weighted, Hinton-style
+  distillation) as well as the hard top-1; report both. Gate: top-1 accuracy on the 200-query
+  sample must not drop vs. the single-label prompt.
+- [ ] **1b.2 Confidence cascade.** Student answers when confident, escalates to the LLM
+  otherwise. Curve: accuracy and LLM-cost vs. escalation fraction. Needs a *calibrated*
+  student → report ECE, apply temperature scaling.
+- [ ] **1b.3 Data-efficiency curve.** Student accuracy vs. number of teacher labels
+  (500 / 1k / 2k / 5k / 10k). "How many LLM calls do you actually need?"
+- [ ] **1b.4 Model-size Pareto.** TinyBERT (14M) / MiniLM-L6 (22M) / DistilBERT (66M) on
+  Colab; accuracy vs. params vs. CPU latency. Then ONNX + int8 quantisation of the winner.
+- [ ] **1b.5 tabaudit on the teacher labels.** Run `tabaudit audit` on the LLM-labelled train
+  set; does dropping the flagged label-noise rows help the student? Cross-project.
+- [ ] **1b.6 (later)** Second teacher (Gemini Flash) on the test split: agreement as a noise
+  signal, and "which free teacher is best".
+
 ## Phase 2 — Students  (2 days)
 
 - [x] **2.1** Baseline: TF-IDF (word + char n-grams) + logistic regression. Trained on **gold** first as the reference (what supervised learning gets), then on **teacher** labels (the distilled version). _(2026-09-17: gold-trained baseline done; teacher-trained waits on 1.6)_
