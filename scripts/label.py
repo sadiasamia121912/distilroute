@@ -45,7 +45,7 @@ def main() -> None:
     )
     add = ap.add_argument
     add("--split", choices=["train", "test"], required=True)
-    add("--provider", default="groq", choices=["groq", "gemini"])
+    add("--provider", default="groq", choices=["groq", "openrouter", "nvidia", "gemini"])
     add("--model", default=None, help="override the provider's default model")
     add("--batch-size", type=int, default=20)
     add("--limit", type=int, default=None, help="label only the first N (after --seed shuffle)")

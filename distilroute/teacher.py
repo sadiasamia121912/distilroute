@@ -38,14 +38,29 @@ class RateLimited(Exception):
         self.retry_after = retry_after
 
 
+# "openai"-style providers all take the same chat/completions payload and bearer key.
+# Free-tier catalogues rotate: GET <base>/models lists what a key can use today.
 PROVIDERS: dict[str, dict] = {
     "groq": {
+        "style": "openai",
         "url": "https://api.groq.com/openai/v1/chat/completions",
-        # Free-tier catalogues rotate; `GET /openai/v1/models` lists what a key can use.
         "default_model": "openai/gpt-oss-120b",
         "key_env": "GROQ_API_KEY",
     },
+    "openrouter": {
+        "style": "openai",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "default_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "key_env": "OPENROUTER_API_KEY",
+    },
+    "nvidia": {
+        "style": "openai",
+        "url": "https://integrate.api.nvidia.com/v1/chat/completions",
+        "default_model": "openai/gpt-oss-120b",
+        "key_env": "NVIDIA_API_KEY",
+    },
     "gemini": {
+        "style": "gemini",
         "url": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         "default_model": "gemini-2.0-flash",
         "key_env": "GEMINI_API_KEY",
@@ -187,7 +202,7 @@ class Teacher:
     # ---------------------------------------------------------------- providers
 
     def _payload(self, system: str, user: str) -> dict:
-        if self.provider == "groq":
+        if PROVIDERS[self.provider]["style"] == "openai":
             payload = {
                 "model": self.model,
                 "temperature": self.temperature,
@@ -213,7 +228,7 @@ class Teacher:
 
     def _http_transport(self, payload: dict) -> tuple[str, dict]:
         spec = PROVIDERS[self.provider]
-        if self.provider == "groq":
+        if PROVIDERS[self.provider]["style"] == "openai":
             r = requests.post(
                 spec["url"],
                 json=payload,
@@ -234,7 +249,7 @@ class Teacher:
             raise TeacherError(f"HTTP {r.status_code} from {self.provider}: {r.text[:400]}")
         r.raise_for_status()  # 5xx -> requests.HTTPError, which the labeller retries
         body = r.json()
-        if self.provider == "groq":
+        if PROVIDERS[self.provider]["style"] == "openai":
             text = body["choices"][0]["message"]["content"]
             usage = body.get("usage", {})
         else:
