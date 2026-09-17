@@ -1,6 +1,6 @@
 # distilroute — Roadmap
 
-_Last updated: 2026-09-17. Project 2 of `../AI_ML_Portfolio_Projects.md`. Budget: **$0**._
+_Last updated: 2026-09-17. Project 2 of `../tabaudit/AI_ML_Portfolio_Projects.md`. Budget: **$0**._
 
 ## The pitch
 
@@ -77,7 +77,7 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 
 ## Phase 4 — Publish  (½ day)
 
-- [ ] **4.1** README results table, résumé bullet numbers into `../AI_ML_Portfolio_Projects.md`.
+- [ ] **4.1** README results table, résumé bullet numbers into `../tabaudit/AI_ML_Portfolio_Projects.md`.
 - [ ] **4.2** Public repo, LinkedIn post.
 
 ---
