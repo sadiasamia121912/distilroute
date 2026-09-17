@@ -25,7 +25,7 @@ import requests
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.teacher import RateLimited, Teacher  # noqa: E402
+from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
@@ -52,6 +52,12 @@ def main() -> None:
     add("--seed", type=int, default=None, help="shuffle order with this seed (for samples)")
     add("--run", default=None, help="tag for a separate output file, e.g. self_agreement")
     add("--max-calls", type=int, default=None, help="stop after this many API calls")
+    add(
+        "--descriptions",
+        action="store_true",
+        help="add data/intent_descriptions.json to the prompt",
+    )
+    add("--reasoning", default="low", choices=["low", "medium", "high"], help="gpt-oss only")
     args = ap.parse_args()
 
     load_dotenv(ROOT / ".env")
@@ -76,7 +82,22 @@ def main() -> None:
     if not todo:
         return
 
-    teacher = Teacher(labels=labels, provider=args.provider, model=args.model)
+    desc = None
+    if args.descriptions:
+        desc = json.loads((ROOT / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
+        missing = [n for n in labels if n not in desc]
+        assert not missing, f"no description for {missing}"
+    teacher = Teacher(
+        labels=labels,
+        provider=args.provider,
+        model=args.model,
+        descriptions=desc,
+        reasoning_effort=args.reasoning,
+    )
+    print(
+        f"teacher: {args.provider} / {teacher.model}, batch {args.batch_size}, "
+        f"reasoning {args.reasoning}, descriptions {'on' if desc else 'off'}"
+    )
     t0 = time.time()
     failed = 0
     backoff = 5.0
@@ -92,6 +113,8 @@ def main() -> None:
                     results = teacher.label_batch(queries)
                     backoff = 5.0
                     break
+                except TeacherError as e:
+                    sys.exit(f"\n{e}\nNot retrying — fix the model/key and re-run to resume.")
                 except RateLimited as e:
                     wait = e.retry_after or backoff
                     backoff = min(backoff * 2, 300)
@@ -113,6 +136,8 @@ def main() -> None:
                     "raw": r.raw,
                     "provider": args.provider,
                     "model": teacher.model,
+                    "reasoning": args.reasoning,
+                    "descriptions": bool(desc),
                     "ts": ts,
                 }
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")

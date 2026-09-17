@@ -26,6 +26,10 @@ import requests
 Transport = Callable[[dict], tuple[str, dict]]
 
 
+class TeacherError(Exception):
+    """A 4xx the provider will keep returning (bad model, bad key, bad request) — do not retry."""
+
+
 class RateLimited(Exception):
     """HTTP 429 — carries the provider's suggested wait (seconds), if it sent one."""
 
@@ -37,7 +41,8 @@ class RateLimited(Exception):
 PROVIDERS: dict[str, dict] = {
     "groq": {
         "url": "https://api.groq.com/openai/v1/chat/completions",
-        "default_model": "llama-3.3-70b-versatile",
+        # Free-tier catalogues rotate; `GET /openai/v1/models` lists what a key can use.
+        "default_model": "openai/gpt-oss-120b",
         "key_env": "GROQ_API_KEY",
     },
     "gemini": {
@@ -62,6 +67,8 @@ class Teacher:
     model: str | None = None
     api_key: str | None = None
     temperature: float = 0.0
+    descriptions: dict[str, str] | None = None  # intent -> one line; still no example queries
+    reasoning_effort: str = "low"  # only sent to reasoning models (gpt-oss)
     transport: Transport | None = None
     calls: int = field(default=0, init=False)
     tokens_in: int = field(default=0, init=False)
@@ -77,12 +84,20 @@ class Teacher:
             if not self.api_key:
                 raise ValueError(f"set {spec['key_env']} in .env (see .env.example)")
             self.transport = self._http_transport
-        self._label_set = set(self.labels)
+        # Match on the normalised form, answer with the canonical one (Banking77 has one
+        # mixed-case name, `Refund_not_showing_up`).
+        self._canonical = {self._normalise(name): name for name in self.labels}
 
     # ------------------------------------------------------------------ prompt
 
     def build_messages(self, queries: list[str]) -> tuple[str, str]:
-        intents = "\n".join(f"- {name}" for name in self.labels)
+        if self.descriptions:
+            intents = "\n".join(
+                f"- {n}: {self.descriptions[n]}" if n in self.descriptions else f"- {n}"
+                for n in self.labels
+            )
+        else:
+            intents = "\n".join(f"- {name}" for name in self.labels)
         system = (
             "You route customer messages sent to a banking app's support inbox. "
             "Assign each message exactly one intent from this list, using the name verbatim:\n"
@@ -98,7 +113,9 @@ class Teacher:
 
     @staticmethod
     def _normalise(name: str) -> str:
-        return re.sub(r"[\s\-]+", "_", name.strip().strip("\"'`").lower())
+        # Banking77 has `reverted_card_payment?` (sic) and `Refund_not_showing_up`; models
+        # return `reverted_card_payment` and `refund_not_showing_up`. Compare loosely.
+        return re.sub(r"[\s\-]+", "_", name.strip().strip("\"'`?.!").lower())
 
     def parse(self, text: str, n: int) -> dict[int, tuple[str | None, str]]:
         """Map 1-based item number -> (label or None, raw answer). Missing items get ("", None)."""
@@ -119,8 +136,7 @@ class Teacher:
             except ValueError:
                 continue
             if 1 <= i <= n:
-                cand = self._normalise(str(v))
-                out[i] = (cand if cand in self._label_set else None, str(v))
+                out[i] = (self._canonical.get(self._normalise(str(v))), str(v))
         return out
 
     # ---------------------------------------------------------------- labelling
@@ -150,7 +166,7 @@ class Teacher:
 
     def _payload(self, system: str, user: str) -> dict:
         if self.provider == "groq":
-            return {
+            payload = {
                 "model": self.model,
                 "temperature": self.temperature,
                 "response_format": {"type": "json_object"},
@@ -159,6 +175,10 @@ class Teacher:
                     {"role": "user", "content": user},
                 ],
             }
+            if "gpt-oss" in (self.model or ""):
+                # Reasoning model: a routing decision does not need a long think.
+                payload["reasoning_effort"] = self.reasoning_effort
+            return payload
         # gemini
         return {
             "systemInstruction": {"parts": [{"text": system}]},
@@ -188,7 +208,9 @@ class Teacher:
         if r.status_code == 429:
             ra = r.headers.get("retry-after")
             raise RateLimited(float(ra) if ra and ra.replace(".", "", 1).isdigit() else None)
-        r.raise_for_status()
+        if 400 <= r.status_code < 500:
+            raise TeacherError(f"HTTP {r.status_code} from {self.provider}: {r.text[:400]}")
+        r.raise_for_status()  # 5xx -> requests.HTTPError, which the labeller retries
         body = r.json()
         if self.provider == "groq":
             text = body["choices"][0]["message"]["content"]

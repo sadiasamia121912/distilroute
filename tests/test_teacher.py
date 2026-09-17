@@ -44,6 +44,17 @@ def test_parse_happy_path_and_normalisation():
     assert parsed[2][0] == "lost_or_stolen_card"
 
 
+def test_parse_returns_canonical_case_for_mixed_case_labels():
+    t = Teacher(
+        labels=["Refund_not_showing_up", "card_arrival"], provider="groq", transport=fake({})
+    )
+    assert (
+        t.parse('{"1": "refund_not_showing_up", "2": "Card Arrival"}', 2)[1][0]
+        == "Refund_not_showing_up"
+    )
+    assert t.parse('{"1": "Refund_not_showing_up"}', 1)[1][0] == "Refund_not_showing_up"
+
+
 def test_parse_rejects_unknown_labels_and_keeps_raw():
     t = make({})
     parsed = t.parse('{"1": "card_delivery_delay"}', 1)
@@ -89,3 +100,31 @@ def test_missing_key_is_a_clear_error(monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     with pytest.raises(ValueError, match="GROQ_API_KEY"):
         Teacher(labels=LABELS, provider="groq")
+
+
+def test_descriptions_go_in_prompt_but_stay_optional():
+    t = Teacher(
+        labels=LABELS,
+        provider="groq",
+        transport=fake({}),
+        descriptions={"card_arrival": "card not here yet"},
+    )
+    system, _ = t.build_messages(["x"])
+    assert "- card_arrival: card not here yet" in system
+    assert "- top_up_failed" in system  # a label without a description is still listed
+
+
+def test_all_banking77_intents_have_a_description():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    desc = json.loads((root / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
+    cats = json.loads((root / "data" / "raw" / "categories.json").read_text(encoding="utf-8"))
+    assert set(cats) <= set(desc)
+    # No dataset query may appear verbatim in a description (zero-shot promise).
+    import pandas as pd
+
+    train = pd.read_csv(root / "data" / "raw" / "train.csv").text.str.lower()
+    for d in desc.values():
+        assert d.lower() not in set(train)
