@@ -250,7 +250,9 @@ class Teacher:
         r.raise_for_status()  # 5xx -> requests.HTTPError, which the labeller retries
         body = r.json()
         if PROVIDERS[self.provider]["style"] == "openai":
-            text = body["choices"][0]["message"]["content"]
+            # Reasoning models can spend the whole budget thinking and return content: null;
+            # an empty answer parses to "unparsed" and the per-item retry takes over.
+            text = body["choices"][0]["message"].get("content") or ""
             usage = body.get("usage", {})
         else:
             text = body["candidates"][0]["content"]["parts"][0]["text"]
