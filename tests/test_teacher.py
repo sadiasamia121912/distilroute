@@ -119,15 +119,17 @@ def test_all_banking77_intents_have_a_description():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    desc = json.loads((root / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
     cats = json.loads((root / "data" / "raw" / "categories.json").read_text(encoding="utf-8"))
-    assert set(cats) <= set(desc)
-    # No dataset query may appear verbatim in a description (zero-shot promise).
     import pandas as pd
 
-    train = pd.read_csv(root / "data" / "raw" / "train.csv").text.str.lower()
-    for d in desc.values():
-        assert d.lower() not in set(train)
+    train = set(pd.read_csv(root / "data" / "raw" / "train.csv").text.str.lower().str.strip())
+    for name in ["intent_descriptions.json", "intent_descriptions_v1.json"]:
+        desc = json.loads((root / "data" / name).read_text(encoding="utf-8"))
+        assert set(cats) <= set(desc), name
+        # No dataset query may appear verbatim in a description (zero-shot promise).
+        for k, d in desc.items():
+            if not k.startswith("_"):
+                assert d.lower().strip() not in train, (name, k)
 
 
 def test_top_k_prompt_and_ranked_parsing():

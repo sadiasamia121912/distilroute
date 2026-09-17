@@ -83,9 +83,11 @@ def main() -> None:
     if not todo:
         return
 
-    desc = None
+    desc, desc_version = None, None
     if args.descriptions:
-        desc = json.loads((ROOT / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
+        raw = json.loads((ROOT / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
+        desc_version = raw.get("_version", "v1")
+        desc = {k: v for k, v in raw.items() if not k.startswith("_")}
         missing = [n for n in labels if n not in desc]
         assert not missing, f"no description for {missing}"
     teacher = Teacher(
@@ -98,7 +100,7 @@ def main() -> None:
     )
     print(
         f"teacher: {args.provider} / {teacher.model}, batch {args.batch_size}, "
-        f"reasoning {args.reasoning}, descriptions {'on' if desc else 'off'}, top-k {args.top_k}"
+        f"reasoning {args.reasoning}, descriptions {desc_version or 'off'}, top-k {args.top_k}"
     )
     t0 = time.time()
     failed = 0
@@ -140,7 +142,7 @@ def main() -> None:
                     "provider": args.provider,
                     "model": teacher.model,
                     "reasoning": args.reasoning,
-                    "descriptions": bool(desc),
+                    "descriptions": desc_version,
                     "ts": ts,
                 }
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
