@@ -58,6 +58,7 @@ def main() -> None:
         help="add data/intent_descriptions.json to the prompt",
     )
     add("--reasoning", default="low", choices=["low", "medium", "high"], help="gpt-oss only")
+    add("--top-k", type=int, default=1, help="ask for a ranked top-k list (soft labels)")
     args = ap.parse_args()
 
     load_dotenv(ROOT / ".env")
@@ -93,10 +94,11 @@ def main() -> None:
         model=args.model,
         descriptions=desc,
         reasoning_effort=args.reasoning,
+        top_k=args.top_k,
     )
     print(
         f"teacher: {args.provider} / {teacher.model}, batch {args.batch_size}, "
-        f"reasoning {args.reasoning}, descriptions {'on' if desc else 'off'}"
+        f"reasoning {args.reasoning}, descriptions {'on' if desc else 'off'}, top-k {args.top_k}"
     )
     t0 = time.time()
     failed = 0
@@ -133,6 +135,7 @@ def main() -> None:
                     "text": r.text,
                     "gold": df.category.iloc[idx],
                     "teacher": r.label,
+                    "ranked": r.ranked,
                     "raw": r.raw,
                     "provider": args.provider,
                     "model": teacher.model,

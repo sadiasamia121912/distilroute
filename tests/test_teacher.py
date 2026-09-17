@@ -40,7 +40,7 @@ def test_prompt_lists_names_only_and_numbers_queries():
 def test_parse_happy_path_and_normalisation():
     t = make({})
     parsed = t.parse('{"1": "card_arrival", "2": " Lost or stolen card "}', 2)
-    assert parsed[1] == ("card_arrival", "card_arrival")
+    assert parsed[1] == ("card_arrival", "card_arrival", ["card_arrival"])
     assert parsed[2][0] == "lost_or_stolen_card"
 
 
@@ -58,14 +58,14 @@ def test_parse_returns_canonical_case_for_mixed_case_labels():
 def test_parse_rejects_unknown_labels_and_keeps_raw():
     t = make({})
     parsed = t.parse('{"1": "card_delivery_delay"}', 1)
-    assert parsed[1] == (None, "card_delivery_delay")
+    assert parsed[1] == (None, "card_delivery_delay", [])
 
 
 def test_parse_survives_fences_and_garbage():
     t = make({})
     fenced = '```json\n{"1": "top_up_failed"}\n```'
     assert t.parse(fenced, 1)[1][0] == "top_up_failed"
-    assert t.parse("Sure! Here you go.", 2) == {1: (None, ""), 2: (None, "")}
+    assert t.parse("Sure! Here you go.", 2) == {1: (None, "", []), 2: (None, "", [])}
     assert t.parse('{"1": "top_up_failed"', 1)[1][0] is None  # truncated JSON
 
 
@@ -128,3 +128,29 @@ def test_all_banking77_intents_have_a_description():
     train = pd.read_csv(root / "data" / "raw" / "train.csv").text.str.lower()
     for d in desc.values():
         assert d.lower() not in set(train)
+
+
+def test_top_k_prompt_and_ranked_parsing():
+    t = Teacher(labels=LABELS, provider="groq", transport=fake({}), top_k=3)
+    system, _ = t.build_messages(["x"])
+    assert "list of the 3 most likely intent names" in system
+    parsed = t.parse(
+        '{"1": ["exchange_rate", "bogus", "Exchange Rate", "top_up_failed", "card_arrival"],'
+        ' "2": "card_arrival"}',
+        2,
+    )
+    # unknown dropped, duplicate collapsed, truncated to k, label == first valid
+    assert parsed[1][2] == ["exchange_rate", "top_up_failed", "card_arrival"]
+    assert parsed[1][0] == "exchange_rate"
+    assert parsed[2] == ("card_arrival", "card_arrival", ["card_arrival"])
+
+
+def test_label_batch_carries_ranked_list():
+    t = Teacher(
+        labels=LABELS,
+        provider="groq",
+        transport=fake({"1": ["top_up_failed", "card_arrival"]}),
+        top_k=2,
+    )
+    res = t.label_batch(["a"])
+    assert res[0].label == "top_up_failed" and res[0].ranked == ["top_up_failed", "card_arrival"]

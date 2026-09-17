@@ -58,6 +58,7 @@ class LabelResult:
     text: str
     label: str | None  # None == the teacher's answer was not a known intent
     raw: str  # what the model actually said for this item, for the audit trail
+    ranked: list[str] = field(default_factory=list)  # top-k valid intents, best first
 
 
 @dataclass
@@ -69,6 +70,7 @@ class Teacher:
     temperature: float = 0.0
     descriptions: dict[str, str] | None = None  # intent -> one line; still no example queries
     reasoning_effort: str = "low"  # only sent to reasoning models (gpt-oss)
+    top_k: int = 1  # >1 asks for a ranked list per query (soft labels for distillation)
     transport: Transport | None = None
     calls: int = field(default=0, init=False)
     tokens_in: int = field(default=0, init=False)
@@ -102,9 +104,15 @@ class Teacher:
             "You route customer messages sent to a banking app's support inbox. "
             "Assign each message exactly one intent from this list, using the name verbatim:\n"
             f"{intents}\n\n"
-            "Reply with a single JSON object mapping each message number (as a string) to its "
-            'intent name, e.g. {"1": "card_arrival", "2": "lost_or_stolen_card"}. '
-            "No other text."
+            + (
+                "Reply with a single JSON object mapping each message number (as a string) to its "
+                'intent name, e.g. {"1": "card_arrival", "2": "lost_or_stolen_card"}. '
+                if self.top_k == 1
+                else "Reply with a single JSON object mapping each message number (as a string) "
+                f"to a list of the {self.top_k} most likely intent names, most likely first, "
+                'e.g. {"1": ["card_arrival", "card_delivery_estimate", "get_physical_card"]}. '
+            )
+            + "No other text."
         )
         user = "\n".join(f"{i + 1}. {q.strip()}" for i, q in enumerate(queries))
         return system, user
@@ -117,9 +125,21 @@ class Teacher:
         # return `reverted_card_payment` and `refund_not_showing_up`. Compare loosely.
         return re.sub(r"[\s\-]+", "_", name.strip().strip("\"'`?.!").lower())
 
-    def parse(self, text: str, n: int) -> dict[int, tuple[str | None, str]]:
-        """Map 1-based item number -> (label or None, raw answer). Missing items get ("", None)."""
-        out: dict[int, tuple[str | None, str]] = {i: (None, "") for i in range(1, n + 1)}
+    def _ranked(self, v: object) -> list[str]:
+        """Valid canonical intents from a model value (one name or a list), best first, no dupes."""
+        items = v if isinstance(v, list) else [v]
+        seen: list[str] = []
+        for item in items:
+            name = self._canonical.get(self._normalise(str(item)))
+            if name and name not in seen:
+                seen.append(name)
+        return seen[: self.top_k]
+
+    def parse(self, text: str, n: int) -> dict[int, tuple[str | None, str, list[str]]]:
+        """Map 1-based item number -> (label or None, raw answer, ranked valid intents)."""
+        out: dict[int, tuple[str | None, str, list[str]]] = {
+            i: (None, "", []) for i in range(1, n + 1)
+        }
         # Models sometimes wrap JSON in a code fence or add a sentence; take the outermost {...}.
         m = re.search(r"\{.*\}", text, re.S)
         if not m:
@@ -136,7 +156,9 @@ class Teacher:
             except ValueError:
                 continue
             if 1 <= i <= n:
-                out[i] = (self._canonical.get(self._normalise(str(v))), str(v))
+                ranked = self._ranked(v)
+                raw = json.dumps(v, ensure_ascii=False) if isinstance(v, list) else str(v)
+                out[i] = (ranked[0] if ranked else None, raw, ranked)
         return out
 
     # ---------------------------------------------------------------- labelling
@@ -146,13 +168,13 @@ class Teacher:
         parsed = self._ask(queries)
         results: list[LabelResult] = []
         for i, q in enumerate(queries, start=1):
-            label, raw = parsed[i]
+            label, raw, ranked = parsed[i]
             if label is None and len(queries) > 1:
-                label, raw = self._ask([q])[1]
-            results.append(LabelResult(text=q, label=label, raw=raw))
+                label, raw, ranked = self._ask([q])[1]
+            results.append(LabelResult(text=q, label=label, raw=raw, ranked=ranked))
         return results
 
-    def _ask(self, queries: list[str]) -> dict[int, tuple[str | None, str]]:
+    def _ask(self, queries: list[str]) -> dict[int, tuple[str | None, str, list[str]]]:
         system, user = self.build_messages(queries)
         payload = self._payload(system, user)
         assert self.transport is not None
