@@ -3,3 +3,5 @@
 #   pip install -r requirements-train.txt
 sentence-transformers>=3.0
 setfit>=1.1
+onnx>=1.16
+onnxruntime>=1.18

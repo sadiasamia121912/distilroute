@@ -6,6 +6,7 @@ requires-python = ">=3.10"
 
 [tool.ruff]
 line-length = 100
+extend-exclude = ["notebooks"]  # Colab cells use ! and % magics
 target-version = "py310"
 
 [tool.ruff.lint]

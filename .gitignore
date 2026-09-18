@@ -8,3 +8,4 @@ data/raw/
 models/
 *.egg-info/
 checkpoints/
+logs/

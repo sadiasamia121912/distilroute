@@ -11,6 +11,7 @@ recomputes what it can from the probabilities so all runs are scored the same wa
 - expected calibration error (ECE, 10 bins) — whether "90 % confident" means 90 % right
 - a cascade preview: route the least-confident X % of queries to the teacher instead, and
   report the accuracy of the mixed system. This is the deployment pattern (roadmap 1b.2).
+- the data-efficiency curves from `scripts/data_curve.py` (results/curves/), if any.
 """
 
 from __future__ import annotations
@@ -58,6 +59,38 @@ def cascade(pred, conf, gold, teacher: pd.Series | None) -> dict[float, float | 
             mixed[idx] = t.values
         out[frac] = float((mixed == gold).mean())
     return out
+
+
+def curve_lines() -> list[str]:
+    """Data-efficiency table: accuracy at each training-set size, mean ± half-range over seeds."""
+    curves = [json.loads(p.read_text()) for p in sorted((RESULTS / "curves").glob("*.json"))]
+    if not curves:
+        return []
+    sizes = sorted({r["n"] for c in curves for r in c["rows"]})
+    lines = [
+        "",
+        "## Data efficiency — accuracy vs. number of training labels",
+        "",
+        "How many labelled tickets does a student need? Each cell is accuracy vs gold on the "
+        "full test split, training on N random rows of the pool, mean ± half-range over "
+        "seeds (`scripts/data_curve.py`). With teacher labels, N is the number of LLM calls' "
+        "worth of data.",
+        "",
+        "| student | trained on | " + " | ".join(f"{n:,}" for n in sizes) + " |",
+        "|---|---|" + "---:|" * len(sizes),
+    ]
+    for c in curves:
+        cells = []
+        for n in sizes:
+            accs = [r["accuracy"] for r in c["rows"] if r["n"] == n]
+            if not accs:
+                cells.append("—")
+            elif len(accs) == 1:
+                cells.append(f"{accs[0]:.3f}")
+            else:
+                cells.append(f"{np.mean(accs):.3f} ± {(max(accs) - min(accs)) / 2:.3f}")
+        lines.append(f"| {c['student']} | {c['trained_on']} | " + " | ".join(cells) + " |")
+    return lines
 
 
 def main() -> None:
@@ -144,6 +177,8 @@ def main() -> None:
     for r in rows:
         cells = ["—" if v is None else f"{v:.3f}" for v in r["cascade"].values()]
         lines.append(f"| {r['model']} | {r['trained_on']} | " + " | ".join(cells) + " |")
+
+    lines += curve_lines()
 
     DOCS.mkdir(exist_ok=True)
     out = DOCS / "results.md"
