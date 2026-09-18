@@ -65,6 +65,18 @@ def build() -> Pipeline:
     )
 
 
+def save_run(name: str, metrics: dict, classes: list[str], proba: np.ndarray) -> None:
+    """The contract every student follows: metrics JSON + test-split probabilities.
+
+    The probabilities (rows in test order, columns in `classes` order) are what the cascade
+    and calibration analysis need; nothing downstream retrains a model to get them.
+    """
+    (RESULTS / f"{name}.json").write_text(json.dumps(metrics, indent=2))
+    np.savez_compressed(
+        RESULTS / f"{name}_test_probs.npz", classes=np.array(classes), proba=proba.astype("float32")
+    )
+
+
 def latency(model: Pipeline, texts: list[str], n: int = 500) -> tuple[float, float]:
     times = []
     for t in texts[:n]:
@@ -87,7 +99,9 @@ def main() -> None:
     model.fit(train.text, train.y)
     fit_s = time.time() - t0
 
-    pred = model.predict(test.text)
+    proba = model.predict_proba(test.text)
+    classes = list(model.classes_)
+    pred = np.array(classes)[proba.argmax(axis=1)]
     acc = accuracy_score(test.category, pred)
     f1 = f1_score(test.category, pred, average="macro")
     p50, p95 = latency(model, test.text.tolist())
@@ -98,23 +112,24 @@ def main() -> None:
     print(f"  latency per query      p50 {p50:.2f} ms  p95 {p95:.2f} ms")
 
     RESULTS.mkdir(exist_ok=True)
-    out = RESULTS / f"tfidf_lr_{args.labels}.json"
-    out.write_text(
-        json.dumps(
-            {
-                "model": "tfidf+lr",
-                "trained_on": args.labels,
-                "n_train": int(len(train)),
-                "accuracy": acc,
-                "macro_f1": f1,
-                "p50_ms": p50,
-                "p95_ms": p95,
-                "fit_seconds": fit_s,
-            },
-            indent=2,
-        )
+    name = f"tfidf_lr_{args.labels}"
+    save_run(
+        name,
+        {
+            "model": "tfidf+lr",
+            "params": 0,
+            "trained_on": args.labels,
+            "n_train": int(len(train)),
+            "accuracy": acc,
+            "macro_f1": f1,
+            "p50_ms": p50,
+            "p95_ms": p95,
+            "fit_seconds": fit_s,
+        },
+        classes,
+        proba,
     )
-    print(f"  -> {out.relative_to(ROOT)}")
+    print(f"  -> results/{name}.json + _test_probs.npz")
 
 
 if __name__ == "__main__":

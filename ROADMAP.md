@@ -74,7 +74,7 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [~] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
   _2026-09-17: v1 run stopped at 2,460 (kept as `test.v1_partial.jsonl`; file is intent-sorted so it covers ~60 of 77 intents — not a random sample). It exposed that 33 descriptions mis-described the dataset's actual intent semantics (`get_physical_card` = PIN questions, 0 % correct). v2 descriptions written from TRAIN examples. Next: `scripts/gates.ps1` (v2 / top-3 / batch 50 / batch 100 on the 200-query sample), then relabel test with the winner._
 - [ ] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`.
-- [ ] **1.7** Self-agreement run: 300 test queries relabelled → `docs/teacher.md` (accuracy, macro-F1, self-agreement, confusion pairs, parse-failure rate, wall-clock and calls used).
+- [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(script done 2026-09-18; regenerate when test completes)_ Still to do: self-agreement run (300 test queries relabelled).
 
 ## Phase 1b — Make it advanced, for free  (decided 2026-09-17)
 
@@ -103,7 +103,7 @@ free tier costs a day.
 - [x] **2.1** Baseline: TF-IDF (word + char n-grams) + logistic regression. Trained on **gold** first as the reference (what supervised learning gets), then on **teacher** labels (the distilled version). _(2026-09-17: gold-trained baseline done; teacher-trained waits on 1.6)_
 - [ ] **2.2** SetFit (`sentence-transformers/paraphrase-MiniLM-L3-v2` or `all-MiniLM-L6-v2`), CPU-trainable here.
 - [ ] **2.3** DistilBERT fine-tune on Colab/Kaggle free GPU (`notebooks/distilbert.ipynb`); save the model, download to `models/`.
-- [ ] **2.4** `scripts/evaluate.py` → `docs/results.md`: one table, all models × {acc vs gold, agreement w/ teacher, macro-F1}, plus "gold-trained vs teacher-trained" for the same architecture — the distillation gap.
+- [x] **2.4** `scripts/evaluate.py` → `docs/results.md`: every run in `results/` (metrics JSON + test probabilities, the contract in `baseline.py::save_run`) × {acc, macro-F1, agreement w/ teacher, ECE, latency} + the cascade preview table (1b.2). _(2026-09-18; fills in as runs land)_
 
 ## Phase 3 — Serving + the cost/latency table  (1–2 days)
 
@@ -140,6 +140,15 @@ free tier costs a day.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
+
+**2026-09-18 (second host, reports)** — Cerebras and OpenRouter no longer serve gpt-oss-120b
+free; main teacher stays on Groq (~9 days of background labelling). OpenRouter's free
+nemotron-3-ultra-550b wired in as the second teacher — its gate exposed three failure modes of
+free reasoning endpoints (null content, empty batches, 200-with-error bodies), all now handled
+with tests; at 100/200 it reads 0.76 with 15 % unparsed, i.e. a weaker teacher. Wrote
+`distilroute/data.py`, `scripts/teacher_report.py` (→ docs/teacher.md) and
+`scripts/evaluate.py` (→ docs/results.md, with ECE and the cascade preview); baseline now
+saves test probabilities under a shared contract.
 
 **2026-09-18 (gates)** — Same 200 queries: v1 0.885 → **v2 0.905** (macro-F1 0.851 → 0.882);
 top-3 keeps top-1 at 0.905 with gold in the list 96 % of the time; batch 50 and 100 both drop
