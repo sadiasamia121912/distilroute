@@ -24,6 +24,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.pipeline import FeatureUnion, Pipeline
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from distilroute.runs import latency_ms, save_run  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 LABELS = ROOT / "data" / "labels"
@@ -65,27 +68,6 @@ def build() -> Pipeline:
     )
 
 
-def save_run(name: str, metrics: dict, classes: list[str], proba: np.ndarray) -> None:
-    """The contract every student follows: metrics JSON + test-split probabilities.
-
-    The probabilities (rows in test order, columns in `classes` order) are what the cascade
-    and calibration analysis need; nothing downstream retrains a model to get them.
-    """
-    (RESULTS / f"{name}.json").write_text(json.dumps(metrics, indent=2))
-    np.savez_compressed(
-        RESULTS / f"{name}_test_probs.npz", classes=np.array(classes), proba=proba.astype("float32")
-    )
-
-
-def latency(model: Pipeline, texts: list[str], n: int = 500) -> tuple[float, float]:
-    times = []
-    for t in texts[:n]:
-        t0 = time.perf_counter()
-        model.predict([t])
-        times.append((time.perf_counter() - t0) * 1000)
-    return float(np.percentile(times, 50)), float(np.percentile(times, 95))
-
-
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--labels", choices=["gold", "teacher"], default="gold")
@@ -104,14 +86,13 @@ def main() -> None:
     pred = np.array(classes)[proba.argmax(axis=1)]
     acc = accuracy_score(test.category, pred)
     f1 = f1_score(test.category, pred, average="macro")
-    p50, p95 = latency(model, test.text.tolist())
+    p50, p95 = latency_ms(lambda t: model.predict([t]), test.text.tolist())
 
     print(f"tfidf+lr trained on {args.labels} ({len(train):,} rows, {fit_s:.0f}s)")
     print(f"  test accuracy vs gold  {acc:.4f}")
     print(f"  test macro-F1 vs gold  {f1:.4f}")
     print(f"  latency per query      p50 {p50:.2f} ms  p95 {p95:.2f} ms")
 
-    RESULTS.mkdir(exist_ok=True)
     name = f"tfidf_lr_{args.labels}"
     save_run(
         name,

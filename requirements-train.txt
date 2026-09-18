@@ -1,0 +1,5 @@
+# Students that need PyTorch. Installed separately to keep the base venv small:
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch
+#   pip install -r requirements-train.txt
+sentence-transformers>=3.0
+setfit>=1.1
