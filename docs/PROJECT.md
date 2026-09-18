@@ -170,7 +170,7 @@ distilroute/
 ## 10. Status (paused 2026-09-18, evening)
 
 **Done**
-- Data downloaded and checked; repo, 19 tests, lint.
+- Data downloaded and checked; repo, 24 tests, lint.
 - Teacher client: strict parsing, v2 intent descriptions (revised from train examples after
   v1 exposed misleading intent names), top-3 ranked answers, providers Groq / OpenRouter /
   NVIDIA / Gemini, resumable labeller hardened against free-endpoint failure modes.
@@ -192,7 +192,7 @@ distilroute/
 - Calibration (`distilroute/calibration.py`): temperature fit on a 10 % training-pool holdout,
   never on test; ECE 0.074 → 0.011 for MiniLM. Threshold cascade: escalate below 0.8
   confidence → 14 % to the teacher, 97.5 % accuracy on what the student keeps.
-- Test-split labelling with the final config: **1,140 / 3,080** at pause (Groq daily cap
+- Test-split labelling with the final config: **1,180 / 3,080** at pause (Groq daily cap
   ≈ 1,400 queries/day; ~2 more days for test, then ~3 for a 3k train subset).
 
 **Paused with**

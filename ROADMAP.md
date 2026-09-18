@@ -151,7 +151,7 @@ free tier costs a day.
 ## Session log
 
 **2026-09-18 (curves, fine-tune script, serving)** — Test labelling restarted as a detached process
-(`logs/label_test.log`; 380 → 1,140 at pause, then Groq's daily token cap: 5–10 min sleeps). Wrote `scripts/data_curve.py` (1b.3) and ran
+(`logs/label_test.log`; 380 → 1,180 at pause, then Groq's daily token cap: 5–15 min sleeps). Wrote `scripts/data_curve.py` (1b.3) and ran
 it on gold for both CPU students: MiniLM frozen reaches 0.84 with 1k random labels and 0.92
 with 5k; TF-IDF needs 5k to reach 0.89. `evaluate.py` renders the curves into `docs/results.md`.
 Wrote `scripts/finetune.py` (2.3 / 1b.4: DistilBERT / MiniLM / TinyBERT full fine-tune, soft
@@ -177,8 +177,16 @@ Then, in order: (a) Colab notebook on the gold rows — upload a zip of the chec
 `.venv/` and `data/raw/`; unzip the results back and re-run `evaluate.py` + `bench_latency.py`.
 (b) When test hits 3,080: `teacher_report.py`, then `bench_latency.py --teacher 30`.
 (c) Start train: `label.py --split train --limit 3000 --seed 0`, then `--labels teacher` for
-every student. (d) 3.4 Dockerfile (install Docker first), 4.1 README. Done tonight after the pause note:
-3.3 cost table (`scripts/cost.py`), 1b.2 calibration + threshold cascade (`distilroute/calibration.py`).
+every student. (d) 3.4 Dockerfile (install Docker first), 4.1 README.
+
+**2026-09-18 (late: cost, calibration — final pause)** — 3.3 `scripts/cost.py`: teacher at Groq's
+paid price $220 / 1M one query per call ($28 batched 20), MiniLM $0.07, TF-IDF $0.01 on a
+t3.small. 1b.2 `distilroute/calibration.py`: every student holds out 10 % of its training pool,
+fits a temperature there; ECE MiniLM 0.074 → 0.011, TF-IDF 0.090 → 0.007, SetFit 0.214 → 0.059
+(all under-confident, T ≈ 0.7); threshold-cascade table in results.md (MiniLM < 0.8: escalate
+14 %, 97.5 % on the rest); the service applies T and reports `calibrated`. 24 tests. Labeller at
+1,180 / 3,080 when paused, alive, in daily-cap sleeps. **Everything unblocked without labels, a
+GPU or Docker is done** — next session starts with the Colab run or the label files.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
