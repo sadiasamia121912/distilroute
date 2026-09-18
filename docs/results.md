@@ -7,7 +7,7 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.949** on the 1,180 test querie
 | model | params | trained on | n train | acc vs gold | macro-F1 | agree w/ teacher | ECE raw → calibrated (T) | p50 / p95 ms |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.901 | 0.074 → 0.011 (T=0.71) | 11.5 / 14.6 |
-| MiniLM-L6 setfit (16/intent) | 23M | gold | 1,232 | **0.867** | 0.866 | 0.837 | 0.207 (uncalibrated) | 12.5 / 16.9 † |
+| MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.836 | 0.214 → 0.059 (T=0.69) | 12.4 / 16.3 † |
 | tfidf+lr | — | gold | 9,000 | **0.910** | 0.910 | 0.886 | 0.090 → 0.007 (T=0.66) | 1.8 / 2.5 |
 
 Latency: single query, in-process, CPU of `Samin` (`scripts/bench_latency.py`); † = as recorded by the training script instead (possibly another machine).
@@ -19,7 +19,7 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | model | trained on | 0 % | 5 % | 10 % | 20 % | 30 % |
 |---|---|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | gold | 0.927 | — | — | — | — |
-| MiniLM-L6 setfit (16/intent) | gold | 0.867 | — | — | — | — |
+| MiniLM-L6 setfit (16/intent) | gold | 0.864 | — | — | — | — |
 | tfidf+lr | gold | 0.910 | — | — | — | — |
 
 ## Cascade by confidence threshold — the policy a service would actually run
@@ -29,7 +29,7 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | model | trained on | < 0.5 | < 0.7 | < 0.8 | < 0.9 | < 0.95 |
 |---|---|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | gold | 4% · 0.948 · — | 10% · 0.965 · — | 14% · 0.975 · — | 20% · 0.986 · — | 29% · 0.991 · — |
-| MiniLM-L6 setfit (16/intent) | gold | 25% · 0.958 · — | 51% · 0.988 · — | 68% · 0.991 · — | 89% · 1.000 · — | 97% · 1.000 · — |
+| MiniLM-L6 setfit (16/intent) | gold | 11% · 0.913 · — | 26% · 0.957 · — | 36% · 0.977 · — | 53% · 0.989 · — | 69% · 0.994 · — |
 | tfidf+lr | gold | 5% · 0.938 · — | 11% · 0.962 · — | 15% · 0.972 · — | 22% · 0.984 · — | 29% · 0.990 · — |
 
 ## Data efficiency — accuracy vs. number of training labels
