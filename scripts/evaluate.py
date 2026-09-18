@@ -8,9 +8,13 @@ recomputes what it can from the probabilities so all runs are scored the same wa
 
 - accuracy / macro-F1 vs gold, recomputed from the probabilities
 - agreement with the teacher, on the test rows the teacher has labelled so far
-- expected calibration error (ECE, 10 bins) — whether "90 % confident" means 90 % right
-- a cascade preview: route the least-confident X % of queries to the teacher instead, and
-  report the accuracy of the mixed system. This is the deployment pattern (roadmap 1b.2).
+- expected calibration error (ECE, 10 bins) — whether "90 % confident" means 90 % right —
+  raw and after temperature scaling (T fit by the training script on held-out training-pool
+  rows, see `distilroute.calibration`); everything below uses the calibrated confidence
+- the cascade (roadmap 1b.2), two ways: escalate the least-confident X % of queries to the
+  teacher (a budget), or escalate everything below a confidence threshold (a policy). The
+  threshold table also gives coverage and the student's accuracy on what it kept, which
+  needs no teacher labels.
 - the data-efficiency curves from `scripts/data_curve.py` (results/curves/), if any.
 - cost per 1M requests from `scripts/cost.py` (results/cost.json), if present.
 
@@ -30,19 +34,11 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from distilroute.calibration import apply_temperature, ece  # noqa: E402
 from distilroute.data import DOCS, LABELS, RESULTS, load_labels, load_split  # noqa: E402
 
 ESCALATE = [0.0, 0.05, 0.10, 0.20, 0.30]
-
-
-def ece(conf: np.ndarray, hit: np.ndarray, bins: int = 10) -> float:
-    edges = np.linspace(0, 1, bins + 1)
-    total = 0.0
-    for lo, hi in zip(edges[:-1], edges[1:], strict=True):
-        m = (conf > lo) & (conf <= hi)
-        if m.any():
-            total += m.mean() * abs(hit[m].mean() - conf[m].mean())
-    return float(total)
+THRESHOLDS = [0.5, 0.7, 0.8, 0.9, 0.95]
 
 
 def cascade(pred, conf, gold, teacher: pd.Series | None) -> dict[float, float | None]:
@@ -131,6 +127,29 @@ def cost_lines() -> list[str]:
     return lines
 
 
+def threshold_cascade(pred, conf, gold, teacher: pd.Series | None) -> list[dict]:
+    """For each confidence threshold: how much is escalated, how good the student is on the
+    rest, and the accuracy of the mixed system (None until the teacher has labelled the
+    escalated rows)."""
+    out = []
+    for thr in THRESHOLDS:
+        esc = conf < thr
+        kept_acc = float((pred[~esc] == gold[~esc]).mean()) if (~esc).any() else None
+        mixed = None
+        if teacher is not None and not esc.any():
+            mixed = float((pred == gold).mean())
+        elif teacher is not None:
+            t = teacher.reindex(np.flatnonzero(esc))
+            if not t.isna().any():
+                m = pred.copy()
+                m[esc] = t.values
+                mixed = float((m == gold).mean())
+        out.append(
+            {"thr": thr, "escalated": float(esc.mean()), "kept_acc": kept_acc, "mixed": mixed}
+        )
+    return out
+
+
 def main() -> None:
     test = load_split("test")
     gold = test.category.values
@@ -154,8 +173,10 @@ def main() -> None:
         z = np.load(probs_path, allow_pickle=False)
         classes, proba = z["classes"], z["proba"]
         pred = classes[proba.argmax(axis=1)]
-        conf = proba.max(axis=1)
         hit = pred == gold
+        conf_raw = proba.max(axis=1)
+        temp = meta.get("temperature")
+        conf = apply_temperature(proba, temp).max(axis=1) if temp else conf_raw
         row = {
             "name": name,
             "model": meta["model"],
@@ -167,9 +188,12 @@ def main() -> None:
             "p50_ms": lat.get("p50_ms"),
             "p95_ms": lat.get("p95_ms"),
             "lat_here": name in latency,
+            "ece_raw": ece(conf_raw, hit),
             "ece": ece(conf, hit),
+            "temperature": temp,
             "agree": None,
             "cascade": cascade(pred, conf, gold, teacher),
+            "thresholds": threshold_cascade(pred, conf, gold, teacher),
         }
         if teacher is not None:
             common = teacher.dropna()
@@ -194,7 +218,7 @@ def main() -> None:
         ]
     lines += [
         "| model | params | trained on | n train | acc vs gold | macro-F1 | agree w/ teacher "
-        "| ECE | p50 / p95 ms |",
+        "| ECE raw → calibrated (T) | p50 / p95 ms |",
         "|---|---:|---|---:|---:|---:|---:|---:|---:|",
     ]
     for r in rows:
@@ -202,9 +226,14 @@ def main() -> None:
         params = "—" if not r["params"] else f"{r['params'] / 1e6:.0f}M"
         lat = "—" if r["p50_ms"] is None else f"{r['p50_ms']:.1f} / {r['p95_ms']:.1f}"
         lat += "" if r["lat_here"] or r["p50_ms"] is None else " †"
+        cal = (
+            f"{r['ece_raw']:.3f} → {r['ece']:.3f} (T={r['temperature']:.2f})"
+            if r["temperature"]
+            else f"{r['ece_raw']:.3f} (uncalibrated)"
+        )
         lines.append(
             f"| {r['model']} | {params} | {r['trained_on']} | {r['n_train']:,} "
-            f"| **{r['accuracy']:.3f}** | {r['macro_f1']:.3f} | {agree} | {r['ece']:.3f} | {lat} |"
+            f"| **{r['accuracy']:.3f}** | {r['macro_f1']:.3f} | {agree} | {cal} | {lat} |"
         )
 
     if latency:
@@ -234,6 +263,26 @@ def main() -> None:
     ]
     for r in rows:
         cells = ["—" if v is None else f"{v:.3f}" for v in r["cascade"].values()]
+        lines.append(f"| {r['model']} | {r['trained_on']} | " + " | ".join(cells) + " |")
+
+    lines += [
+        "",
+        "## Cascade by confidence threshold — the policy a service would actually run",
+        "",
+        "Escalate a query when the student's *calibrated* confidence is below the threshold. "
+        "Per cell: share of queries escalated · student accuracy on the ones it kept · accuracy "
+        "of the mixed system (— until the teacher has labelled the escalated rows). Calibration "
+        "is what makes the threshold mean something: without it 0.9 is just a number.",
+        "",
+        "| model | trained on | " + " | ".join(f"< {t}" for t in THRESHOLDS) + " |",
+        "|---|---|" + "---:|" * len(THRESHOLDS),
+    ]
+    for r in rows:
+        cells = []
+        for t in r["thresholds"]:
+            kept = "—" if t["kept_acc"] is None else f"{t['kept_acc']:.3f}"
+            mixed = "—" if t["mixed"] is None else f"{t['mixed']:.3f}"
+            cells.append(f"{t['escalated']:.0%} · {kept} · {mixed}")
         lines.append(f"| {r['model']} | {r['trained_on']} | " + " | ".join(cells) + " |")
 
     lines += curve_lines()

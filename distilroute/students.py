@@ -21,6 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
+from distilroute.calibration import apply_temperature
 from distilroute.data import MODELS, ROOT, categories
 
 TEACHER = "teacher"
@@ -36,12 +37,15 @@ class Routed:
 class Router:
     name: str
     kind: str
+    temperature: float | None = None  # from meta.json; confidence is calibrated when set
 
     def proba(self, text: str) -> tuple[list[str], np.ndarray]:  # pragma: no cover - abstract
         raise NotImplementedError
 
     def route(self, text: str) -> Routed:
         classes, p = self.proba(text)
+        if self.temperature:
+            p = apply_temperature(p[None, :], self.temperature)[0]
         top = np.argsort(-p)[:3]
         return Routed(classes[top[0]], float(p[top[0]]), [classes[i] for i in top])
 
@@ -52,7 +56,7 @@ class TfidfRouter(Router):
     def __init__(self, path: Path, meta: dict):
         import joblib
 
-        self.name = meta["name"]
+        self.name, self.temperature = meta["name"], meta.get("temperature")
         self.model = joblib.load(path / "model.joblib")
         self.classes = list(self.model.classes_)
 
@@ -67,7 +71,7 @@ class MiniLMRouter(Router):
         import joblib
         from sentence_transformers import SentenceTransformer
 
-        self.name = meta["name"]
+        self.name, self.temperature = meta["name"], meta.get("temperature")
         enc = meta["encoder"]
         self.encoder = SentenceTransformer(
             str(path / enc) if (path / enc).is_dir() else enc, device="cpu"
@@ -87,7 +91,7 @@ class OnnxRouter(Router):
         import onnxruntime as ort
         from transformers import AutoTokenizer
 
-        self.name = meta["name"]
+        self.name, self.temperature = meta["name"], meta.get("temperature")
         self.tokenizer = AutoTokenizer.from_pretrained(path)
         self.session = ort.InferenceSession(
             str(path / "model.int8.onnx"), providers=["CPUExecutionProvider"]

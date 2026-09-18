@@ -189,6 +189,9 @@ distilroute/
   one loader per model kind; `scripts/bench_latency.py` → `results/latency.json`.
 - Cost per 1M requests (`scripts/cost.py`, paid list prices): teacher **$220** one ticket per
   call ($28 batched), MiniLM frozen **$0.07**, TF-IDF $0.01 on a t3.small.
+- Calibration (`distilroute/calibration.py`): temperature fit on a 10 % training-pool holdout,
+  never on test; ECE 0.074 → 0.011 for MiniLM. Threshold cascade: escalate below 0.8
+  confidence → 14 % to the teacher, 97.5 % accuracy on what the student keeps.
 - Test-split labelling with the final config: **1,140 / 3,080** at pause (Groq daily cap
   ≈ 1,400 queries/day; ~2 more days for test, then ~3 for a 3k train subset).
 

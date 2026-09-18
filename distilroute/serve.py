@@ -34,6 +34,7 @@ class RouteResponse(BaseModel):
     confidence: float | None
     ranked: list[str]
     model: str
+    calibrated: bool  # confidence went through the model's fitted temperature
     latency_ms: float
 
 
@@ -70,6 +71,7 @@ def route(req: RouteRequest) -> RouteResponse:
         confidence=r.confidence,
         ranked=r.ranked,
         model=name,
+        calibrated=router.temperature is not None,
         latency_ms=round((time.perf_counter() - t0) * 1000, 2),
     )
 

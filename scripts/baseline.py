@@ -26,7 +26,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.pipeline import FeatureUnion, Pipeline
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
+from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
@@ -74,7 +74,7 @@ def main() -> None:
     ap.add_argument("--labels", choices=["gold", "teacher"], default="gold")
     args = ap.parse_args()
 
-    train = load_train(args.labels)
+    train, calib = split_calib(load_train(args.labels))
     test = pd.read_csv(RAW / "test.csv")
 
     model = build()
@@ -84,18 +84,23 @@ def main() -> None:
 
     proba = model.predict_proba(test.text)
     classes = list(model.classes_)
+    p_calib = model.predict_proba(calib.text)
+    y_calib = np.array([classes.index(y) for y in calib.y])
     pred = np.array(classes)[proba.argmax(axis=1)]
     acc = accuracy_score(test.category, pred)
     f1 = f1_score(test.category, pred, average="macro")
     p50, p95 = latency_ms(lambda t: model.predict([t]), test.text.tolist())
 
-    print(f"tfidf+lr trained on {args.labels} ({len(train):,} rows, {fit_s:.0f}s)")
+    print(
+        f"tfidf+lr trained on {args.labels} ({len(train):,} rows, {len(calib)} held out for "
+        f"calibration, {fit_s:.0f}s)"
+    )
     print(f"  test accuracy vs gold  {acc:.4f}")
     print(f"  test macro-F1 vs gold  {f1:.4f}")
     print(f"  latency per query      p50 {p50:.2f} ms  p95 {p95:.2f} ms")
 
     name = f"tfidf_lr_{args.labels}"
-    save_run(
+    metrics = save_run(
         name,
         {
             "model": "tfidf+lr",
@@ -110,8 +115,10 @@ def main() -> None:
         },
         classes,
         proba,
+        calib=(p_calib, y_calib),
     )
-    joblib.dump(model, model_dir(name, "tfidf") / "model.joblib")
+    d = model_dir(name, "tfidf", temperature=metrics["temperature"])
+    joblib.dump(model, d / "model.joblib")
     print(f"  -> results/{name}.json + _test_probs.npz, models/{name}/")
 
 

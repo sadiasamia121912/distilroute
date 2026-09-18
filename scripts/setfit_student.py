@@ -31,7 +31,7 @@ from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import load_split, teacher_train_labels  # noqa: E402
-from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
+from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
 ENCODER = "sentence-transformers/all-MiniLM-L6-v2"
 PARAMS = 22_713_216
@@ -63,9 +63,12 @@ def main() -> None:
 
     from sentence_transformers import SentenceTransformer
 
-    train = load_train(args.labels, args.per_class, args.seed)
+    train, calib = split_calib(load_train(args.labels, args.per_class, args.seed), seed=args.seed)
     test = load_split("test")
-    print(f"{args.mode}: {len(train):,} training rows, labels={args.labels}")
+    print(
+        f"{args.mode}: {len(train):,} training rows, {len(calib)} held out for calibration, "
+        f"labels={args.labels}"
+    )
 
     t0 = time.time()
     if args.mode == "frozen":
@@ -93,6 +96,8 @@ def main() -> None:
     x_test = encoder.encode(test.text.tolist(), batch_size=64, show_progress_bar=False)
     proba = head.predict_proba(x_test)
     classes = list(head.classes_)
+    p_calib = head.predict_proba(encoder.encode(calib.text.tolist(), show_progress_bar=False))
+    y_calib = np.array([classes.index(y) for y in calib.y])
     pred = np.array(classes)[proba.argmax(axis=1)]
     acc = accuracy_score(test.category, pred)
     f1 = f1_score(test.category, pred, average="macro")
@@ -106,7 +111,7 @@ def main() -> None:
     name = f"{tag}_{args.labels}"
     print(f"  fit {fit_s:.0f}s   acc {acc:.4f}   macro-F1 {f1:.4f}")
     print(f"  latency p50 {p50:.1f} ms  p95 {p95:.1f} ms")
-    save_run(
+    metrics = save_run(
         name,
         {
             "model": f"MiniLM-L6 {args.mode}"
@@ -124,12 +129,14 @@ def main() -> None:
         },
         classes,
         proba,
+        calib=(p_calib, y_calib),
     )
     # Frozen mode only needs the head; setfit mode also saves the fine-tuned encoder.
+    t = metrics["temperature"]
     if args.mode == "frozen":
-        d = model_dir(name, "minilm", encoder=ENCODER)
+        d = model_dir(name, "minilm", encoder=ENCODER, temperature=t)
     else:
-        d = model_dir(name, "minilm", encoder="encoder")
+        d = model_dir(name, "minilm", encoder="encoder", temperature=t)
         encoder.save(str(d / "encoder"))
     joblib.dump(head, d / "head.joblib")
     print(f"  -> results/{name}.json, models/{name}/")

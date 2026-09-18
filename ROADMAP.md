@@ -86,9 +86,14 @@ free tier costs a day.
   count, ~2× output tokens. Students train on a soft target (rank-weighted, Hinton-style
   distillation) as well as the hard top-1; report both. Gate: top-1 accuracy on the 200-query
   sample must not drop vs. the single-label prompt.
-- [ ] **1b.2 Confidence cascade.** Student answers when confident, escalates to the LLM
+- [~] **1b.2 Confidence cascade.** Student answers when confident, escalates to the LLM
   otherwise. Curve: accuracy and LLM-cost vs. escalation fraction. Needs a *calibrated*
-  student → report ECE, apply temperature scaling.
+  student → report ECE, apply temperature scaling. _(2026-09-18: `distilroute/calibration.py`;
+  every student holds out a stratified 10 % of its training pool (`runs.split_calib`), fits T
+  there, `evaluate.py` applies it. On gold: both LR heads are **under**-confident (T ≈ 0.7),
+  ECE 0.074 → 0.011 (MiniLM), 0.090 → 0.007 (TF-IDF); the holdout costs ~0.3 pt. Threshold
+  cascade table in results.md: MiniLM below 0.8 → escalate 14 %, **97.5 %** on the rest. The
+  mixed-system column fills in when the test split is fully labelled.)_
 - [~] **1b.3 Data-efficiency curve.** Student accuracy vs. number of teacher labels
   (500 / 1k / 2k / 5k / 10k). "How many LLM calls do you actually need?" _(`scripts/data_curve.py`,
   2026-09-18, on gold: frozen MiniLM 0.61 / 0.74 / 0.84 / 0.89 / 0.92 / 0.93 at 250 / 500 / 1k / 2k /
@@ -172,7 +177,8 @@ Then, in order: (a) Colab notebook on the gold rows — upload a zip of the chec
 `.venv/` and `data/raw/`; unzip the results back and re-run `evaluate.py` + `bench_latency.py`.
 (b) When test hits 3,080: `teacher_report.py`, then `bench_latency.py --teacher 30`.
 (c) Start train: `label.py --split train --limit 3000 --seed 0`, then `--labels teacher` for
-every student. (d) 3.4 Dockerfile (install Docker first), 4.1 README. 3.3 cost table done (`scripts/cost.py`).
+every student. (d) 3.4 Dockerfile (install Docker first), 4.1 README. Done tonight after the pause note:
+3.3 cost table (`scripts/cost.py`), 1b.2 calibration + threshold cascade (`distilroute/calibration.py`).
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.

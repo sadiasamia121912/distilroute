@@ -2,12 +2,14 @@
   "model": "MiniLM-L6 frozen",
   "params": 22713216,
   "trained_on": "gold",
-  "n_train": 10003,
-  "accuracy": 0.9301948051948052,
-  "macro_f1": 0.9300789106734388,
-  "p50_ms": 13.293550000526011,
-  "p95_ms": 15.618320001522079,
-  "fit_seconds": 47.618473052978516,
+  "n_train": 9000,
+  "accuracy": 0.926948051948052,
+  "macro_f1": 0.9270361396786225,
+  "p50_ms": 12.399150029523298,
+  "p95_ms": 15.71678500913549,
+  "fit_seconds": 40.598273038864136,
   "encoder": "sentence-transformers/all-MiniLM-L6-v2",
-  "max_steps": null
+  "max_steps": null,
+  "temperature": 0.714847215207084,
+  "n_calib": 1003
 }

@@ -35,6 +35,7 @@ def test_route_returns_ranked_intents_and_latency(client):
     assert body["ranked"] == ["card_arrival", "exchange_rate", "top_up_failed"]
     assert body["confidence"] == pytest.approx(0.7)
     assert body["model"] == "fake_gold"
+    assert body["calibrated"] is False
     assert body["latency_ms"] >= 0
 
 
@@ -50,6 +51,17 @@ def test_models_load_once_and_stay_resident(client):
     client.post("/route", json={"text": "a"})
     client.post("/route", json={"text": "b"})
     assert client.get("/health").json() == {"ok": True, "loaded": ["fake_gold"]}
+
+
+def test_confidence_is_calibrated_when_the_model_has_a_temperature(client, monkeypatch):
+    class Calibrated(FakeRouter):
+        temperature = 0.5  # sharpen: 0.7 -> 0.7^2 / (0.7^2 + 0.2^2 + 0.1^2)
+
+    monkeypatch.setattr(students, "load", lambda name: Calibrated())
+    body = client.post("/route", json={"text": "card"}).json()
+    assert body["calibrated"] is True
+    assert body["confidence"] == pytest.approx(0.49 / 0.54, rel=1e-3)
+    assert body["ranked"][0] == "card_arrival"
 
 
 def test_empty_text_rejected(client):

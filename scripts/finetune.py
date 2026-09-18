@@ -173,7 +173,8 @@ def main() -> None:
     hf_name, n_params = MODELS[args.model]
     classes = categories()
     train = load_train(args.labels, args.limit, args.seed)
-    val = train.sample(frac=0.05, random_state=args.seed)
+    # Held out from training: per-epoch validation and, at the end, the calibration set.
+    val = train.groupby("y", group_keys=False).sample(frac=0.1, random_state=args.seed)
     train = train.drop(val.index)
     test = load_split("test")
     print(
@@ -264,7 +265,7 @@ def main() -> None:
     print(f"  torch CPU latency p50 {metrics['p50_ms']:.1f} ms  p95 {metrics['p95_ms']:.1f} ms")
 
     if args.export_onnx:
-        out_dir = model_dir(name, "onnx", hf_model=hf_name)
+        out_dir = model_dir(name, "onnx", hf_model=hf_name)  # temperature added below
         fp32, int8 = export_onnx(model_cpu, tokenizer, out_dir)
         q_proba, sess = onnx_predict_proba(int8, tokenizer, test.text.tolist())
         q_pred = np.array(classes)[q_proba.argmax(1)]
@@ -286,7 +287,16 @@ def main() -> None:
         )
         (out_dir / "classes.json").write_text(json.dumps(classes))
 
-    save_run(name, metrics, classes, proba)
+    y_calib = np.array([classes.index(y) for y in val_y])
+    metrics = save_run(
+        name,
+        metrics,
+        classes,
+        proba,
+        calib=(predict_proba(model_cpu, val_ids, val_mask, "cpu"), y_calib),
+    )
+    if args.export_onnx:
+        model_dir(name, "onnx", hf_model=hf_name, temperature=metrics["temperature"])
     print(f"  -> results/{name}.json")
 
 
