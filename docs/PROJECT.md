@@ -159,18 +159,24 @@ distilroute/
 └── docs/PROJECT.md             this file
 ```
 
-## 10. Status (updated 2026-09-17)
+## 10. Status (updated 2026-09-18)
 
 **Done**
-- Data downloaded and checked; repo, tests (13), lint, CI-ready layout.
-- Teacher client with strict parsing, descriptions, reasoning-effort and top-k options;
-  resumable labeller with checkpointing and fail-fast on non-retryable errors.
-- 200-query teacher configuration study (table above). Teacher ≈ 88.5 % accuracy.
-- TF-IDF + LR on gold: **0.913 accuracy / 0.913 macro-F1, 1.9 ms p50 per query on CPU**.
-- Test-split labelling in progress: 2,200 / 3,080 at the daily token cap, 0 parse failures.
+- Data downloaded and checked; repo, 14 tests, lint.
+- Teacher client: strict parsing, v2 intent descriptions (revised from train examples after
+  v1 exposed misleading intent names), top-3 ranked answers, providers Groq / OpenRouter /
+  NVIDIA / Gemini, resumable labeller hardened against free-endpoint failure modes.
+- Teacher configuration study on 200 queries: v1 0.885 → v2 0.905; top-3 keeps top-1 and puts
+  gold in the list 96 % of the time; batch 50/100 lose 2 points (rejected); second teacher
+  nemotron-550b 0.835 (rejected). Final: gpt-oss-120b, v2, top-3, batch 20.
+- `scripts/teacher_report.py` → `docs/teacher.md`; `scripts/evaluate.py` → `docs/results.md`
+  (accuracy, macro-F1, agreement, ECE, cascade preview) from a shared run contract.
+- Students on gold (supervised reference): TF-IDF + LR **0.913** (1.6 ms); frozen
+  MiniLM-L6 + LR **0.930** (15 ms), no fine-tuning.
+- Test-split labelling with the final config: 360 / 3,080 (Groq daily cap ≈ 1,400 queries/day).
 
 **Next**
-- Finish test split → teacher accuracy on all 3,080 queries.
-- 200-query gates for top-3 answers and batch sizes 50 / 100.
-- Label a 3,000-row train subset → first distilled baseline → Colab notebook for the
-  transformer students.
+- SetFit few-shot (16/intent) on gold; keep labelling test, then a 3,000-row train subset.
+- Every student with `--labels teacher` → the distillation gap. Cascade table once test labels
+  are complete.
+- Colab notebook: DistilBERT / TinyBERT fine-tune, ONNX int8 export.

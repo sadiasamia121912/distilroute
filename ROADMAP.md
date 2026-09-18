@@ -101,7 +101,7 @@ free tier costs a day.
 ## Phase 2 — Students  (2 days)
 
 - [x] **2.1** Baseline: TF-IDF (word + char n-grams) + logistic regression. Trained on **gold** first as the reference (what supervised learning gets), then on **teacher** labels (the distilled version). _(2026-09-17: gold-trained baseline done; teacher-trained waits on 1.6)_
-- [ ] **2.2** SetFit (`sentence-transformers/paraphrase-MiniLM-L3-v2` or `all-MiniLM-L6-v2`), CPU-trainable here.
+- [~] **2.2** `scripts/setfit_student.py` (all-MiniLM-L6-v2, 22M): `--mode frozen` (embeddings + LR head, all rows) and `--mode setfit` (contrastive few-shot, `--per-class 16`). _(2026-09-18: **frozen on gold = 0.930 / 0.930 macro-F1, 15 ms** — beats TF-IDF 0.913 and matches published fine-tuned DistilBERT with no fine-tuning. The SetFit few-shot run was interrupted by the session pause; re-run it.)_
 - [ ] **2.3** DistilBERT fine-tune on Colab/Kaggle free GPU (`notebooks/distilbert.ipynb`); save the model, download to `models/`.
 - [x] **2.4** `scripts/evaluate.py` → `docs/results.md`: every run in `results/` (metrics JSON + test probabilities, the contract in `baseline.py::save_run`) × {acc, macro-F1, agreement w/ teacher, ECE, latency} + the cascade preview table (1b.2). _(2026-09-18; fills in as runs land)_
 
@@ -140,6 +140,22 @@ free tier costs a day.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
+
+**2026-09-18 (students, pause)** — 550B second-teacher gate final: 0.835 / 7.5 % unparsed vs
+gpt-oss-120b 0.905 → gpt-oss stays. Installed torch-cpu + sentence-transformers + setfit
+(`requirements-train.txt`). **Frozen MiniLM-L6 + LR on gold: 0.930**, the best student so far
+and the likely deployment candidate. SetFit few-shot (16/intent) started, not finished. Groq
+test-split labelling at 360/3,080 when the session paused — it only progresses while a
+labeller process is running, so **start it in a normal terminal, not inside the assistant**
+(one process per label file at a time; it resumes from the checkpoint):
+
+```powershell
+cd C:\Users\User\dev\distilroute
+.\.venv\Scripts\python.exe scripts/label.py --split test --descriptions --top-k 3
+```
+
+Next session: re-run the SetFit few-shot on gold, keep labelling test → 3k train subset, then
+`--labels teacher` for every student, then the Colab notebook for DistilBERT/TinyBERT.
 
 **2026-09-18 (second host, reports)** — Cerebras and OpenRouter no longer serve gpt-oss-120b
 free; main teacher stays on Groq (~9 days of background labelling). OpenRouter's free
