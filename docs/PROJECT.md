@@ -172,11 +172,11 @@ distilroute/
 - `scripts/teacher_report.py` → `docs/teacher.md`; `scripts/evaluate.py` → `docs/results.md`
   (accuracy, macro-F1, agreement, ECE, cascade preview) from a shared run contract.
 - Students on gold (supervised reference): TF-IDF + LR **0.913** (1.6 ms); frozen
-  MiniLM-L6 + LR **0.930** (15 ms), no fine-tuning.
+  MiniLM-L6 + LR **0.930** (15 ms), no fine-tuning; SetFit few-shot 16/intent **0.867**.
 - Test-split labelling with the final config: 360 / 3,080 (Groq daily cap ≈ 1,400 queries/day).
 
 **Next**
-- SetFit few-shot (16/intent) on gold; keep labelling test, then a 3,000-row train subset.
+- Keep labelling test, then a 3,000-row train subset.
 - Every student with `--labels teacher` → the distillation gap. Cascade table once test labels
   are complete.
 - Colab notebook: DistilBERT / TinyBERT fine-tune, ONNX int8 export.

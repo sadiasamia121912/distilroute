@@ -1,0 +1,13 @@
+{
+  "model": "MiniLM-L6 setfit (16/intent)",
+  "params": 22713216,
+  "trained_on": "gold",
+  "n_train": 1232,
+  "accuracy": 0.8665584415584415,
+  "macro_f1": 0.8656990822051259,
+  "p50_ms": 12.529749976238236,
+  "p95_ms": 16.943189964513294,
+  "fit_seconds": 623.6235709190369,
+  "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+  "max_steps": 400
+}
