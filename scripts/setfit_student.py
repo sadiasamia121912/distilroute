@@ -43,9 +43,9 @@ def load_train(labels: str, per_class: int | None, seed: int):
         df = teacher_train_labels()
         print(f"teacher labels: {len(df):,} usable")
     if per_class:
-        df = df.groupby("y", group_keys=False).apply(
-            lambda g: g.sample(min(len(g), per_class), random_state=seed)
-        )
+        # Same N for every intent (the smallest Banking77 intent has 35 train rows).
+        n = min(per_class, int(df.y.value_counts().min()))
+        df = df.groupby("y").sample(n=n, random_state=seed)
     return df
 
 
