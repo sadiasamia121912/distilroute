@@ -1,0 +1,13 @@
+{
+  "model": "MiniLM-L6 frozen",
+  "params": 22713216,
+  "trained_on": "gold",
+  "n_train": 10003,
+  "accuracy": 0.9301948051948052,
+  "macro_f1": 0.9300789106734388,
+  "p50_ms": 14.867499965475872,
+  "p95_ms": 17.507670010672882,
+  "fit_seconds": 78.65275740623474,
+  "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+  "max_steps": null
+}
