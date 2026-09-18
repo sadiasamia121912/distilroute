@@ -1,6 +1,6 @@
 # distilroute — Roadmap
 
-_Last updated: 2026-09-17. Project 2 of `../tabaudit/AI_ML_Portfolio_Projects.md`. Budget: **$0**._
+_Last updated: 2026-09-18. Project 2 of `../tabaudit/AI_ML_Portfolio_Projects.md`. Budget: **$0**._
 
 ## The pitch
 
@@ -89,8 +89,11 @@ free tier costs a day.
 - [ ] **1b.2 Confidence cascade.** Student answers when confident, escalates to the LLM
   otherwise. Curve: accuracy and LLM-cost vs. escalation fraction. Needs a *calibrated*
   student → report ECE, apply temperature scaling.
-- [ ] **1b.3 Data-efficiency curve.** Student accuracy vs. number of teacher labels
-  (500 / 1k / 2k / 5k / 10k). "How many LLM calls do you actually need?"
+- [~] **1b.3 Data-efficiency curve.** Student accuracy vs. number of teacher labels
+  (500 / 1k / 2k / 5k / 10k). "How many LLM calls do you actually need?" _(`scripts/data_curve.py`,
+  2026-09-18, on gold: frozen MiniLM 0.61 / 0.74 / 0.84 / 0.89 / 0.92 / 0.93 at 250 / 500 / 1k / 2k /
+  5k / 10k; TF-IDF 0.44 → 0.91 over the same sizes — the pretrained encoder is worth ~10 pts at 1k
+  labels, 2 pts at 10k. Re-run with `--labels teacher` once train is labelled.)_
 - [ ] **1b.4 Model-size Pareto.** TinyBERT (14M) / MiniLM-L6 (22M) / DistilBERT (66M) on
   Colab; accuracy vs. params vs. CPU latency. Then ONNX + int8 quantisation of the winner.
 - [ ] **1b.5 tabaudit on the teacher labels.** Run `tabaudit audit` on the LLM-labelled train
@@ -102,7 +105,11 @@ free tier costs a day.
 
 - [x] **2.1** Baseline: TF-IDF (word + char n-grams) + logistic regression. Trained on **gold** first as the reference (what supervised learning gets), then on **teacher** labels (the distilled version). _(2026-09-17: gold-trained baseline done; teacher-trained waits on 1.6)_
 - [~] **2.2** `scripts/setfit_student.py` (all-MiniLM-L6-v2, 22M): `--mode frozen` (embeddings + LR head, all rows) and `--mode setfit` (contrastive few-shot, `--per-class 16`). _(2026-09-18: **frozen on gold = 0.930 / 0.930 macro-F1, 15 ms** — beats TF-IDF 0.913 and matches published fine-tuned DistilBERT with no fine-tuning. SetFit few-shot 16/intent (1,232 rows, 624 s CPU) = **0.867** — few-shot costs ~6 pts vs the frozen encoder on all 10k rows.)_
-- [ ] **2.3** DistilBERT fine-tune on Colab/Kaggle free GPU (`notebooks/distilbert.ipynb`); save the model, download to `models/`.
+- [~] **2.3** `scripts/finetune.py` (distilbert 66M / minilm 22M / tinybert 14M; hard or `--soft`
+  top-3 targets; `--export-onnx` → fp32 + dynamic-int8 graphs, int8 accuracy and latency recorded)
+  + `notebooks/finetune_colab.ipynb` that clones the repo, runs every config on a T4 and zips
+  `results/` + `models/` back. _(2026-09-18: written and smoke-tested on CPU end to end (TinyBERT
+  int8: 2.1 ms p50, 14.6 MB). Still to do: run it on Colab — gold now, teacher once 1.6 lands.)_
 - [x] **2.4** `scripts/evaluate.py` → `docs/results.md`: every run in `results/` (metrics JSON + test probabilities, the contract in `baseline.py::save_run`) × {acc, macro-F1, agreement w/ teacher, ECE, latency} + the cascade preview table (1b.2). _(2026-09-18; fills in as runs land)_
 
 ## Phase 3 — Serving + the cost/latency table  (1–2 days)
@@ -137,6 +144,15 @@ free tier costs a day.
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-18 (curves, fine-tune script)** — Test labelling restarted as a detached process
+(`logs/label_test.log`; 380 → 1,080 and running). Wrote `scripts/data_curve.py` (1b.3) and ran
+it on gold for both CPU students: MiniLM frozen reaches 0.84 with 1k random labels and 0.92
+with 5k; TF-IDF needs 5k to reach 0.89. `evaluate.py` renders the curves into `docs/results.md`.
+Wrote `scripts/finetune.py` (2.3 / 1b.4: DistilBERT / MiniLM / TinyBERT full fine-tune, soft
+top-3 targets, ONNX + int8 export) with a Colab wrapper notebook; smoke-tested on CPU.
+Next: run the notebook on Colab for the gold rows; `bench_latency.py` + FastAPI (3.1–3.2) can
+be built against the gold-trained models while teacher labels fill in.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
