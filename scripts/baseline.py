@@ -17,6 +17,7 @@ import sys
 import time
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -25,7 +26,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.pipeline import FeatureUnion, Pipeline
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.runs import latency_ms, save_run  # noqa: E402
+from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
@@ -110,7 +111,8 @@ def main() -> None:
         classes,
         proba,
     )
-    print(f"  -> results/{name}.json + _test_probs.npz")
+    joblib.dump(model, model_dir(name, "tfidf") / "model.joblib")
+    print(f"  -> results/{name}.json + _test_probs.npz, models/{name}/")
 
 
 if __name__ == "__main__":

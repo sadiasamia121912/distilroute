@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 import time
 from collections.abc import Callable
+from pathlib import Path
 
 import numpy as np
 
-from distilroute.data import RESULTS
+from distilroute.data import MODELS, RESULTS
 
 
 def save_run(name: str, metrics: dict, classes: list[str], proba: np.ndarray) -> None:
@@ -24,6 +25,18 @@ def save_run(name: str, metrics: dict, classes: list[str], proba: np.ndarray) ->
         classes=np.array(classes),
         proba=proba.astype("float32"),
     )
+
+
+def model_dir(name: str, kind: str, **meta) -> Path:
+    """models/<name>/ with a meta.json saying how to load it (see `distilroute.students`).
+
+    `kind` is one of tfidf | minilm | onnx; the rest of `meta` is whatever the loader needs
+    (encoder name, classes). models/ is gitignored — these are rebuilt by the scripts.
+    """
+    d = MODELS / name
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "meta.json").write_text(json.dumps({"kind": kind, "name": name, **meta}, indent=2))
+    return d
 
 
 def latency_ms(

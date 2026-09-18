@@ -24,13 +24,14 @@ import sys
 import time
 from pathlib import Path
 
+import joblib
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import load_split, teacher_train_labels  # noqa: E402
-from distilroute.runs import latency_ms, save_run  # noqa: E402
+from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
 
 ENCODER = "sentence-transformers/all-MiniLM-L6-v2"
 PARAMS = 22_713_216
@@ -124,7 +125,14 @@ def main() -> None:
         classes,
         proba,
     )
-    print(f"  -> results/{name}.json")
+    # Frozen mode only needs the head; setfit mode also saves the fine-tuned encoder.
+    if args.mode == "frozen":
+        d = model_dir(name, "minilm", encoder=ENCODER)
+    else:
+        d = model_dir(name, "minilm", encoder="encoder")
+        encoder.save(str(d / "encoder"))
+    joblib.dump(head, d / "head.joblib")
+    print(f"  -> results/{name}.json, models/{name}/")
 
 
 if __name__ == "__main__":

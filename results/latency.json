@@ -1,0 +1,38 @@
+{
+  "minilm_frozen_gold": {
+    "p50_ms": 11.504850001074374,
+    "p95_ms": 14.569514978211371,
+    "mean_ms": 11.716420600540005,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "minilm"
+  },
+  "tfidf_lr_gold": {
+    "p50_ms": 1.8054500105790794,
+    "p95_ms": 2.523640007711947,
+    "mean_ms": 1.903992599225603,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "tfidf"
+  },
+  "minilm_frozen_gold@http": {
+    "p50_ms": 14.594299980672076,
+    "p95_ms": 37.22765499260276,
+    "mean_ms": 18.849386999499984,
+    "n": 200,
+    "host": "Samin",
+    "mode": "http",
+    "kind": "minilm"
+  },
+  "tfidf_lr_gold@http": {
+    "p50_ms": 32.5963000068441,
+    "p95_ms": 36.38007501140236,
+    "mean_ms": 26.80016950063873,
+    "n": 200,
+    "host": "Samin",
+    "mode": "http",
+    "kind": "tfidf"
+  }
+}

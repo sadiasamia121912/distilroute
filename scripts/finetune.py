@@ -37,7 +37,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import ROOT, categories, load_split, teacher_train_labels  # noqa: E402
-from distilroute.runs import latency_ms, save_run  # noqa: E402
+from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
 
 MODELS = {
     "distilbert": ("distilbert-base-uncased", 66_955_085),
@@ -264,7 +264,7 @@ def main() -> None:
     print(f"  torch CPU latency p50 {metrics['p50_ms']:.1f} ms  p95 {metrics['p95_ms']:.1f} ms")
 
     if args.export_onnx:
-        out_dir = ROOT / "models" / name
+        out_dir = model_dir(name, "onnx", hf_model=hf_name)
         fp32, int8 = export_onnx(model_cpu, tokenizer, out_dir)
         q_proba, sess = onnx_predict_proba(int8, tokenizer, test.text.tolist())
         q_pred = np.array(classes)[q_proba.argmax(1)]

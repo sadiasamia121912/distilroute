@@ -114,8 +114,8 @@ free tier costs a day.
 
 ## Phase 3 — Serving + the cost/latency table  (1–2 days)
 
-- [ ] **3.1** FastAPI `POST /route` with a `model=` switch (teacher | tfidf | setfit | distilbert); same request/response schema for all.
-- [ ] **3.2** `scripts/bench_latency.py`: 500 requests per model, p50/p95, on this laptop (CPU). Teacher latency measured end-to-end through the free-tier API.
+- [x] **3.1** FastAPI `POST /route` with a `model=` switch (teacher | tfidf | setfit | distilbert); same request/response schema for all. _(2026-09-18: `distilroute/serve.py` over `distilroute/students.py`, a loader for every `models/<run>/meta.json` (tfidf / minilm / onnx) plus the teacher; lazy-loaded, `GET /models`, `/health`; 5 tests with a fake router. Student scripts now persist their models.)_
+- [~] **3.2** `scripts/bench_latency.py`: 500 requests per model, p50/p95, on this laptop (CPU). Teacher latency measured end-to-end through the free-tier API. _(2026-09-18: in-process — MiniLM frozen 11.5 / 14.6 ms, TF-IDF 1.8 / 2.5 ms; `--http` mode too, but Windows loopback delayed-ACK adds ~30 ms so the table uses in-process. `--teacher N` written, not yet run: it would share Groq's rate limit with the labeller.)_
 - [ ] **3.3** Cost per 1M requests: teacher from the provider's *paid* price list (the free tier is not a production option — say so), students from CPU-seconds on a priced cloud VM.
 - [ ] **3.4** Dockerfile (student only — ~300 MB image), `docker run` → `/route` works. README with the final table + the pitch.
 
@@ -145,14 +145,20 @@ free tier costs a day.
 
 ## Session log
 
-**2026-09-18 (curves, fine-tune script)** — Test labelling restarted as a detached process
-(`logs/label_test.log`; 380 → 1,080 and running). Wrote `scripts/data_curve.py` (1b.3) and ran
+**2026-09-18 (curves, fine-tune script, serving)** — Test labelling restarted as a detached process
+(`logs/label_test.log`; 380 → 1,120, then Groq's daily token cap: 5–10 min sleeps). Wrote `scripts/data_curve.py` (1b.3) and ran
 it on gold for both CPU students: MiniLM frozen reaches 0.84 with 1k random labels and 0.92
 with 5k; TF-IDF needs 5k to reach 0.89. `evaluate.py` renders the curves into `docs/results.md`.
 Wrote `scripts/finetune.py` (2.3 / 1b.4: DistilBERT / MiniLM / TinyBERT full fine-tune, soft
 top-3 targets, ONNX + int8 export) with a Colab wrapper notebook; smoke-tested on CPU.
-Next: run the notebook on Colab for the gold rows; `bench_latency.py` + FastAPI (3.1–3.2) can
-be built against the gold-trained models while teacher labels fill in.
+Then 3.1 + 3.2: `distilroute/students.py` (one loader per model kind, incl. the teacher),
+`distilroute/serve.py` (FastAPI, tested with a fake router), `scripts/bench_latency.py`
+(→ `results/latency.json`, which `evaluate.py` now prefers for the latency column). Verified
+end to end against a running uvicorn. Not done: 3.3 cost table, 3.4 Dockerfile (no Docker on
+this laptop), the teacher latency run (wait for labelling to finish).
+Next: run `notebooks/finetune_colab.ipynb` on Colab (gold rows now), keep the labeller
+running (`python scripts/label.py --split test --descriptions --top-k 3`, it resumes), then
+train subset → `--labels teacher` everywhere.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.

@@ -12,6 +12,10 @@ recomputes what it can from the probabilities so all runs are scored the same wa
 - a cascade preview: route the least-confident X % of queries to the teacher instead, and
   report the accuracy of the mixed system. This is the deployment pattern (roadmap 1b.2).
 - the data-efficiency curves from `scripts/data_curve.py` (results/curves/), if any.
+
+Latency comes from results/latency.json (`scripts/bench_latency.py`, this laptop's CPU) when
+a run has an entry there, else from what the training script recorded (Colab's CPU for the
+fine-tuned models).
 """
 
 from __future__ import annotations
@@ -102,6 +106,9 @@ def main() -> None:
         teacher = t.teacher
         t_cov = len(t) / len(test)
 
+    lat_path = RESULTS / "latency.json"
+    latency = json.loads(lat_path.read_text()) if lat_path.exists() else {}
+
     rows = []
     for meta_path in sorted(RESULTS.glob("*.json")):
         name = meta_path.stem
@@ -109,6 +116,7 @@ def main() -> None:
         meta = json.loads(meta_path.read_text())
         if not probs_path.exists():
             continue
+        lat = latency.get(name, meta)  # bench on this laptop beats whatever the trainer saw
         z = np.load(probs_path, allow_pickle=False)
         classes, proba = z["classes"], z["proba"]
         pred = classes[proba.argmax(axis=1)]
@@ -122,8 +130,9 @@ def main() -> None:
             "n_train": meta["n_train"],
             "accuracy": accuracy_score(gold, pred),
             "macro_f1": f1_score(gold, pred, average="macro"),
-            "p50_ms": meta.get("p50_ms"),
-            "p95_ms": meta.get("p95_ms"),
+            "p50_ms": lat.get("p50_ms"),
+            "p95_ms": lat.get("p95_ms"),
+            "lat_here": name in latency,
             "ece": ece(conf, hit),
             "agree": None,
             "cascade": cascade(pred, conf, gold, teacher),
@@ -158,11 +167,26 @@ def main() -> None:
         agree = "—" if r["agree"] is None else f"{r['agree']:.3f}"
         params = "—" if not r["params"] else f"{r['params'] / 1e6:.0f}M"
         lat = "—" if r["p50_ms"] is None else f"{r['p50_ms']:.1f} / {r['p95_ms']:.1f}"
+        lat += "" if r["lat_here"] or r["p50_ms"] is None else " †"
         lines.append(
             f"| {r['model']} | {params} | {r['trained_on']} | {r['n_train']:,} "
             f"| **{r['accuracy']:.3f}** | {r['macro_f1']:.3f} | {agree} | {r['ece']:.3f} | {lat} |"
         )
 
+    if latency:
+        hosts = sorted({v["host"] for v in latency.values()})
+        lines += [
+            "",
+            f"Latency: single query, in-process, CPU of `{', '.join(hosts)}` "
+            "(`scripts/bench_latency.py`); † = as recorded by the training script instead "
+            "(possibly another machine).",
+        ]
+        if "teacher" in latency:
+            t = latency["teacher"]
+            lines.append(
+                f"Teacher through the API, end to end: p50 **{t['p50_ms']:,.0f} ms** / "
+                f"p95 {t['p95_ms']:,.0f} ms over {t['n']} queries."
+            )
     lines += [
         "",
         "## Cascade preview — escalate the least-confident queries to the teacher",

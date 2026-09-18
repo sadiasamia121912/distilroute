@@ -146,10 +146,18 @@ table shows the **distillation gap** for the same architecture.
 ```
 distilroute/
 ├── distilroute/teacher.py      LLM client: prompt, strict parsing, top-k, providers over plain HTTP
+├── distilroute/students.py     one loader per model kind (tfidf / minilm / onnx / teacher)
+├── distilroute/serve.py        FastAPI POST /route with a model= switch
 ├── scripts/
 │   ├── download_data.py        Banking77 → data/raw/, with sanity checks
 │   ├── label.py                resumable teacher labelling → data/labels/*.jsonl
-│   └── baseline.py             TF-IDF + LR, --labels gold|teacher → results/*.json
+│   ├── baseline.py             TF-IDF + LR, --labels gold|teacher → results/*.json + models/
+│   ├── setfit_student.py       frozen MiniLM + LR head, or SetFit few-shot
+│   ├── finetune.py             DistilBERT / MiniLM / TinyBERT fine-tune, ONNX int8 (Colab)
+│   ├── data_curve.py           accuracy vs. number of training labels
+│   ├── bench_latency.py        p50/p95 per model on this CPU → results/latency.json
+│   └── evaluate.py             every run → docs/results.md
+├── notebooks/finetune_colab.ipynb  runs finetune.py on a free T4
 ├── data/
 │   ├── intent_descriptions.json  one line per intent (no dataset queries)
 │   └── labels/                   committed teacher labels + the 200-query comparison runs
@@ -171,12 +179,19 @@ distilroute/
   nemotron-550b 0.835 (rejected). Final: gpt-oss-120b, v2, top-3, batch 20.
 - `scripts/teacher_report.py` → `docs/teacher.md`; `scripts/evaluate.py` → `docs/results.md`
   (accuracy, macro-F1, agreement, ECE, cascade preview) from a shared run contract.
-- Students on gold (supervised reference): TF-IDF + LR **0.913** (1.6 ms); frozen
-  MiniLM-L6 + LR **0.930** (15 ms), no fine-tuning; SetFit few-shot 16/intent **0.867**.
-- Test-split labelling with the final config: 360 / 3,080 (Groq daily cap ≈ 1,400 queries/day).
+- Students on gold (supervised reference): TF-IDF + LR **0.913** (1.8 ms); frozen
+  MiniLM-L6 + LR **0.930** (11.5 ms), no fine-tuning; SetFit few-shot 16/intent **0.867**.
+- Data-efficiency curve on gold (`scripts/data_curve.py`): frozen MiniLM 0.84 at 1k random
+  labels, 0.92 at 5k; TF-IDF 0.74 / 0.89 at the same sizes.
+- `scripts/finetune.py` (DistilBERT / MiniLM / TinyBERT, hard or soft top-3 targets, ONNX +
+  int8 export) and the Colab notebook that runs it; smoke-tested on CPU.
+- Serving: `distilroute/serve.py` (FastAPI `POST /route`, `model=` switch, lazy loading) over
+  one loader per model kind; `scripts/bench_latency.py` → `results/latency.json`.
+- Test-split labelling with the final config: 1,120 / 3,080 (Groq daily cap ≈ 1,400 queries/day).
 
 **Next**
+- Run the Colab notebook (gold rows now; teacher rows once train is labelled).
 - Keep labelling test, then a 3,000-row train subset.
 - Every student with `--labels teacher` → the distillation gap. Cascade table once test labels
   are complete.
-- Colab notebook: DistilBERT / TinyBERT fine-tune, ONNX int8 export.
+- Cost-per-1M table, Dockerfile.
