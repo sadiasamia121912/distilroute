@@ -167,10 +167,10 @@ distilroute/
 └── docs/PROJECT.md             this file
 ```
 
-## 10. Status (updated 2026-09-18)
+## 10. Status (paused 2026-09-18, evening)
 
 **Done**
-- Data downloaded and checked; repo, 14 tests, lint.
+- Data downloaded and checked; repo, 19 tests, lint.
 - Teacher client: strict parsing, v2 intent descriptions (revised from train examples after
   v1 exposed misleading intent names), top-3 ranked answers, providers Groq / OpenRouter /
   NVIDIA / Gemini, resumable labeller hardened against free-endpoint failure modes.
@@ -187,11 +187,22 @@ distilroute/
   int8 export) and the Colab notebook that runs it; smoke-tested on CPU.
 - Serving: `distilroute/serve.py` (FastAPI `POST /route`, `model=` switch, lazy loading) over
   one loader per model kind; `scripts/bench_latency.py` → `results/latency.json`.
-- Test-split labelling with the final config: 1,120 / 3,080 (Groq daily cap ≈ 1,400 queries/day).
+- Test-split labelling with the final config: **1,140 / 3,080** at pause (Groq daily cap
+  ≈ 1,400 queries/day; ~2 more days for test, then ~3 for a 3k train subset).
 
-**Next**
-- Run the Colab notebook (gold rows now; teacher rows once train is labelled).
-- Keep labelling test, then a 3,000-row train subset.
-- Every student with `--labels teacher` → the distillation gap. Cascade table once test labels
-  are complete.
-- Cost-per-1M table, Dockerfile.
+**Paused with**
+- The labeller running as a detached process (log: `logs/label_test.log`). It survives the
+  assistant session but not a reboot; restarting is safe, it resumes from the checkpoint:
+  `.\.venv\Scripts\python.exe scripts/label.py --split test --descriptions --top-k 3`
+- `models/` holds `tfidf_lr_gold` and `minilm_frozen_gold` (gitignored, rebuilt by the
+  scripts); the service serves both: `uvicorn distilroute.serve:app --port 8000`.
+
+**Next, in order**
+1. Colab: `notebooks/finetune_colab.ipynb` on a T4 with the gold rows (zip the checkout for
+   cell 1 until the repo is public). Unzip the download into the checkout, run
+   `scripts/evaluate.py` and `scripts/bench_latency.py`.
+2. Test labels complete → `scripts/teacher_report.py` (the real teacher ceiling), the cascade
+   table fills in, teacher latency (`bench_latency.py --teacher 30`, once the labeller is idle).
+3. `label.py --split train --limit 3000 --seed 0` → every student with `--labels teacher`
+   (baseline, setfit_student, data_curve, finetune on Colab) → the distillation gap.
+4. Cost-per-1M table (3.3), Dockerfile (3.4, needs Docker installed), README table (4.1).

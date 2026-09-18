@@ -146,7 +146,7 @@ free tier costs a day.
 ## Session log
 
 **2026-09-18 (curves, fine-tune script, serving)** — Test labelling restarted as a detached process
-(`logs/label_test.log`; 380 → 1,120, then Groq's daily token cap: 5–10 min sleeps). Wrote `scripts/data_curve.py` (1b.3) and ran
+(`logs/label_test.log`; 380 → 1,140 at pause, then Groq's daily token cap: 5–10 min sleeps). Wrote `scripts/data_curve.py` (1b.3) and ran
 it on gold for both CPU students: MiniLM frozen reaches 0.84 with 1k random labels and 0.92
 with 5k; TF-IDF needs 5k to reach 0.89. `evaluate.py` renders the curves into `docs/results.md`.
 Wrote `scripts/finetune.py` (2.3 / 1b.4: DistilBERT / MiniLM / TinyBERT full fine-tune, soft
@@ -156,9 +156,23 @@ Then 3.1 + 3.2: `distilroute/students.py` (one loader per model kind, incl. the 
 (→ `results/latency.json`, which `evaluate.py` now prefers for the latency column). Verified
 end to end against a running uvicorn. Not done: 3.3 cost table, 3.4 Dockerfile (no Docker on
 this laptop), the teacher latency run (wait for labelling to finish).
-Next: run `notebooks/finetune_colab.ipynb` on Colab (gold rows now), keep the labeller
-running (`python scripts/label.py --split test --descriptions --top-k 3`, it resumes), then
-train subset → `--labels teacher` everywhere.
+**Resume (tonight / next session):**
+
+```powershell
+cd C:\Users\User\dev\distilroute
+# 1. Is the labeller still alive? It survives the assistant session, not a reboot.
+Get-Content logs\label_test.log -Tail 2; (Get-Content data\labels\test.jsonl | Measure-Object -Line).Lines
+# 2. If not, restart it — resumes from the checkpoint; one process per label file at a time.
+.\.venv\Scripts\python.exe scripts/label.py --split test --descriptions --top-k 3
+# 3. Sanity: tests + the results doc
+.\.venv\Scripts\python.exe -m pytest -q; .\.venv\Scripts\python.exe scripts/evaluate.py
+```
+
+Then, in order: (a) Colab notebook on the gold rows — upload a zip of the checkout without
+`.venv/` and `data/raw/`; unzip the results back and re-run `evaluate.py` + `bench_latency.py`.
+(b) When test hits 3,080: `teacher_report.py`, then `bench_latency.py --teacher 30`.
+(c) Start train: `label.py --split train --limit 3000 --seed 0`, then `--labels teacher` for
+every student. (d) 3.3 cost table, 3.4 Dockerfile (install Docker first), 4.1 README.
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
