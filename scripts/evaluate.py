@@ -12,6 +12,7 @@ recomputes what it can from the probabilities so all runs are scored the same wa
 - a cascade preview: route the least-confident X % of queries to the teacher instead, and
   report the accuracy of the mixed system. This is the deployment pattern (roadmap 1b.2).
 - the data-efficiency curves from `scripts/data_curve.py` (results/curves/), if any.
+- cost per 1M requests from `scripts/cost.py` (results/cost.json), if present.
 
 Latency comes from results/latency.json (`scripts/bench_latency.py`, this laptop's CPU) when
 a run has an entry there, else from what the training script recorded (Colab's CPU for the
@@ -94,6 +95,39 @@ def curve_lines() -> list[str]:
             else:
                 cells.append(f"{np.mean(accs):.3f} ± {(max(accs) - min(accs)) / 2:.3f}")
         lines.append(f"| {c['student']} | {c['trained_on']} | " + " | ".join(cells) + " |")
+    return lines
+
+
+def cost_lines() -> list[str]:
+    path = RESULTS / "cost.json"
+    if not path.exists():
+        return []
+    c = json.loads(path.read_text())
+    vm, teacher = c["prices"]["vm"], c["prices"]["teacher"]
+    lines = [
+        "",
+        "## Cost per 1M requests",
+        "",
+        f"Teacher at the provider's **paid** list price ({teacher['model']}: "
+        f"${teacher['usd_per_1m_in']} in / ${teacher['usd_per_1m_out']} out per 1M tokens) — "
+        "the free tier we labelled with is rate-capped and not a production option. Tokens per "
+        f"query measured on the final config (~{c['tokens']['prompt_fixed']:,} fixed prompt + "
+        f"{c['tokens']['prompt_per_query']} per query in, {c['tokens']['output_per_query']} out). "
+        f"Students: mean in-process latency × a {vm['name']} at ${vm['usd_per_hour']}/h, one "
+        "request at a time on one core — an upper bound; on hardware you already own it is $0. "
+        "Prices checked 2026-09-18 (`scripts/cost.py`).",
+        "",
+        "| model | mode | per query | $ per 1M requests |",
+        "|---|---|---:|---:|",
+    ]
+    for r in c["rows"].values():
+        if "tokens_in_per_query" in r:
+            per = f"{r['tokens_in_per_query']:,.0f} + {r['tokens_out_per_query']} tokens"
+            mode = r["mode"]
+        else:
+            per = f"{r['cpu_seconds_per_query'] * 1000:.1f} ms CPU"
+            mode = vm["name"].split(" (")[0]
+        lines.append(f"| {r['model']} | {mode} | {per} | **{r['usd_per_1m']:,.2f}** |")
     return lines
 
 
@@ -203,6 +237,7 @@ def main() -> None:
         lines.append(f"| {r['model']} | {r['trained_on']} | " + " | ".join(cells) + " |")
 
     lines += curve_lines()
+    lines += cost_lines()
 
     DOCS.mkdir(exist_ok=True)
     out = DOCS / "results.md"

@@ -187,6 +187,8 @@ distilroute/
   int8 export) and the Colab notebook that runs it; smoke-tested on CPU.
 - Serving: `distilroute/serve.py` (FastAPI `POST /route`, `model=` switch, lazy loading) over
   one loader per model kind; `scripts/bench_latency.py` → `results/latency.json`.
+- Cost per 1M requests (`scripts/cost.py`, paid list prices): teacher **$220** one ticket per
+  call ($28 batched), MiniLM frozen **$0.07**, TF-IDF $0.01 on a t3.small.
 - Test-split labelling with the final config: **1,140 / 3,080** at pause (Groq daily cap
   ≈ 1,400 queries/day; ~2 more days for test, then ~3 for a 3k train subset).
 
@@ -205,4 +207,4 @@ distilroute/
    table fills in, teacher latency (`bench_latency.py --teacher 30`, once the labeller is idle).
 3. `label.py --split train --limit 3000 --seed 0` → every student with `--labels teacher`
    (baseline, setfit_student, data_curve, finetune on Colab) → the distillation gap.
-4. Cost-per-1M table (3.3), Dockerfile (3.4, needs Docker installed), README table (4.1).
+4. Dockerfile (3.4, needs Docker installed), README table (4.1).

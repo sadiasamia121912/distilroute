@@ -1,0 +1,50 @@
+{
+  "prices": {
+    "teacher": {
+      "model": "openai/gpt-oss-120b on Groq (paid tier)",
+      "usd_per_1m_in": 0.15,
+      "usd_per_1m_out": 0.6,
+      "source": "https://www.cloudzero.com/blog/groq-pricing/"
+    },
+    "vm": {
+      "name": "AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "usd_per_hour": 0.0208,
+      "source": "https://instances.vantage.sh/aws/ec2/t3.small"
+    }
+  },
+  "tokens": {
+    "prompt_fixed": 1350,
+    "prompt_per_query": 27,
+    "output_per_query": 23
+  },
+  "rows": {
+    "teacher_batched": {
+      "model": "openai/gpt-oss-120b on Groq (paid tier)",
+      "mode": "20 queries per call",
+      "tokens_in_per_query": 94.5,
+      "tokens_out_per_query": 23,
+      "usd_per_1m": 27.97
+    },
+    "teacher_single": {
+      "model": "openai/gpt-oss-120b on Groq (paid tier)",
+      "mode": "one query per call",
+      "tokens_in_per_query": 1377.0,
+      "tokens_out_per_query": 23,
+      "usd_per_1m": 220.35
+    },
+    "minilm_frozen_gold": {
+      "model": "minilm_frozen_gold",
+      "mode": "11.7 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.011716420600540005,
+      "usd_per_1m": 0.07,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "tfidf_lr_gold": {
+      "model": "tfidf_lr_gold",
+      "mode": "1.9 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.0019039925992256031,
+      "usd_per_1m": 0.01,
+      "usd_per_1m_own_hardware": 0.0
+    }
+  }
+}

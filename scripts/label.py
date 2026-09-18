@@ -151,7 +151,8 @@ def main() -> None:
             el = time.time() - t0
             print(
                 f"  {n_done:>6,}/{len(todo):,}  calls {teacher.calls:>4}  "
-                f"tokens {teacher.tokens_in + teacher.tokens_out:>8,}  unparsed {failed}  "
+                f"tokens in/out {teacher.tokens_in:>8,}/{teacher.tokens_out:>7,}  "
+                f"unparsed {failed}  "
                 f"{el:6.0f}s",
                 flush=True,
             )

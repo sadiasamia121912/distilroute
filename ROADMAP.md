@@ -116,7 +116,7 @@ free tier costs a day.
 
 - [x] **3.1** FastAPI `POST /route` with a `model=` switch (teacher | tfidf | setfit | distilbert); same request/response schema for all. _(2026-09-18: `distilroute/serve.py` over `distilroute/students.py`, a loader for every `models/<run>/meta.json` (tfidf / minilm / onnx) plus the teacher; lazy-loaded, `GET /models`, `/health`; 5 tests with a fake router. Student scripts now persist their models.)_
 - [~] **3.2** `scripts/bench_latency.py`: 500 requests per model, p50/p95, on this laptop (CPU). Teacher latency measured end-to-end through the free-tier API. _(2026-09-18: in-process — MiniLM frozen 11.5 / 14.6 ms, TF-IDF 1.8 / 2.5 ms; `--http` mode too, but Windows loopback delayed-ACK adds ~30 ms so the table uses in-process. `--teacher N` written, not yet run: it would share Groq's rate limit with the labeller.)_
-- [ ] **3.3** Cost per 1M requests: teacher from the provider's *paid* price list (the free tier is not a production option — say so), students from CPU-seconds on a priced cloud VM.
+- [x] **3.3** Cost per 1M requests: teacher from the provider's *paid* price list (the free tier is not a production option — say so), students from CPU-seconds on a priced cloud VM. _(2026-09-18: `scripts/cost.py` → `results/cost.json` → results.md. gpt-oss-120b on Groq paid ($0.15 / $0.60 per 1M tokens): **$220 / 1M** one ticket per call, $28 batched 20; MiniLM frozen **$0.07**, TF-IDF $0.01 on a t3.small ($0.0208/h) — ~3,000× cheaper than the single-query teacher; $0 on owned hardware. Tokens per query measured on the final config: 118 at batch 20.)_
 - [ ] **3.4** Dockerfile (student only — ~300 MB image), `docker run` → `/route` works. README with the final table + the pitch.
 
 ## Phase 4 — Publish  (½ day)
@@ -172,7 +172,7 @@ Then, in order: (a) Colab notebook on the gold rows — upload a zip of the chec
 `.venv/` and `data/raw/`; unzip the results back and re-run `evaluate.py` + `bench_latency.py`.
 (b) When test hits 3,080: `teacher_report.py`, then `bench_latency.py --teacher 30`.
 (c) Start train: `label.py --split train --limit 3000 --seed 0`, then `--labels teacher` for
-every student. (d) 3.3 cost table, 3.4 Dockerfile (install Docker first), 4.1 README.
+every student. (d) 3.4 Dockerfile (install Docker first), 4.1 README. 3.3 cost table done (`scripts/cost.py`).
 
 **2026-09-17 (kickoff)** — Repo created, Banking77 chosen and checked, teacher client +
 resumable labeller written with fake-transport tests, TF-IDF baseline on gold labels run.
