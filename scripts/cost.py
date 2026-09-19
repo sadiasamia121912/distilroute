@@ -41,11 +41,12 @@ PRICES = {
     },
 }
 
-# Measured on the final labelling config (v2 descriptions, top-3, reasoning low), 2026-09-18:
-# 91,837 tokens over 780 test queries in 39 calls of 20 = 117.7 tokens/query; the prompt is
-# ~1,350 fixed (77 names + descriptions + instructions) + ~27 per query, so the answer +
-# reasoning is ~23 tokens/query. Single-query mode pays the fixed prompt on every call.
-TOKENS = {"prompt_fixed": 1350, "prompt_per_query": 27, "output_per_query": 23}
+# Measured on the full test-split run (final config: v2 descriptions, top-3, reasoning low),
+# 2026-09-19: 251,996 prompt + 66,064 completion tokens over 3,080 queries in 135 calls of
+# 20-ish -> 1,867 prompt tokens per call = ~1,330 fixed (77 names + descriptions +
+# instructions) + ~27 per query, and 21 completion tokens (answer + reasoning) per query.
+# Single-query mode pays the fixed prompt on every call.
+TOKENS = {"prompt_fixed": 1330, "prompt_per_query": 27, "output_per_query": 21}
 
 
 def teacher_cost(batch: int) -> dict:

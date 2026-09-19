@@ -71,10 +71,11 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [x] **1.3** `scripts/label.py`: resumable labelling with JSONL checkpoint, rate-limit backoff, `--split test|train --limit N`. _(2026-09-17)_
 - [x] **1.4** Get a Groq key (free, https://console.groq.com) → `.env` as `GROQ_API_KEY`. _(2026-09-17)_
 - [x] **1.4b** Teacher config comparison on 200 test queries (`data/labels/test.cmp_*.jsonl`) — see Protocol. _(2026-09-17)_
-- [~] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
+- [x] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
   _2026-09-17: v1 run stopped at 2,460 (kept as `test.v1_partial.jsonl`; file is intent-sorted so it covers ~60 of 77 intents — not a random sample). It exposed that 33 descriptions mis-described the dataset's actual intent semantics (`get_physical_card` = PIN questions, 0 % correct). v2 descriptions written from TRAIN examples. Next: `scripts/gates.ps1` (v2 / top-3 / batch 50 / batch 100 on the 200-query sample), then relabel test with the winner._
-- [ ] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`.
-- [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(script done 2026-09-18; regenerate when test completes)_ Still to do: self-agreement run (300 test queries relabelled).
+  _**2026-09-19: complete.** 3,080 / 3,080 with the final config, 0 unparsed, 135 calls, 318k tokens over ~2 days of free-tier trickle. **Teacher = 0.948 accuracy / 0.946 macro-F1**, gold in top-3 98.4 % (`docs/teacher.md`). Weakest: `top_up_by_bank_transfer_charge` 0.33, `beneficiary_not_allowed` 0.53._
+- [~] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`. _(2026-09-19: 3,000-row random subset (`--limit 3000 --seed 0`) started as a detached process, `logs/label_train.log`; ~2 days.)_
+- [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(generated on the full test split 2026-09-19)_ Still to do: self-agreement run (300 test queries relabelled).
 
 ## Phase 1b — Make it advanced, for free  (decided 2026-09-17)
 
@@ -149,6 +150,13 @@ free tier costs a day.
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-19 (test labels complete)** — Labeller finished the test split overnight (one 2-hour
+stall when the laptop slept and Wi-Fi did not come back; it recovered by itself). Teacher on
+the full split: **0.948**. `results.md` cascade columns filled in: **MiniLM frozen escalating
+its least-confident 20 % to the teacher = 0.963, above the teacher alone (0.948)** — 80 % of
+queries never touch the LLM. Cost script now uses the measured token split (252k in / 66k
+out). Train subset (3,000 rows, seed 0) labelling started.
 
 **2026-09-18 (curves, fine-tune script, serving)** — Test labelling restarted as a detached process
 (`logs/label_test.log`; 380 → 1,180 at pause, then Groq's daily token cap: 5–15 min sleeps). Wrote `scripts/data_curve.py` (1b.3) and ran

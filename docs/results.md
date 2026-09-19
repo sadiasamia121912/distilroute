@@ -43,11 +43,11 @@ How many labelled tickets does a student need? Each cell is accuracy vs gold on 
 
 ## Cost per 1M requests
 
-Teacher at the provider's **paid** list price (openai/gpt-oss-120b on Groq (paid tier): $0.15 in / $0.6 out per 1M tokens) — the free tier we labelled with is rate-capped and not a production option. Tokens per query measured on the final config (~1,350 fixed prompt + 27 per query in, 23 out). Students: mean in-process latency × a AWS t3.small (2 vCPU, us-east-1, on-demand) at $0.0208/h, one request at a time on one core — an upper bound; on hardware you already own it is $0. Prices checked 2026-09-18 (`scripts/cost.py`).
+Teacher at the provider's **paid** list price (openai/gpt-oss-120b on Groq (paid tier): $0.15 in / $0.6 out per 1M tokens) — the free tier we labelled with is rate-capped and not a production option. Tokens per query measured on the final config (~1,330 fixed prompt + 27 per query in, 21 out). Students: mean in-process latency × a AWS t3.small (2 vCPU, us-east-1, on-demand) at $0.0208/h, one request at a time on one core — an upper bound; on hardware you already own it is $0. Prices checked 2026-09-18 (`scripts/cost.py`).
 
 | model | mode | per query | $ per 1M requests |
 |---|---|---:|---:|
-| openai/gpt-oss-120b on Groq (paid tier) | 20 queries per call | 94 + 23 tokens | **27.97** |
-| openai/gpt-oss-120b on Groq (paid tier) | one query per call | 1,377 + 23 tokens | **220.35** |
+| openai/gpt-oss-120b on Groq (paid tier) | 20 queries per call | 94 + 21 tokens | **26.62** |
+| openai/gpt-oss-120b on Groq (paid tier) | one query per call | 1,357 + 21 tokens | **216.15** |
 | minilm_frozen_gold | AWS t3.small | 11.7 ms CPU | **0.07** |
 | tfidf_lr_gold | AWS t3.small | 1.9 ms CPU | **0.01** |

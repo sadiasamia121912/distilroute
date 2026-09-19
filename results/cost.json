@@ -13,24 +13,24 @@
     }
   },
   "tokens": {
-    "prompt_fixed": 1350,
+    "prompt_fixed": 1330,
     "prompt_per_query": 27,
-    "output_per_query": 23
+    "output_per_query": 21
   },
   "rows": {
     "teacher_batched": {
       "model": "openai/gpt-oss-120b on Groq (paid tier)",
       "mode": "20 queries per call",
-      "tokens_in_per_query": 94.5,
-      "tokens_out_per_query": 23,
-      "usd_per_1m": 27.97
+      "tokens_in_per_query": 93.5,
+      "tokens_out_per_query": 21,
+      "usd_per_1m": 26.62
     },
     "teacher_single": {
       "model": "openai/gpt-oss-120b on Groq (paid tier)",
       "mode": "one query per call",
-      "tokens_in_per_query": 1377.0,
-      "tokens_out_per_query": 23,
-      "usd_per_1m": 220.35
+      "tokens_in_per_query": 1357.0,
+      "tokens_out_per_query": 21,
+      "usd_per_1m": 216.15
     },
     "minilm_frozen_gold": {
       "model": "minilm_frozen_gold",
