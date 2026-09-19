@@ -211,9 +211,14 @@ def main() -> None:
     if teacher is not None:
         t_acc = float((t.teacher == t.gold).mean())
         lines += [
-            f"Teacher (`gpt-oss-120b`, zero-shot): accuracy **{t_acc:.3f}** on the "
-            f"{len(t):,} test queries labelled so far ({t_cov:.0%} — intent-sorted, so partial "
-            "coverage is not a random sample). Agreement below is measured on those rows.",
+            f"Teacher (`gpt-oss-120b`, zero-shot): accuracy **{t_acc:.3f}** on "
+            + (
+                f"the full {len(t):,}-query test split."
+                if t_cov >= 1
+                else f"the {len(t):,} test queries labelled so far ({t_cov:.0%} — intent-sorted, "
+                "so partial coverage is not a random sample). Agreement below is measured on "
+                "those rows."
+            ),
             "",
         ]
     lines += [
