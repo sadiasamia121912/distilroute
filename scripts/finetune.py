@@ -39,11 +39,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import ROOT, categories, load_split, teacher_train_labels  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
 
+# name -> (hub id, params, learning rate). Small encoders need a higher LR: at 5e-5 MiniLM and
+# TinyBERT were still at 0.5 / 0.4 after 4 epochs on 9k rows (Colab, 2026-09-21).
 MODELS = {
-    "distilbert": ("distilbert-base-uncased", 66_955_085),
-    "minilm": ("nreimers/MiniLM-L6-H384-uncased", 22_713_216),
-    "tinybert": ("huawei-noah/TinyBERT_General_4L_312D", 14_350_874),
+    "distilbert": ("distilbert-base-uncased", 66_955_085, 5e-5),
+    "minilm": ("sentence-transformers/all-MiniLM-L6-v2", 22_713_216, 1e-4),
+    "tinybert": ("huawei-noah/TinyBERT_General_4L_312D", 14_350_874, 3e-4),
 }
+MIN_STEPS = 2000  # a 77-way head needs this many updates whatever the pool size
 RANK_WEIGHTS = np.array([1.0, 1 / 2, 1 / 3])
 MAX_LEN = 64  # p95 query is 151 chars ~ 40 tokens
 
@@ -152,8 +155,8 @@ def main() -> None:
     ap.add_argument("--labels", choices=["gold", "teacher"], default="gold")
     ap.add_argument("--soft", action="store_true", help="train on the teacher's ranked top-3")
     ap.add_argument("--soft-alpha", type=float, default=0.3)
-    ap.add_argument("--epochs", type=int, default=4)
-    ap.add_argument("--lr", type=float, default=5e-5)
+    ap.add_argument("--epochs", type=int, default=None, help="default: enough for MIN_STEPS")
+    ap.add_argument("--lr", type=float, default=None, help="default: per model, see MODELS")
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--limit", type=int, default=None, help="subsample the training pool")
     ap.add_argument("--seed", type=int, default=0)
@@ -170,7 +173,8 @@ def main() -> None:
 
     torch.manual_seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    hf_name, n_params = MODELS[args.model]
+    hf_name, n_params, default_lr = MODELS[args.model]
+    args.lr = args.lr or default_lr
     classes = categories()
     train = load_train(args.labels, args.limit, args.seed)
     # Held out from training: per-epoch validation and, at the end, the calibration set.
@@ -189,6 +193,9 @@ def main() -> None:
     ids, mask = encode(tokenizer, train.text.tolist())
     y = torch.tensor(targets(train, classes, args.soft, args.soft_alpha))
     loader = DataLoader(TensorDataset(ids, mask, y), batch_size=args.batch_size, shuffle=True)
+    if args.epochs is None:
+        args.epochs = max(4, -(-MIN_STEPS // len(loader)))  # ceil
+    print(f"  lr {args.lr:g}, {args.epochs} epochs x {len(loader)} steps")
     val_ids, val_mask = encode(tokenizer, val.text.tolist())
     val_y = val.y.values
 
