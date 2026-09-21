@@ -139,6 +139,52 @@ free tier costs a day.
   text, pick a bucket" — routing, moderation, triage, sentiment. It does not cover free-text
   outputs (summaries, replies). The README says so.
 
+## Phase 6 — Results nobody else reports  (decided 2026-09-21, after Phases 1–4)
+
+The model is a distilled MiniLM/DistilBERT; that is not special and the README must not claim
+it is. What can make the project valuable is a handful of *measured, surprising, reusable*
+results on questions teams actually have. Ordered by payoff per effort at $0. All of 6.1–6.3
+are offline (no LLM calls) and start once the shuffled test labels and Colab round 2 give the
+honest baselines.
+
+- [ ] **6.1 Student beats its teacher.** Today the student lands exactly on the teacher's
+  accuracy (0.848 on 3k rows) — it learns the noise. Three free levers, each reported alone
+  and combined, target vs gold on test: (a) **soft labels** — train on the top-3 rank-weighted
+  target (`finetune.py --soft`, and a soft head for the frozen student); (b) **noise filtering**
+  — cross-validated student predictions that confidently disagree with the teacher flag likely
+  teacher errors; drop or down-weight them (confident-learning style; this is the tabaudit
+  cross-project item 1b.5); (c) **self-training** — the student pseudo-labels the 7,003
+  unlabelled train rows, retrain on 3k teacher + 7k self labels. Success = a student above
+  0.848 with zero human labels in training. _Script: `scripts/denoise.py` writing runs under the
+  shared contract so `evaluate.py` shows them as rows._
+- [ ] **6.2 Out-of-scope detection.** Real inboxes contain messages that fit none of the 77
+  intents; a router that confidently misfiles them is worse than one that escalates. Banking77
+  has no OOS class; **CLINC150** (free, 1,200 labelled out-of-scope queries) does. Measure: at
+  each calibrated-confidence threshold, the share of OOS queries escalated vs the share of
+  in-scope queries wrongly escalated (ROC-style table). Also test whether temperature scaling
+  helps or hurts OOS separation. _Script: `scripts/oos.py` + `scripts/download_clinc.py`._
+- [ ] **6.3 Active labelling — spend LLM calls where they matter.** Simulated entirely inside
+  the 3,000 labelled rows: pick N rows by (i) random, (ii) TF-IDF/MiniLM disagreement,
+  (iii) lowest student confidence after a 500-row seed round; train the frozen student on each
+  N and compare on test. Claim shape: "same accuracy with ~2× fewer LLM calls". _Extends
+  `data_curve.py` with a `--select` strategy._
+- [ ] **6.4 Second domain** — Phase 5, now concrete: CLINC150 (150 intents, 10 domains) through
+  the same scripts with only a download script + descriptions file added. Together with 6.2 it
+  reuses one dataset for two results.
+- [ ] **6.5 Three-tier cascade + cost Pareto.** TF-IDF (1.8 ms) → MiniLM → LLM with a threshold
+  per tier; one table/chart of accuracy vs $ per 1M requests, and the answer to "cheapest
+  system that reaches 95 %".
+- [ ] **6.6 Robustness.** Typo / paraphrase perturbations of the test set (rule-based, free):
+  does the student degrade more than the teacher? Support tickets are messy.
+- [ ] **6.7 Live demo page** (published artifact): type a message → intent, calibrated
+  confidence, escalate-or-not, running cost meter for teacher vs student. Judged in 30 seconds.
+- [ ] **6.8 Case study write-up** with the charts: cost table, cascade curve, data curve, and
+  the batch-context leak as a lesson. The repo is the proof; the write-up is what gets read.
+
+**Framing rule for the README:** not "a novel classifier" but "a reproducible $0 recipe with
+three results people will quote: student beats teacher (6.1), cascade beats teacher at a fifth
+of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
+
 ---
 
 ## Rules of thumb
