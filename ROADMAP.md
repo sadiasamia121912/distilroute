@@ -162,7 +162,11 @@ run was shuffled, so its labels and everything trained on them stand; the test l
 Fix: `label.py` now always shuffles; the sorted run is kept as `test.sorted_batches.jsonl`
 and listed as superseded in `teacher.md`; shuffled relabel of test started (~2 days). Until it
 lands, `results.md`'s teacher line, agreement and cascade columns are partial. Colab zip
-rebuilt with the train labels so the teacher rows can run there.
+rebuilt with the train labels so the teacher rows can run there. SetFit few-shot on teacher
+labels: 0.789 (7/intent — the rarest intent has only 7 teacher rows). **Latency caveat:** the
+laptop was on battery (21 %, 1.6 GHz) when the teacher-trained models were benched — every model
+read ~2.5× slower than Friday, so those numbers were discarded. **To do: `bench_latency.py`
+for all models in one session, plugged in.**
 
 **2026-09-19 (test labels complete)** — Labeller finished the test split overnight (one 2-hour
 stall when the laptop slept and Wi-Fi did not come back; it recovered by itself). Teacher on

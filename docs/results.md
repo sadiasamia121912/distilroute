@@ -7,11 +7,11 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.892** on the 120 test queries 
 | model | params | trained on | n train | acc vs gold | macro-F1 | agree w/ teacher | ECE raw → calibrated (T) | p50 / p95 ms |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.892 | 0.074 → 0.011 (T=0.71) | 11.5 / 14.6 |
-| MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 28.2 / 37.5 |
+| MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 27.5 / 37.4 † |
 | MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.850 | 0.214 → 0.059 (T=0.69) | 12.4 / 16.3 † |
-| MiniLM-L6 setfit (7/intent) | 23M | teacher | 462 | **0.789** | 0.785 | 0.842 | 0.268 → 0.018 (T=0.55) | 28.3 / 35.8 |
+| MiniLM-L6 setfit (7/intent) | 23M | teacher | 462 | **0.789** | 0.785 | 0.842 | 0.268 → 0.018 (T=0.55) | 27.6 / 38.9 † |
 | tfidf+lr | — | gold | 9,000 | **0.910** | 0.910 | 0.858 | 0.090 → 0.007 (T=0.66) | 1.8 / 2.5 |
-| tfidf+lr | — | teacher | 2,697 | **0.812** | 0.809 | 0.850 | 0.149 → 0.046 (T=0.67) | 4.8 / 8.3 |
+| tfidf+lr | — | teacher | 2,697 | **0.812** | 0.809 | 0.850 | 0.149 → 0.046 (T=0.67) | 6.6 / 20.2 † |
 
 Latency: single query, in-process, CPU of `Samin` (`scripts/bench_latency.py`); † = as recorded by the training script instead (possibly another machine).
 

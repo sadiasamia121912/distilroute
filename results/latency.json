@@ -34,32 +34,5 @@
     "host": "Samin",
     "mode": "http",
     "kind": "tfidf"
-  },
-  "tfidf_lr_teacher": {
-    "p50_ms": 4.79889998678118,
-    "p95_ms": 8.343834965489805,
-    "mean_ms": 5.3850419980008155,
-    "n": 500,
-    "host": "Samin",
-    "mode": "in-process",
-    "kind": "tfidf"
-  },
-  "minilm_frozen_teacher": {
-    "p50_ms": 28.165800031274557,
-    "p95_ms": 37.45504502439871,
-    "mean_ms": 29.53668219735846,
-    "n": 500,
-    "host": "Samin",
-    "mode": "in-process",
-    "kind": "minilm"
-  },
-  "minilm_setfit_7pc_teacher": {
-    "p50_ms": 28.25139998458326,
-    "p95_ms": 35.77273498522115,
-    "mean_ms": 28.86979020247236,
-    "n": 500,
-    "host": "Samin",
-    "mode": "in-process",
-    "kind": "minilm"
   }
 }
