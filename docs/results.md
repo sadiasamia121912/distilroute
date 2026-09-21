@@ -7,8 +7,10 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.948** on the full 3,080-query 
 | model | params | trained on | n train | acc vs gold | macro-F1 | agree w/ teacher | ECE raw → calibrated (T) | p50 / p95 ms |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.904 | 0.074 → 0.011 (T=0.71) | 11.5 / 14.6 |
+| MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.876 | 0.101 → 0.034 (T=0.70) | 36.2 / 67.7 |
 | MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.857 | 0.214 → 0.059 (T=0.69) | 12.4 / 16.3 † |
 | tfidf+lr | — | gold | 9,000 | **0.910** | 0.910 | 0.885 | 0.090 → 0.007 (T=0.66) | 1.8 / 2.5 |
+| tfidf+lr | — | teacher | 2,697 | **0.812** | 0.809 | 0.837 | 0.149 → 0.046 (T=0.67) | 6.9 / 8.3 |
 
 Latency: single query, in-process, CPU of `Samin` (`scripts/bench_latency.py`); † = as recorded by the training script instead (possibly another machine).
 
@@ -19,8 +21,10 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | model | trained on | 0 % | 5 % | 10 % | 20 % | 30 % |
 |---|---|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | gold | 0.927 | 0.948 | 0.955 | 0.963 | 0.960 |
+| MiniLM-L6 frozen | teacher | 0.848 | 0.873 | 0.892 | 0.919 | 0.934 |
 | MiniLM-L6 setfit (16/intent) | gold | 0.864 | 0.891 | 0.907 | 0.934 | 0.948 |
 | tfidf+lr | gold | 0.910 | 0.934 | 0.952 | 0.964 | 0.963 |
+| tfidf+lr | teacher | 0.812 | 0.839 | 0.859 | 0.893 | 0.919 |
 
 ## Cascade by confidence threshold — the policy a service would actually run
 
@@ -29,17 +33,21 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | model | trained on | < 0.5 | < 0.7 | < 0.8 | < 0.9 | < 0.95 |
 |---|---|---:|---:|---:|---:|---:|
 | MiniLM-L6 frozen | gold | 4% · 0.948 · 0.943 | 10% · 0.965 · 0.955 | 14% · 0.975 · 0.960 | 20% · 0.986 · 0.962 | 29% · 0.991 · 0.961 |
+| MiniLM-L6 frozen | teacher | 7% · 0.880 · 0.882 | 17% · 0.916 · 0.915 | 24% · 0.935 · 0.927 | 35% · 0.952 · 0.938 | 48% · 0.963 · 0.943 |
 | MiniLM-L6 setfit (16/intent) | gold | 11% · 0.913 · 0.910 | 26% · 0.957 · 0.942 | 36% · 0.977 · 0.949 | 53% · 0.989 · 0.954 | 69% · 0.994 · 0.951 |
 | tfidf+lr | gold | 5% · 0.938 · 0.934 | 11% · 0.962 · 0.955 | 15% · 0.972 · 0.960 | 22% · 0.984 · 0.964 | 29% · 0.990 · 0.964 |
+| tfidf+lr | teacher | 12% · 0.860 · 0.867 | 24% · 0.905 · 0.906 | 32% · 0.924 · 0.921 | 42% · 0.943 · 0.934 | 52% · 0.952 · 0.940 |
 
 ## Data efficiency — accuracy vs. number of training labels
 
 How many labelled tickets does a student need? Each cell is accuracy vs gold on the full test split, training on N random rows of the pool, mean ± half-range over seeds (`scripts/data_curve.py`). With teacher labels, N is the number of LLM calls' worth of data.
 
-| student | trained on | 250 | 500 | 1,000 | 2,000 | 5,000 | 10,003 |
-|---|---|---:|---:|---:|---:|---:|---:|
-| MiniLM-L6 frozen | gold | 0.610 ± 0.023 | 0.742 ± 0.020 | 0.841 ± 0.010 | 0.885 ± 0.005 | 0.918 ± 0.002 | 0.930 |
-| tfidf+lr | gold | 0.442 ± 0.036 | 0.586 ± 0.023 | 0.738 ± 0.012 | 0.822 ± 0.006 | 0.889 ± 0.003 | 0.913 |
+| student | trained on | 250 | 500 | 1,000 | 2,000 | 3,000 | 5,000 | 10,003 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| MiniLM-L6 frozen | gold | 0.610 ± 0.023 | 0.742 ± 0.020 | 0.841 ± 0.010 | 0.885 ± 0.005 | — | 0.918 ± 0.002 | 0.930 |
+| MiniLM-L6 frozen | teacher | 0.567 ± 0.003 | 0.715 ± 0.007 | 0.787 ± 0.010 | 0.834 ± 0.003 | 0.846 | — | — |
+| tfidf+lr | gold | 0.442 ± 0.036 | 0.586 ± 0.023 | 0.738 ± 0.012 | 0.822 ± 0.006 | — | 0.889 ± 0.003 | 0.913 |
+| tfidf+lr | teacher | 0.402 ± 0.012 | 0.564 ± 0.007 | 0.694 ± 0.016 | 0.772 ± 0.008 | 0.808 | — | — |
 
 ## Cost per 1M requests
 

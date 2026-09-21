@@ -44,10 +44,12 @@ def load_train(labels: str, per_class: int | None, seed: int):
         df = teacher_train_labels()
         print(f"teacher labels: {len(df):,} usable")
     if per_class:
-        # Same N for every intent (the smallest Banking77 intent has 35 train rows).
+        # Same N for every intent, capped by the rarest one (35 gold rows; can be far fewer in
+        # a teacher-labelled subset). Returns the N actually used so the run is named honestly.
         n = min(per_class, int(df.y.value_counts().min()))
         df = df.groupby("y").sample(n=n, random_state=seed)
-    return df
+        return df, n
+    return df, None
 
 
 def main() -> None:
@@ -63,7 +65,9 @@ def main() -> None:
 
     from sentence_transformers import SentenceTransformer
 
-    train, calib = split_calib(load_train(args.labels, args.per_class, args.seed), seed=args.seed)
+    train, per_class = load_train(args.labels, args.per_class, args.seed)
+    args.per_class = per_class
+    train, calib = split_calib(train, seed=args.seed)
     test = load_split("test")
     print(
         f"{args.mode}: {len(train):,} training rows, {len(calib)} held out for calibration, "

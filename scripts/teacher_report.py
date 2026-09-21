@@ -19,10 +19,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import DOCS, LABELS, load_labels, load_split  # noqa: E402
 
 DEFAULT_RUNS = [
-    ("test", "main run: gpt-oss-120b, v2 descriptions, top-3, batch 20"),
+    ("test", "main run: gpt-oss-120b, v2 descriptions, top-3, batch 20, shuffled order"),
     ("test.cmp_low_names", "gate: v1 names only"),
     ("test.cmp_low_desc", "gate: v1 descriptions"),
     ("test.cmp_med_desc", "gate: v1 descriptions, medium reasoning"),
+    (
+        "test.sorted_batches",
+        "SUPERSEDED: same config, intent-sorted batches (batch-context leak, +7 pts)",
+    ),
     ("test.gate_v2", "gate: v2 descriptions"),
     ("test.gate_v2_top3", "gate: v2 descriptions, top-3"),
     ("test.gate_v2_b50", "gate: v2, batch 50"),

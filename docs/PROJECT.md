@@ -167,7 +167,7 @@ distilroute/
 └── docs/PROJECT.md             this file
 ```
 
-## 10. Status (paused 2026-09-18, evening)
+## 10. Status (updated 2026-09-21)
 
 **Done**
 - Data downloaded and checked; repo, 24 tests, lint.
@@ -192,8 +192,13 @@ distilroute/
 - Calibration (`distilroute/calibration.py`): temperature fit on a 10 % training-pool holdout,
   never on test; ECE 0.074 → 0.011 for MiniLM. Threshold cascade: escalate below 0.8
   confidence → 14 % to the teacher, 97.5 % accuracy on what the student keeps.
-- Test-split labelling with the final config: **1,180 / 3,080** at pause (Groq daily cap
-  ≈ 1,400 queries/day; ~2 more days for test, then ~3 for a 3k train subset).
+- Train subset labelled (3,000 random rows, 0 unparsed). Teacher on it: **0.848** vs gold.
+- **Distillation gap on 3k labels:** frozen MiniLM 0.848 on teacher labels vs ~0.90 on gold
+  (data curve) — the student matches its teacher; TF-IDF 0.812 vs 0.86.
+- **Found and fixed a protocol flaw (2026-09-21):** the intent-sorted test CSV meant every
+  teacher batch was one intent, inflating the teacher's test accuracy to 0.948 (0.98 vs 0.905
+  on the same 200 queries, sorted vs shuffled). The labeller now always shuffles; the test
+  split is being relabelled (~2 days). The train labels were shuffled and stand.
 
 **Paused with**
 - The labeller running as a detached process (log: `logs/label_test.log`). It survives the

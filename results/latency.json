@@ -34,5 +34,23 @@
     "host": "Samin",
     "mode": "http",
     "kind": "tfidf"
+  },
+  "tfidf_lr_teacher": {
+    "p50_ms": 6.924949993845075,
+    "p95_ms": 8.297084947116671,
+    "mean_ms": 6.432262397836894,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "tfidf"
+  },
+  "minilm_frozen_teacher": {
+    "p50_ms": 36.20400000363588,
+    "p95_ms": 67.70813004113734,
+    "mean_ms": 41.17595020122826,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "minilm"
   }
 }

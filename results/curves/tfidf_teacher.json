@@ -1,0 +1,111 @@
+{
+  "student": "tfidf+lr",
+  "trained_on": "teacher",
+  "pool": 3000,
+  "rows": [
+    {
+      "n": 250,
+      "seed": 0,
+      "n_classes_seen": 74,
+      "accuracy": 0.4159090909090909,
+      "macro_f1": 0.3797149084869855,
+      "fit_seconds": 2.9451136589050293
+    },
+    {
+      "n": 250,
+      "seed": 1,
+      "n_classes_seen": 68,
+      "accuracy": 0.39805194805194805,
+      "macro_f1": 0.3616291996436308,
+      "fit_seconds": 2.525189161300659
+    },
+    {
+      "n": 250,
+      "seed": 2,
+      "n_classes_seen": 72,
+      "accuracy": 0.39090909090909093,
+      "macro_f1": 0.3503664350349467,
+      "fit_seconds": 2.770603656768799
+    },
+    {
+      "n": 500,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.5672077922077922,
+      "macro_f1": 0.5513252931034027,
+      "fit_seconds": 5.253515005111694
+    },
+    {
+      "n": 500,
+      "seed": 1,
+      "n_classes_seen": 77,
+      "accuracy": 0.5704545454545454,
+      "macro_f1": 0.5504564207971305,
+      "fit_seconds": 3.941073179244995
+    },
+    {
+      "n": 500,
+      "seed": 2,
+      "n_classes_seen": 77,
+      "accuracy": 0.5555194805194805,
+      "macro_f1": 0.5321533321815041,
+      "fit_seconds": 4.057066202163696
+    },
+    {
+      "n": 1000,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.7061688311688312,
+      "macro_f1": 0.6998267481299941,
+      "fit_seconds": 7.879477262496948
+    },
+    {
+      "n": 1000,
+      "seed": 1,
+      "n_classes_seen": 77,
+      "accuracy": 0.7,
+      "macro_f1": 0.6885573074109876,
+      "fit_seconds": 7.993193626403809
+    },
+    {
+      "n": 1000,
+      "seed": 2,
+      "n_classes_seen": 77,
+      "accuracy": 0.6746753246753247,
+      "macro_f1": 0.6641767787577296,
+      "fit_seconds": 7.301131963729858
+    },
+    {
+      "n": 2000,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.7737012987012987,
+      "macro_f1": 0.7689124631762052,
+      "fit_seconds": 13.000333070755005
+    },
+    {
+      "n": 2000,
+      "seed": 1,
+      "n_classes_seen": 77,
+      "accuracy": 0.7798701298701298,
+      "macro_f1": 0.7750710880842745,
+      "fit_seconds": 14.7114737033844
+    },
+    {
+      "n": 2000,
+      "seed": 2,
+      "n_classes_seen": 77,
+      "accuracy": 0.7636363636363637,
+      "macro_f1": 0.758398408086607,
+      "fit_seconds": 11.836754322052002
+    },
+    {
+      "n": 3000,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.8084415584415584,
+      "macro_f1": 0.8050888654471445,
+      "fit_seconds": 20.526310920715332
+    }
+  ]
+}

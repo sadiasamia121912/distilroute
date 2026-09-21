@@ -1,0 +1,111 @@
+{
+  "student": "MiniLM-L6 frozen",
+  "trained_on": "teacher",
+  "pool": 3000,
+  "rows": [
+    {
+      "n": 250,
+      "seed": 0,
+      "n_classes_seen": 74,
+      "accuracy": 0.5694805194805195,
+      "macro_f1": 0.5226475276815267,
+      "fit_seconds": 0.6679830551147461
+    },
+    {
+      "n": 250,
+      "seed": 1,
+      "n_classes_seen": 68,
+      "accuracy": 0.5685064935064935,
+      "macro_f1": 0.52277549558617,
+      "fit_seconds": 0.7301089763641357
+    },
+    {
+      "n": 250,
+      "seed": 2,
+      "n_classes_seen": 72,
+      "accuracy": 0.5642857142857143,
+      "macro_f1": 0.5128464888300085,
+      "fit_seconds": 0.543999433517456
+    },
+    {
+      "n": 500,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.7201298701298702,
+      "macro_f1": 0.7109532448813265,
+      "fit_seconds": 0.7131834030151367
+    },
+    {
+      "n": 500,
+      "seed": 1,
+      "n_classes_seen": 77,
+      "accuracy": 0.7178571428571429,
+      "macro_f1": 0.7007642841471188,
+      "fit_seconds": 1.0390830039978027
+    },
+    {
+      "n": 500,
+      "seed": 2,
+      "n_classes_seen": 77,
+      "accuracy": 0.7068181818181818,
+      "macro_f1": 0.680820488503079,
+      "fit_seconds": 0.8832879066467285
+    },
+    {
+      "n": 1000,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.7996753246753247,
+      "macro_f1": 0.7960849015976202,
+      "fit_seconds": 0.7077240943908691
+    },
+    {
+      "n": 1000,
+      "seed": 1,
+      "n_classes_seen": 77,
+      "accuracy": 0.7834415584415585,
+      "macro_f1": 0.774534120152262,
+      "fit_seconds": 0.6705646514892578
+    },
+    {
+      "n": 1000,
+      "seed": 2,
+      "n_classes_seen": 77,
+      "accuracy": 0.7792207792207793,
+      "macro_f1": 0.7703810571323163,
+      "fit_seconds": 0.6744542121887207
+    },
+    {
+      "n": 2000,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.8350649350649351,
+      "macro_f1": 0.8326458607464813,
+      "fit_seconds": 1.1024019718170166
+    },
+    {
+      "n": 2000,
+      "seed": 1,
+      "n_classes_seen": 77,
+      "accuracy": 0.8366883116883117,
+      "macro_f1": 0.8345658590709621,
+      "fit_seconds": 0.8825716972351074
+    },
+    {
+      "n": 2000,
+      "seed": 2,
+      "n_classes_seen": 77,
+      "accuracy": 0.8311688311688312,
+      "macro_f1": 0.8267315068152188,
+      "fit_seconds": 1.0220134258270264
+    },
+    {
+      "n": 3000,
+      "seed": 0,
+      "n_classes_seen": 77,
+      "accuracy": 0.8457792207792207,
+      "macro_f1": 0.8434010239760876,
+      "fit_seconds": 1.715897560119629
+    }
+  ]
+}

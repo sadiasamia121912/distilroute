@@ -71,10 +71,10 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [x] **1.3** `scripts/label.py`: resumable labelling with JSONL checkpoint, rate-limit backoff, `--split test|train --limit N`. _(2026-09-17)_
 - [x] **1.4** Get a Groq key (free, https://console.groq.com) → `.env` as `GROQ_API_KEY`. _(2026-09-17)_
 - [x] **1.4b** Teacher config comparison on 200 test queries (`data/labels/test.cmp_*.jsonl`) — see Protocol. _(2026-09-17)_
-- [x] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
+- [~] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
   _2026-09-17: v1 run stopped at 2,460 (kept as `test.v1_partial.jsonl`; file is intent-sorted so it covers ~60 of 77 intents — not a random sample). It exposed that 33 descriptions mis-described the dataset's actual intent semantics (`get_physical_card` = PIN questions, 0 % correct). v2 descriptions written from TRAIN examples. Next: `scripts/gates.ps1` (v2 / top-3 / batch 50 / batch 100 on the 200-query sample), then relabel test with the winner._
-  _**2026-09-19: complete.** 3,080 / 3,080 with the final config, 0 unparsed, 135 calls, 318k tokens over ~2 days of free-tier trickle. **Teacher = 0.948 accuracy / 0.946 macro-F1**, gold in top-3 98.4 % (`docs/teacher.md`). Weakest: `top_up_by_bank_transfer_charge` 0.33, `beneficiary_not_allowed` 0.53._
-- [~] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`. _(2026-09-19: 3,000-row random subset (`--limit 3000 --seed 0`) started as a detached process, `logs/label_train.log`; ~2 days.)_
+  _2026-09-19: 3,080 / 3,080, 0 unparsed, read 0.948 — **but see 2026-09-21: invalid.** The test CSV is intent-sorted, so every batch of 20 was a single intent and the teacher used the batch as a hint: on the same 200 queries it scores 0.98 in sorted batches vs 0.905 in random ones. Kept as `test.sorted_batches.jsonl` for the record; the labeller now always shuffles. **Relabel in shuffled order started 2026-09-21** (`logs/label_test_shuffled.log`, ~2 days)._
+- [~] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`. _(3,000-row random subset (`--limit 3000 --seed 0`) done 2026-09-21: 0 unparsed, 150 calls, 283k in / 174k out. Teacher vs gold on it: **0.848**, top-3 hit 0.936 — random batches, so this is the honest zero-shot number on the train distribution. Remaining 7,003 rows: later, if the data curve says they matter.)_
 - [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(generated on the full test split 2026-09-19)_ Still to do: self-agreement run (300 test queries relabelled).
 
 ## Phase 1b — Make it advanced, for free  (decided 2026-09-17)
@@ -150,6 +150,19 @@ free tier costs a day.
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-21 (train subset done; the batch-context leak)** — Train subset finished (3,000,
+0 unparsed). Students on teacher labels: TF-IDF **0.812**, frozen MiniLM **0.848** — exactly
+the teacher's own accuracy on those rows (0.848), i.e. the student learns the teacher, noise
+included; the gold-trained curve at 3k gives ~0.90, so the distillation gap is ~5 pts of
+teacher noise. Sanity-checking why the teacher read 0.948 on test but 0.848 on train exposed
+a **protocol flaw**: the test CSV is intent-sorted, every batch of 20 was one intent, and the
+teacher used that as context (same 200 queries: 0.98 sorted vs 0.905 shuffled). The train
+run was shuffled, so its labels and everything trained on them stand; the test labels do not.
+Fix: `label.py` now always shuffles; the sorted run is kept as `test.sorted_batches.jsonl`
+and listed as superseded in `teacher.md`; shuffled relabel of test started (~2 days). Until it
+lands, `results.md`'s teacher line, agreement and cascade columns are partial. Colab zip
+rebuilt with the train labels so the teacher rows can run there.
 
 **2026-09-19 (test labels complete)** — Labeller finished the test split overnight (one 2-hour
 stall when the laptop slept and Wi-Fi did not come back; it recovered by itself). Teacher on

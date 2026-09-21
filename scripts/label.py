@@ -49,7 +49,13 @@ def main() -> None:
     add("--model", default=None, help="override the provider's default model")
     add("--batch-size", type=int, default=20)
     add("--limit", type=int, default=None, help="label only the first N (after --seed shuffle)")
-    add("--seed", type=int, default=None, help="shuffle order with this seed (for samples)")
+    add(
+        "--seed",
+        type=int,
+        default=0,
+        help="shuffle order with this seed. Always shuffle: the CSVs are sorted by intent, and a "
+        "batch of 20 same-intent queries leaks the answer to the teacher (+7 pts, 2026-09-21)",
+    )
     add("--run", default=None, help="tag for a separate output file, e.g. self_agreement")
     add("--max-calls", type=int, default=None, help="stop after this many API calls")
     add(
@@ -66,8 +72,7 @@ def main() -> None:
     labels = json.loads((RAW / "categories.json").read_text())
 
     order = list(range(len(df)))
-    if args.seed is not None:
-        random.Random(args.seed).shuffle(order)
+    random.Random(args.seed).shuffle(order)
     if args.limit:
         order = order[: args.limit]
 
