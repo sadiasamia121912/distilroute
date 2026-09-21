@@ -1,0 +1,15 @@
+{
+  "model": "MiniLM-L6 setfit (7/intent)",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "n_train": 462,
+  "accuracy": 0.788961038961039,
+  "macro_f1": 0.7854024123429935,
+  "p50_ms": 27.623350091744214,
+  "p95_ms": 38.93974994425662,
+  "fit_seconds": 938.4054164886475,
+  "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+  "max_steps": 400,
+  "temperature": 0.5461234094385028,
+  "n_calib": 77
+}
