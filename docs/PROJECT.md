@@ -56,9 +56,13 @@ routing imperfect and distillation interesting.
   gold are reported separately, as the supervised reference ("what you would get with a
   labelled dataset").
 - **The teacher is zero-shot.** Its prompt contains the 77 intent names and a one-line
-  description of each (`data/intent_descriptions.json`, written from the names). It never
-  sees an example query — a test asserts that no description matches a dataset row. Giving it
-  examples would leak gold labels into the "LLM-labelled" data.
+  description of each (`data/intent_descriptions.json`). The descriptions were written from
+  the names, then revised after reading three random **train** examples per intent — never
+  test — because several names are misleading in this dataset (`get_physical_card` is about
+  the PIN). That is what a human writing a labelling guide from historical tickets would do.
+  The prompt never contains an example query — a test asserts that no description matches a
+  dataset row — and the model is asked in batches of 20 *shuffled* queries, since batches of
+  one intent let it use the batch as a hint (+7 pts, found and fixed 2026-09-21).
 - **Parsing is strict.** An answer that is not one of the 77 names (after case/punctuation
   normalisation) is recorded as a failure, never guessed; the failure rate is reported.
 - **Three numbers per model:** accuracy vs. gold, macro-F1 vs. gold (77 classes are imbalanced
