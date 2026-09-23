@@ -202,7 +202,14 @@ distilroute/
 - **Found and fixed a protocol flaw (2026-09-21):** the intent-sorted test CSV meant every
   teacher batch was one intent, inflating the teacher's test accuracy to 0.948 (0.98 vs 0.905
   on the same 200 queries, sorted vs shuffled). The labeller now always shuffles; the test
-  split is being relabelled (~2 days). The train labels were shuffled and stand.
+  split was relabelled 2026-09-23. The train labels were shuffled and stand.
+- **Teacher (honest): 0.867 accuracy, 0.864 macro-F1, gold in top-3 for 94.7 %.** Every
+  gold-trained student beats it (MiniLM frozen 0.927, DistilBERT 0.918, TF-IDF 0.910); the
+  student distilled from 3k teacher labels reaches 0.848, within 2 pts of its teacher.
+- **Consequence for the cascade:** escalating a gold-trained student's least-confident 20 % to
+  the teacher *lowers* accuracy (0.927 → 0.917), because the LLM is the weaker of the two. It
+  still helps the teacher-trained student (0.848 → 0.871). The deployable lesson is to measure
+  the teacher on held-out data before building an escalation path to it.
 
 **Paused with**
 - The labeller running as a detached process (log: `logs/label_test.log`). It survives the

@@ -71,9 +71,9 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
 - [x] **1.3** `scripts/label.py`: resumable labelling with JSONL checkpoint, rate-limit backoff, `--split test|train --limit N`. _(2026-09-17)_
 - [x] **1.4** Get a Groq key (free, https://console.groq.com) → `.env` as `GROQ_API_KEY`. _(2026-09-17)_
 - [x] **1.4b** Teacher config comparison on 200 test queries (`data/labels/test.cmp_*.jsonl`) — see Protocol. _(2026-09-17)_
-- [~] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
+- [x] **1.5** Label the **test** split first (3,080) → teacher accuracy vs. gold. This is the ceiling every student is measured against; if it is below ~85 % switch teacher before labelling train.
   _2026-09-17: v1 run stopped at 2,460 (kept as `test.v1_partial.jsonl`; file is intent-sorted so it covers ~60 of 77 intents — not a random sample). It exposed that 33 descriptions mis-described the dataset's actual intent semantics (`get_physical_card` = PIN questions, 0 % correct). v2 descriptions written from TRAIN examples. Next: `scripts/gates.ps1` (v2 / top-3 / batch 50 / batch 100 on the 200-query sample), then relabel test with the winner._
-  _2026-09-19: 3,080 / 3,080, 0 unparsed, read 0.948 — **but see 2026-09-21: invalid.** The test CSV is intent-sorted, so every batch of 20 was a single intent and the teacher used the batch as a hint: on the same 200 queries it scores 0.98 in sorted batches vs 0.905 in random ones. Kept as `test.sorted_batches.jsonl` for the record; the labeller now always shuffles. **Relabel in shuffled order started 2026-09-21** (`logs/label_test_shuffled.log`, ~2 days)._
+  _2026-09-19: 3,080 / 3,080, 0 unparsed, read 0.948 — **but see 2026-09-21: invalid.** The test CSV is intent-sorted, so every batch of 20 was a single intent and the teacher used the batch as a hint: on the same 200 queries it scores 0.98 in sorted batches vs 0.905 in random ones. Kept as `test.sorted_batches.jsonl` for the record; the labeller now always shuffles. **Relabelled in shuffled order 2026-09-23**: 3,080 / 3,080, 0 unparsed, 155 calls. **Teacher = 0.867 accuracy / 0.864 macro-F1**, gold in top-3 94.7 % — 8 points below the leaked number and in line with the 0.905 gate (which was an easier random sample of 200). This is the ceiling the project reports._
 - [~] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`. _(3,000-row random subset (`--limit 3000 --seed 0`) done 2026-09-21: 0 unparsed, 150 calls, 283k in / 174k out. Teacher vs gold on it: **0.848**, top-3 hit 0.936 — random batches, so this is the honest zero-shot number on the train distribution. Remaining 7,003 rows: later, if the data curve says they matter.)_
 - [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(generated on the full test split 2026-09-19)_ Still to do: self-agreement run (300 test queries relabelled).
 
@@ -196,6 +196,22 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-23 (honest teacher number — and it changes the story)** — Shuffled relabel of the
+test split done: **teacher 0.867**, not 0.948. Consequences, all good for the project:
+- **Every gold-trained student beats the teacher**: MiniLM frozen 0.927, TF-IDF 0.910,
+  DistilBERT 0.918 vs 0.867. Supervised data is worth ~6 pts over a zero-shot 120B model.
+- **The distilled student (0.848 on 3k teacher labels) is within 2 pts of its teacher** — and
+  the data curve says more labels close it.
+- **The cascade result inverts, and that is the finding.** Escalating a *gold-trained*
+  student's least-confident 20 % to the teacher makes it **worse** (0.927 → 0.917): the
+  "expert" is less accurate than the student it is correcting. For the *teacher-trained*
+  student it still helps (0.848 → 0.871). So: a confidence cascade pays only while the student
+  is worse than the LLM; measure both before building one. The earlier "cascade beats the
+  teacher" line came from the leaked labels and is retracted.
+- Where they differ: the student is right and the teacher wrong on 8.9 % of test queries, the
+  reverse on 3.0 %, both wrong on 4.4 %. A perfect router between the two would reach 0.957 —
+  the headroom Phase 6.1 (noise filtering, self-training) goes after.
 
 **2026-09-21 (train subset done; the batch-context leak)** — Train subset finished (3,000,
 0 unparsed). Students on teacher labels: TF-IDF **0.812**, frozen MiniLM **0.848** — exactly
