@@ -171,7 +171,7 @@ distilroute/
 └── docs/PROJECT.md             this file
 ```
 
-## 10. Status (updated 2026-09-21)
+## 10. Status (updated 2026-09-23 — handoff to a new machine, see ROADMAP session log)
 
 **Done**
 - Data downloaded and checked; repo, 24 tests, lint.

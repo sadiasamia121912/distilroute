@@ -232,6 +232,56 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 
 ## Session log
 
+**2026-09-23 (HANDOFF — machine compromised, work moves to a new device)**
+
+The laptop this project was built on is infected with `Trojan:Win32/JScealTaskExec` (an
+info-stealer, running as SYSTEM, blocked but not removed by Defender; likely entry point was a
+KMS activation crack in `C:\Program Files\Activation-Renewal`). All 45 commits are pushed to
+`github.com/sadiasamia121912/distilroute`. The machine is being rebuilt; nothing below needs it.
+
+**Resume on the new machine:**
+
+```bash
+git clone https://github.com/sadiasamia121912/distilroute.git
+cd distilroute
+python -m venv .venv && .venv/Scripts/activate          # or source .venv/bin/activate
+pip install -r requirements.txt                         # scripts, service, evaluation
+pip install --index-url https://download.pytorch.org/whl/cpu torch
+pip install -r requirements-train.txt                   # students (torch CPU, sentence-transformers)
+python scripts/download_data.py                         # data/raw/ is gitignored; re-fetch Banking77
+python scripts/download_clinc.py                        # CLINC150, for 6.2 / 6.4
+pytest -q && python scripts/evaluate.py                 # 24 tests; rebuilds docs/results.md
+```
+
+Then rebuild the CPU students (minutes, no API key needed) — `models/` is gitignored:
+
+```bash
+python scripts/baseline.py --labels gold
+python scripts/baseline.py --labels teacher
+python scripts/setfit_student.py --mode frozen --labels gold
+python scripts/setfit_student.py --mode frozen --labels teacher
+```
+
+**New API keys are needed only to label more data** (`.env`: `GROQ_API_KEY`, optionally
+`GEMINI_API_KEY`, `OPENROUTER_API_KEY`). The old keys were revoked after the compromise. All
+existing labels are committed, so every student, report and table reproduces without a key.
+
+**What is pending, in priority order:**
+
+1. **Latency re-bench** — every number in the latency column is stale: measured on battery
+   (2.5× slow), during a k-means job, or on Colab's CPU (marked †). Run
+   `python scripts/bench_latency.py` once on an idle, mains-powered machine, then
+   `python scripts/cost.py` and `python scripts/evaluate.py`, since the cost table divides by it.
+2. **6.3 `diverse` strategy** — incomplete. Seed 0 gave 0.779 at 500 labels vs random's 0.708
+   (a 7-point cold-start gain, the most promising active-labelling result), but the 3-seed run
+   was interrupted. `python scripts/active.py --strategies diverse` finishes it; k-means with
+   k≈2,500 is slow, so give it an hour.
+3. **Colab models** — `results/*_ft_*.json` and their test probabilities are committed, so the
+   table is intact, but `models/*_ft_*/` (the int8 ONNX graphs) are not. Re-run
+   `notebooks/finetune_colab.ipynb` if the served artefacts are wanted.
+4. Then: **3.4** Dockerfile (needs Docker installed), **4.1** README with the final table,
+   and **Phase 6.4–6.8**.
+
 **2026-09-23 (Colab round 2, 6.3)** — All seven fine-tune runs landed with the fixed recipe;
 1b.4 closed (see above). Phase 6.3 active labelling (`scripts/active.py`): uncertainty and
 disagreement selection buy only **+0.5 pt** over random at the same budget — not the 2× saving
