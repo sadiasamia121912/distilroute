@@ -7,6 +7,12 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.867** on the full 3,080-query 
 | model | params | trained on | n train | acc vs gold | macro-F1 | agree w/ teacher | ECE raw → calibrated (T) | p50 / p95 ms |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
 | distilbert fine-tuned | 67M | gold | 9,000 | **0.918** | 0.918 | 0.860 | 0.046 → 0.011 (T=0.83) | 81.5 / 114.8 † |
+| MiniLM-L6 frozen + all | 23M | teacher | 7,725 | **0.849** | 0.847 | 0.887 | 0.057 → 0.073 (T=0.55) | — |
+| MiniLM-L6 frozen + base | 23M | teacher | 2,700 | **0.842** | 0.840 | 0.880 | 0.095 → 0.034 (T=0.68) | — |
+| MiniLM-L6 frozen + filter | 23M | teacher | 2,665 | **0.846** | 0.844 | 0.881 | 0.095 → 0.073 (T=0.50) | — |
+| MiniLM-L6 frozen + filter_self | 23M | teacher | 7,811 | **0.849** | 0.846 | 0.883 | 0.020 → 0.077 (T=0.60) | — |
+| MiniLM-L6 frozen + self | 23M | teacher | 7,449 | **0.847** | 0.845 | 0.884 | 0.026 → 0.037 (T=0.79) | — |
+| MiniLM-L6 frozen + soft | 23M | teacher | 2,700 | **0.840** | 0.838 | 0.882 | 0.192 → 0.033 (T=0.54) | — |
 | MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.863 | 0.074 → 0.011 (T=0.71) | 11.5 / 14.6 |
 | MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 27.5 / 37.4 † |
 | MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.831 | 0.214 → 0.059 (T=0.69) | 12.4 / 16.3 † |
@@ -23,6 +29,12 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | model | trained on | 0 % | 5 % | 10 % | 20 % | 30 % |
 |---|---|---:|---:|---:|---:|---:|
 | distilbert fine-tuned | gold | 0.918 | 0.926 | 0.925 | 0.917 | 0.906 |
+| MiniLM-L6 frozen + all | teacher | 0.849 | 0.860 | 0.867 | 0.874 | 0.874 |
+| MiniLM-L6 frozen + base | teacher | 0.842 | 0.856 | 0.864 | 0.869 | 0.871 |
+| MiniLM-L6 frozen + filter | teacher | 0.846 | 0.856 | 0.865 | 0.870 | 0.873 |
+| MiniLM-L6 frozen + filter_self | teacher | 0.849 | 0.860 | 0.868 | 0.873 | 0.874 |
+| MiniLM-L6 frozen + self | teacher | 0.847 | 0.858 | 0.866 | 0.873 | 0.873 |
+| MiniLM-L6 frozen + soft | teacher | 0.840 | 0.849 | 0.861 | 0.869 | 0.873 |
 | MiniLM-L6 frozen | gold | 0.927 | 0.936 | 0.927 | 0.917 | 0.902 |
 | MiniLM-L6 frozen | teacher | 0.848 | 0.859 | 0.866 | 0.869 | 0.871 |
 | MiniLM-L6 setfit (16/intent) | gold | 0.864 | 0.876 | 0.884 | 0.895 | 0.895 |
@@ -37,6 +49,12 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | model | trained on | < 0.5 | < 0.7 | < 0.8 | < 0.9 | < 0.95 |
 |---|---|---:|---:|---:|---:|---:|
 | distilbert fine-tuned | gold | 3% · 0.937 · 0.924 | 9% · 0.962 · 0.927 | 12% · 0.971 · 0.924 | 20% · 0.981 · 0.917 | 27% · 0.987 · 0.910 |
+| MiniLM-L6 frozen + all | teacher | 4% · 0.869 · 0.857 | 11% · 0.899 · 0.867 | 15% · 0.912 · 0.870 | 21% · 0.927 · 0.873 | 27% · 0.940 · 0.874 |
+| MiniLM-L6 frozen + base | teacher | 7% · 0.878 · 0.859 | 18% · 0.914 · 0.868 | 23% · 0.933 · 0.871 | 34% · 0.951 · 0.871 | 45% · 0.963 · 0.871 |
+| MiniLM-L6 frozen + filter | teacher | 3% · 0.864 · 0.853 | 11% · 0.894 · 0.866 | 16% · 0.908 · 0.868 | 22% · 0.927 · 0.872 | 28% · 0.941 · 0.872 |
+| MiniLM-L6 frozen + filter_self | teacher | 3% · 0.867 · 0.855 | 10% · 0.900 · 0.869 | 14% · 0.911 · 0.872 | 20% · 0.925 · 0.872 | 25% · 0.939 · 0.874 |
+| MiniLM-L6 frozen + self | teacher | 7% · 0.884 · 0.863 | 16% · 0.914 · 0.870 | 21% · 0.931 · 0.873 | 30% · 0.945 · 0.873 | 40% · 0.959 · 0.871 |
+| MiniLM-L6 frozen + soft | teacher | 6% · 0.866 · 0.853 | 17% · 0.909 · 0.866 | 24% · 0.929 · 0.870 | 35% · 0.952 · 0.871 | 48% · 0.960 · 0.869 |
 | MiniLM-L6 frozen | gold | 4% · 0.948 · 0.933 | 10% · 0.965 · 0.927 | 14% · 0.975 · 0.924 | 20% · 0.986 · 0.915 | 29% · 0.991 · 0.904 |
 | MiniLM-L6 frozen | teacher | 7% · 0.880 · 0.863 | 17% · 0.916 · 0.868 | 24% · 0.935 · 0.871 | 35% · 0.952 · 0.872 | 48% · 0.963 · 0.870 |
 | MiniLM-L6 setfit (16/intent) | gold | 11% · 0.913 · 0.886 | 26% · 0.957 · 0.894 | 36% · 0.977 · 0.890 | 53% · 0.989 · 0.880 | 69% · 0.994 · 0.873 |

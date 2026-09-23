@@ -1,0 +1,13 @@
+{
+  "model": "MiniLM-L6 frozen + filter_self",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "n_train": 7811,
+  "accuracy": 0.849025974025974,
+  "macro_f1": 0.8463950708707559,
+  "variant": "filter_self",
+  "note": "filter (39 dropped) + 5,146 pseudo-labels",
+  "soft_alpha": null,
+  "temperature": 0.6028701507784259,
+  "n_calib": 296
+}

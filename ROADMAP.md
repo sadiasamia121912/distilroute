@@ -147,7 +147,20 @@ results on questions teams actually have. Ordered by payoff per effort at $0. Al
 are offline (no LLM calls) and start once the shuffled test labels and Colab round 2 give the
 honest baselines.
 
-- [ ] **6.1 Student beats its teacher.** Today the student lands exactly on the teacher's
+- [~] **6.1 Student beats its teacher.** _(`scripts/denoise.py`, 2026-09-23. On 3,000 teacher
+  labels, all six variants reported, none cherry-picked: base 0.842 · soft 0.840 · filter 0.846
+  · self 0.847 · **filter+self 0.849** · all 0.849, against a teacher at **0.867**. So: the
+  levers are worth **+0.7 pt**, the student still sits **1.8 pt below its teacher**, and the
+  stated goal is **not met at this label budget**. What each lever taught us: (a) the top-3
+  soft target *hurts* (−0.2) — the teacher's 2nd and 3rd guesses are noise more often than
+  signal on 77 near-synonym intents; (b) the noise filter is **precise** — 77 % of the 39 rows
+  it drops really are teacher errors against a 15 % base rate, but it only catches 30 of 457,
+  so its effect is small; (c) self-training on the 7,003 unlabelled rows is the biggest single
+  lever (+0.5) **once the confidence threshold is applied to calibrated probabilities** — the
+  head is under-confident (T≈0.7), so a raw 0.9 cut kept 379 rows instead of 4,749. Also:
+  self-training left the head nearly calibrated on its own (raw ECE 0.02), so temperature
+  scaling adds nothing there. Next: label the remaining 7,003 train rows and re-run — the data
+  curve says the gap closes with labels, not with tricks.)_ Today the student lands exactly on the teacher's
   accuracy (0.848 on 3k rows) — it learns the noise. Three free levers, each reported alone
   and combined, target vs gold on test: (a) **soft labels** — train on the top-3 rank-weighted
   target (`finetune.py --soft`, and a soft head for the frozen student); (b) **noise filtering**
@@ -196,6 +209,16 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-23 (Phase 6.1)** — `scripts/denoise.py`: soft labels, confident-learning noise
+filter, and self-training on the unlabelled train rows, each alone and combined, all on the
+frozen-MiniLM student with the project's own LR head (soft targets reach it as weighted
+duplicate rows, so `base` reproduces the main table). Result: **+0.7 pt to 0.849, teacher
+0.867 — the student does not beat its teacher at 3k labels.** Reported in full rather than
+cherry-picked. Two findings worth keeping: the teacher's top-3 is not useful supervision here
+(soft hurts), and a confidence threshold on an *uncalibrated* head silently discards ~90 % of
+the data it should keep. Fixed a subtler bug on the way: for self-trained runs the temperature
+was being fitted on the model's own pseudo-labels.
 
 **2026-09-23 (honest teacher number — and it changes the story)** — Shuffled relabel of the
 test split done: **teacher 0.867**, not 0.948. Consequences, all good for the project:
