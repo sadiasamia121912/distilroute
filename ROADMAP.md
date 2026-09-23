@@ -100,8 +100,17 @@ free tier costs a day.
   2026-09-18, on gold: frozen MiniLM 0.61 / 0.74 / 0.84 / 0.89 / 0.92 / 0.93 at 250 / 500 / 1k / 2k /
   5k / 10k; TF-IDF 0.44 → 0.91 over the same sizes — the pretrained encoder is worth ~10 pts at 1k
   labels, 2 pts at 10k. Re-run with `--labels teacher` once train is labelled.)_
-- [ ] **1b.4 Model-size Pareto.** TinyBERT (14M) / MiniLM-L6 (22M) / DistilBERT (66M) on
+- [x] **1b.4 Model-size Pareto.** TinyBERT (14M) / MiniLM-L6 (22M) / DistilBERT (66M) on
   Colab; accuracy vs. params vs. CPU latency. Then ONNX + int8 quantisation of the winner.
+  _(2026-09-23, Colab round 2 with the fixed recipe — per-model LR, ≥2,000 steps, MiniLM from
+  the sentence-transformers checkpoint. On gold: DistilBERT **0.928**, MiniLM **0.927**,
+  TinyBERT 0.892. On 3k teacher labels: MiniLM **0.847**, DistilBERT 0.839, TinyBERT 0.796.
+  **MiniLM-L6 at 22M matches DistilBERT at 67M on gold and beats it on teacher labels** — the
+  Pareto point and the deployment pick. int8 quantisation costs ±0.3 pt (0.9305 vs 0.9279 for
+  DistilBERT gold, i.e. noise), so the served graph is the quantised one. The soft top-3 target
+  hurt here too (0.836 vs 0.839), matching 6.1 on the frozen student: two architectures, same
+  conclusion. Round 1 (lr 5e-5 for everything) had MiniLM at 0.52 and TinyBERT at 0.39 — those
+  runs were under-trained, not bad models, and were discarded.)_
 - [ ] **1b.5 tabaudit on the teacher labels.** Run `tabaudit audit` on the LLM-labelled train
   set; does dropping the flagged label-noise rows help the student? Cross-project.
 - [ ] **1b.6 (later)** Second teacher (Gemini Flash) on the test split: agreement as a noise
@@ -222,6 +231,18 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-23 (Colab round 2, 6.3)** — All seven fine-tune runs landed with the fixed recipe;
+1b.4 closed (see above). Phase 6.3 active labelling (`scripts/active.py`): uncertainty and
+disagreement selection buy only **+0.5 pt** over random at the same budget — not the 2× saving
+the literature reports — and the diagnostic says why: **the rows they choose are dirtier**.
+The teacher mislabels 15.2 % of the pool, but 19.8 % of what uncertainty sampling buys at a
+1,500 budget (17.6 % for diverse). Ambiguous rows are exactly the near-synonym intents the
+teacher fumbles, so informativeness is paid back in label noise. That is a real caution for
+LLM-labelled active learning, and it points at the fix: pair selection with the 6.1 noise
+filter, or send the uncertain rows to the teacher with a bigger reasoning budget. The
+diversity (k-means) strategy looks strong at the cold start (0.779 vs 0.708 at 500 labels,
+seed 0) — the full 3-seed run is still pending after a memory bug in the distance computation.
 
 **2026-09-23 (Phase 6.2)** — Out-of-scope detection, offline, on every saved student. At a
 10 % escalation budget they catch 94–97 % of CLINC150's out-of-scope queries; entropy is the

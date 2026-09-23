@@ -62,35 +62,67 @@ def cascade(pred, conf, gold, teacher: pd.Series | None) -> dict[float, float | 
     return out
 
 
+def _cells(curve: dict, sizes: list[int]) -> list[str]:
+    out = []
+    for n in sizes:
+        accs = [r["accuracy"] for r in curve["rows"] if r["n"] == n]
+        if not accs:
+            out.append("—")
+        elif len(accs) == 1:
+            out.append(f"{accs[0]:.3f}")
+        else:
+            out.append(f"{np.mean(accs):.3f} ± {(max(accs) - min(accs)) / 2:.3f}")
+    return out
+
+
 def curve_lines() -> list[str]:
-    """Data-efficiency table: accuracy at each training-set size, mean ± half-range over seeds."""
-    curves = [json.loads(p.read_text()) for p in sorted((RESULTS / "curves").glob("*.json"))]
-    if not curves:
-        return []
-    sizes = sorted({r["n"] for c in curves for r in c["rows"]})
-    lines = [
-        "",
-        "## Data efficiency — accuracy vs. number of training labels",
-        "",
-        "How many labelled tickets does a student need? Each cell is accuracy vs gold on the "
-        "full test split, training on N random rows of the pool, mean ± half-range over "
-        "seeds (`scripts/data_curve.py`). With teacher labels, N is the number of LLM calls' "
-        "worth of data.",
-        "",
-        "| student | trained on | " + " | ".join(f"{n:,}" for n in sizes) + " |",
-        "|---|---|" + "---:|" * len(sizes),
-    ]
-    for c in curves:
-        cells = []
-        for n in sizes:
-            accs = [r["accuracy"] for r in c["rows"] if r["n"] == n]
-            if not accs:
-                cells.append("—")
-            elif len(accs) == 1:
-                cells.append(f"{accs[0]:.3f}")
-            else:
-                cells.append(f"{np.mean(accs):.3f} ± {(max(accs) - min(accs)) / 2:.3f}")
-        lines.append(f"| {c['student']} | {c['trained_on']} | " + " | ".join(cells) + " |")
+    """Data-efficiency and active-labelling tables, from results/curves/."""
+    paths = sorted((RESULTS / "curves").glob("*.json"))
+    curves = {p.stem: json.loads(p.read_text()) for p in paths}
+    passive = {k: v for k, v in curves.items() if not k.startswith("active_")}
+    active = {k: v for k, v in curves.items() if k.startswith("active_")}
+    lines = []
+
+    if passive:
+        sizes = sorted({r["n"] for c in passive.values() for r in c["rows"]})
+        lines += [
+            "",
+            "## Data efficiency — accuracy vs. number of training labels",
+            "",
+            "How many labelled tickets does a student need? Each cell is accuracy vs gold on "
+            "the full test split, training on N random rows of the pool, mean ± half-range "
+            "over seeds (`scripts/data_curve.py`). With teacher labels, N is the number of LLM "
+            "calls' worth of data.",
+            "",
+            "| student | trained on | " + " | ".join(f"{n:,}" for n in sizes) + " |",
+            "|---|---|" + "---:|" * len(sizes),
+        ]
+        for c in passive.values():
+            lines.append(
+                f"| {c['student']} | {c['trained_on']} | " + " | ".join(_cells(c, sizes)) + " |"
+            )
+
+    if active:
+        sizes = sorted({r["n"] for c in active.values() for r in c["rows"]})
+        seed_round = next(iter(active.values())).get("seed_round")
+        lines += [
+            "",
+            "## Active labelling — which tickets are worth an LLM call (`scripts/active.py`)",
+            "",
+            f"Same student and the same budget, but the rows are chosen rather than drawn at "
+            f"random: **uncertainty** and **disagreement** spend a first {seed_round} labels at "
+            "random and then pick, **diverse** picks by k-means over the embeddings with no "
+            "model at all. Simulated inside the teacher-labelled pool, 3 seeds, mean ± "
+            "half-range.",
+            "",
+            "| selection | " + " | ".join(f"{n:,} labels" for n in sizes) + " |",
+            "|---|" + "---:|" * len(sizes),
+        ]
+        order = ["active_random", "active_uncertainty", "active_disagreement", "active_diverse"]
+        for k in [k for k in order if k in active] + [k for k in active if k not in order]:
+            label = k.replace("active_", "")
+            lines.append(f"| {label} | " + " | ".join(_cells(active[k], sizes)) + " |")
+
     return lines
 
 
