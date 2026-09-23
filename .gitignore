@@ -9,3 +9,4 @@ models/
 *.egg-info/
 checkpoints/
 logs/
+data/raw/clinc_full.csv

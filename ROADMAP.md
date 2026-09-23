@@ -170,7 +170,20 @@ honest baselines.
   unlabelled train rows, retrain on 3k teacher + 7k self labels. Success = a student above
   0.848 with zero human labels in training. _Script: `scripts/denoise.py` writing runs under the
   shared contract so `evaluate.py` shows them as rows._
-- [ ] **6.2 Out-of-scope detection.** Real inboxes contain messages that fit none of the 77
+- [x] **6.2 Out-of-scope detection.** _(`scripts/download_clinc.py` + `scripts/oos.py` →
+  `docs/oos.md`, 2026-09-23. CLINC150's 1,200 out-of-scope queries vs the Banking77 test split,
+  scored by every saved student, nothing retrained. **It works, and it is free**: at a 10 %
+  in-scope escalation budget the students catch **94–97 %** of out-of-scope traffic; AUROC
+  0.97–0.99. Two findings worth the write-up: (a) **entropy beats max-probability on every
+  model** (0.981–0.987 vs 0.961–0.975) — an out-of-scope message spreads mass thinly over many
+  intents, a hard in-scope one is torn between two or three, and max-prob cannot tell those
+  apart; (b) **temperature scaling slightly hurts separation** (e.g. 0.972 → 0.941 on the
+  SetFit student) — it is fitted on in-scope data to make confidence honest, not to push
+  unfamiliar input away. So: calibrate for the cascade threshold, score out-of-scope with
+  entropy. The messages that do slip through cluster in a few magnet intents
+  (`age_limit`, `country_support`, `lost_or_stolen_phone`) — a short watch-list for production.
+  Caveat in the doc: CLINC's negatives are *far* out of scope; a mortgage or insurance question
+  would be harder, and no near-OOS set exists for Banking77.)_ Real inboxes contain messages that fit none of the 77
   intents; a router that confidently misfiles them is worse than one that escalates. Banking77
   has no OOS class; **CLINC150** (free, 1,200 labelled out-of-scope queries) does. Measure: at
   each calibrated-confidence threshold, the share of OOS queries escalated vs the share of
@@ -209,6 +222,12 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-23 (Phase 6.2)** — Out-of-scope detection, offline, on every saved student. At a
+10 % escalation budget they catch 94–97 % of CLINC150's out-of-scope queries; entropy is the
+best score on every model and temperature scaling slightly hurts separation. `docs/oos.md`.
+CLINC150 is now downloaded in full (22,500 in-scope queries over 150 intents), which is also
+the second dataset Phase 6.4 needs.
 
 **2026-09-23 (Phase 6.1)** — `scripts/denoise.py`: soft labels, confident-learning noise
 filter, and self-training on the unlabelled train rows, each alone and combined, all on the
