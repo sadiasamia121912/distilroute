@@ -29,6 +29,7 @@ accuracy is against the human labels on the untouched 3,080-query test split.
 | TinyBERT fine-tuned, int8 ONNX | 14M | 0.796 | 0.794 | 1.9 / 3.2 ms | 0.01 |
 | TF-IDF + logistic regression | — | 0.812 | 0.809 | 1.6 / 2.0 ms | 0.01 |
 | **Cascade**: MiniLM, escalate to the LLM below 0.8 confidence | — | **0.874** | — | 2.8 ms for 85 % of queries | ≈ 32 |
+| **Cascade**: TF-IDF → MiniLM → LLM, cheapest thresholds that match the LLM | — | 0.864 ± 0.014 | — | 3.4 ms mean; 6 % also wait for the LLM | **13.76** |
 
 - **Teacher cost** is Groq's *paid* list price. The free tier the labels were made with is
   rate-capped and not a production option. **Student cost** is CPU time on an AWS t3.small at
@@ -37,6 +38,9 @@ accuracy is against the human labels on the untouched 3,080-query test split.
 - **Accuracy of the fine-tuned rows is the fp32 model's;** latency and cost are the int8 graph's,
   which is what gets served. int8 costs 0.1–0.7 pt: the served MiniLM scores **0.842** on this
   CPU (DistilBERT 0.838, TinyBERT 0.792).
+- **The three-tier row** picks its thresholds on one half of the test split and is scored on the
+  other (5 random halvings, mean ± half-range), so it is never tuned on the queries it is scored
+  on; it matches the LLM to within that noise. [docs/cascade.md](docs/cascade.md)
 - **Reference, trained on all 10,003 human labels:** MiniLM 0.927, DistilBERT 0.928,
   TF-IDF 0.910. The ~8-point gap to the distilled rows is the teacher's own error rate, passed
   on to the student.
@@ -53,25 +57,40 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
 2. **The cascade beats the teacher using 15 % of its calls.** Calibrate the student
    (temperature scaling, fitted on a held-out slice of its training labels), answer when it is
    ≥ 0.8 confident, and send the rest to the LLM: 0.874 overall, above the LLM alone, at about
-   a seventh of its cost. Calibration is what makes "0.8" mean something.
+   a seventh of its cost. Calibration is what makes "0.8" mean something. With thresholds chosen
+   on held-out data, the cheapest system that **matches the LLM costs $13.76 per 1M requests, 16×
+   less**: TF-IDF answers 58 % of queries, MiniLM most of the rest, and 6.4 % reach the LLM.
+   The TF-IDF tier beats MiniLM → LLM alone ($19.19) in 10 of 10 paired test halves, but only
+   by escalating less; at a fixed LLM budget it changes accuracy by ±0.1 pt, and it adds 0.4 ms
+   of CPU because the MiniLM behind it is already fast. TinyBERT is no use as a first tier.
+   [docs/cascade.md](docs/cascade.md)
 3. **It knows when a message is not its job.** On CLINC150's 1,200 out-of-scope queries, the
    students flag **94–97 %** of them while escalating only 10 % of genuine banking queries
    (AUROC 0.97–0.99). Score this with the entropy of the prediction, not max-probability:
    entropy wins on every model. Temperature scaling slightly *hurts* this separation, so
    calibrate for the cascade and use entropy for out-of-scope. [docs/oos.md](docs/oos.md)
-4. **The student does not beat its teacher, yet.** Soft top-3 targets, a confident-learning
+4. **Typos are the weak spot, and the transformers are the fragile ones.** Re-scored on noisy
+   copies of the test set, three typos per message cost TF-IDF 12 pt but the fine-tuned MiniLM
+   30, DistilBERT 33 and TinyBERT 43: WordPiece shatters a misspelt word into unfamiliar pieces,
+   while TF-IDF's character n-grams still overlap with the right spelling. One typo: TF-IDF −4,
+   MiniLM −10. Lowercase without punctuation, texting slang ("u", "pls", "acct") and greetings
+   cost 0–4 pt. The cascade absorbs part of it, because the students also get less sure: with
+   three typos MiniLM escalates 58 % of messages instead of 16 % and stays 0.847 accurate on
+   the rest, so noise shows up as LLM cost rather than silent misroutes. Whether the teacher
+   degrades less is still to be measured. [docs/robustness.md](docs/robustness.md)
+5. **The student does not beat its teacher, yet.** Soft top-3 targets, a confident-learning
    noise filter and self-training on the 7,003 unlabelled queries are together worth +0.7 pt
    (0.849), still 1.8 pt below the teacher at this label budget. The soft target *hurts* on 77
    near-synonym intents, on both the frozen and the fine-tuned student. The data curve says the
    gap closes with more labels, not with tricks.
-5. **Which tickets to pay the LLM for matters only at the start.** Picking the 500 most
+6. **Which tickets to pay the LLM for matters only at the start.** Picking the 500 most
    *typical* queries (k-means over the embeddings, no model needed) scores **0.785**, against
    0.708 for 500 random ones: about what random reaches with ~900 labels, so the cold start costs
    half the LLM calls. The edge fades by 1,500 labels and is gone by 2,000. Once there is a model
    to choose with, uncertainty and committee-disagreement selection buy only +0.5 pt, not the
    "2× fewer calls" the literature suggests, because the ambiguous tickets they pick are exactly
    the ones the teacher mislabels (19.8 % wrong vs 15.2 % on average).
-6. **A lesson in leakage.** The first teacher run scored **0.948**. The test file is sorted by
+7. **A lesson in leakage.** The first teacher run scored **0.948**. The test file is sorted by
    intent, so every batch of 20 queries shared one intent and the LLM used the batch as a hint.
    Relabelled in shuffled order: **0.867**. The labeller now always shuffles.
    [docs/teacher.md](docs/teacher.md)
