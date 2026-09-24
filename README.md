@@ -1,6 +1,6 @@
 # distilroute
 
-**Distil an LLM support-ticket router into a 22M-parameter model: 98 % of the LLM's accuracy,
+**Distil an LLM support-ticket router into a 22M-parameter model: 97 % of the LLM's accuracy,
 2.8 ms on a CPU, ~12,000× cheaper than one LLM call per ticket, built for $0.**
 
 Teams route support tickets with a frontier LLM. It works, at orders of magnitude more cost and
@@ -46,7 +46,7 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
 
 ## What was found
 
-1. **Distillation keeps 98 % of the teacher's accuracy** (0.847 vs 0.867) at 2.8 ms and
+1. **Distillation keeps 97 % of the teacher's accuracy** (0.842 vs 0.867, served int8) at 2.8 ms and
    $0.02 per 1M requests. MiniLM-L6 at 22M parameters matches DistilBERT at 67M on human labels
    (0.927 vs 0.928) and beats it on teacher labels, so it is the model to ship. int8
    quantisation costs 0.1–0.7 pt (0.847 → 0.842 for the served MiniLM) for a 4× smaller graph.

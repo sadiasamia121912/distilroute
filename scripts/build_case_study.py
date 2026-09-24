@@ -120,6 +120,10 @@ def main() -> None:
     rob = RESULTS / "robustness.json"
     if rob.exists():
         r = json.loads(rob.read_text())
+        # The headline quotes the served int8 graph (clean text, serving code path), not fp32.
+        for row in r["students"]:
+            if row["model"] == SERVED:
+                data["served"]["acc_int8"] = row["kinds"]["clean"]["acc"]
         if len(r["students"]) >= len(STUDENTS):  # a finished run, not a partial one
             data["robustness"] = r
 

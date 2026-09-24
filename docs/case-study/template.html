@@ -318,7 +318,7 @@ function render() {
   $("n-test2").textContent = D.n_test.toLocaleString("en-US");
 
   const tiles = [
-    [f3(s.acc), `student accuracy, ${pct(s.acc / t.acc)} of the LLM's ${f3(t.acc)}`, "MiniLM, 22M parameters"],
+    [f3(s.acc_int8 ?? s.acc), `student accuracy, ${pct((s.acc_int8 ?? s.acc) / t.acc)} of the LLM's ${f3(t.acc)}`, s.acc_int8 ? "MiniLM, 22M, int8 as served" : "MiniLM, 22M parameters"],
     [s.p50.toFixed(1) + " ms", "per message on a laptop CPU", "int8 ONNX, one core"],
     [usd(s.usd), `per 1M messages, against ${usd(t.usd)} for the LLM`, `${Math.round(t.usd / s.usd).toLocaleString("en-US")}× cheaper`],
     [f3(c.best.acc), `with ${pct(c.best.llm)} of messages sent to the LLM`, "beats the LLM alone"],
