@@ -34,6 +34,9 @@ accuracy is against the human labels on the untouched 3,080-query test split.
   rate-capped and not a production option. **Student cost** is CPU time on an AWS t3.small at
   on-demand price, one request at a time: an upper bound, and $0 on hardware you already own.
 - **Latency** is one query at a time, in-process, on a laptop CPU (`scripts/bench_latency.py`).
+- **Accuracy of the fine-tuned rows is the fp32 model's;** latency and cost are the int8 graph's,
+  which is what gets served. int8 costs 0.1–0.7 pt: the served MiniLM scores **0.842** on this
+  CPU (DistilBERT 0.838, TinyBERT 0.792).
 - **Reference, trained on all 10,003 human labels:** MiniLM 0.927, DistilBERT 0.928,
   TF-IDF 0.910. The ~8-point gap to the distilled rows is the teacher's own error rate, passed
   on to the student.
@@ -46,7 +49,7 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
 1. **Distillation keeps 98 % of the teacher's accuracy** (0.847 vs 0.867) at 2.8 ms and
    $0.02 per 1M requests. MiniLM-L6 at 22M parameters matches DistilBERT at 67M on human labels
    (0.927 vs 0.928) and beats it on teacher labels, so it is the model to ship. int8
-   quantisation costs nothing measurable (±0.3 pt).
+   quantisation costs 0.1–0.7 pt (0.847 → 0.842 for the served MiniLM) for a 4× smaller graph.
 2. **The cascade beats the teacher using 15 % of its calls.** Calibrate the student
    (temperature scaling, fitted on a held-out slice of its training labels), answer when it is
    ≥ 0.8 confident, and send the rest to the LLM: 0.874 overall, above the LLM alone, at about
