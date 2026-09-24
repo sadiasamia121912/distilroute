@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pandas as pd
+if TYPE_CHECKING:  # pandas is imported where used: the service image does not install it
+    import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
@@ -17,6 +19,8 @@ DOCS = ROOT / "docs"
 
 def load_split(split: str) -> pd.DataFrame:
     """Gold data for a split, indexed by row number; columns `text`, `category`."""
+    import pandas as pd
+
     df = pd.read_csv(RAW / f"{split}.csv")
     df.index.name = "idx"
     return df
@@ -31,6 +35,8 @@ def load_labels(name: str) -> pd.DataFrame:
 
     `teacher` is the hard label (None where unparsed), `ranked` the top-k list.
     """
+    import pandas as pd
+
     path = LABELS / f"{name}.jsonl"
     recs = [json.loads(line) for line in path.open(encoding="utf-8") if line.strip()]
     df = pd.DataFrame(recs).set_index("idx").sort_index()

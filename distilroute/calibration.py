@@ -11,7 +11,6 @@ out from fitting — never on the test split.
 from __future__ import annotations
 
 import numpy as np
-from scipy.optimize import minimize_scalar
 
 
 def apply_temperature(proba: np.ndarray, t: float) -> np.ndarray:
@@ -23,6 +22,7 @@ def apply_temperature(proba: np.ndarray, t: float) -> np.ndarray:
 
 def fit_temperature(proba: np.ndarray, y_idx: np.ndarray) -> float:
     """T minimising negative log-likelihood of the calibration labels; T > 1 softens."""
+    from scipy.optimize import minimize_scalar  # training-time only; the service image has no scipy
 
     def nll(t: float) -> float:
         p = apply_temperature(proba, t)

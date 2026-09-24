@@ -1,0 +1,6 @@
+# Whitelist: the image needs the package, its requirements and the ONNX students only.
+*
+!requirements-serve.txt
+!distilroute/
+!models/*_ft_*/
+**/__pycache__
