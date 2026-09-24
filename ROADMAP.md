@@ -238,7 +238,7 @@ against random's 0.708 / 0.799 / 0.822 / 0.835 / 0.842. So choosing the most *ty
 +7.7 pt at 500 labels (≈ half the LLM calls for the same accuracy) and +2.3 at 1,000. It stops helping
 by 1,500, and past 2,000 it is slightly worse: k-means centroids are the easy, typical queries, and
 once the student has those, the rare and hard ones matter more. It also buys dirtier labels than random
-(18–20 % wrong vs the 15.2 % base rate), for the same reason uncertainty does. The practical recipe is
+(16–20 % wrong vs the 15.2 % base rate, worst at 1,000–1,500), for the same reason uncertainty does. The practical recipe is
 diverse for the first ~1,000 LLM calls, random after that. README rewritten for 4.1 around the final
 table and six findings. 6.1 is stated as *not met* (student 1.8 pt below teacher), since the old
 framing rule assumed it would be.
