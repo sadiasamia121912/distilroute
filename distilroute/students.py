@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from distilroute.calibration import apply_temperature
-from distilroute.data import MODELS, ROOT, categories
+from distilroute.data import DESCRIPTIONS, MODELS, ROOT, categories
 
 TEACHER = "teacher"
 
@@ -117,7 +117,7 @@ class TeacherRouter(Router):
         from distilroute.teacher import Teacher
 
         load_dotenv(ROOT / ".env")
-        raw = json.loads((ROOT / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
+        raw = json.loads(DESCRIPTIONS.read_text(encoding="utf-8"))
         self.teacher = Teacher(
             labels=categories(),
             provider=provider,

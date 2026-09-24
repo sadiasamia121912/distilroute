@@ -26,12 +26,8 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.pipeline import FeatureUnion, Pipeline
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from distilroute.data import LABELS, MODELS, RAW, RESULTS, rel  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
-
-ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data" / "raw"
-LABELS = ROOT / "data" / "labels"
-RESULTS = ROOT / "results"
 
 
 def load_train(labels: str) -> pd.DataFrame:
@@ -119,7 +115,7 @@ def main() -> None:
     )
     d = model_dir(name, "tfidf", temperature=metrics["temperature"])
     joblib.dump(model, d / "model.joblib")
-    print(f"  -> results/{name}.json + _test_probs.npz, models/{name}/")
+    print(f"  -> {rel(RESULTS)}/{name}.json + _test_probs.npz, {rel(MODELS)}/{name}/")
 
 
 if __name__ == "__main__":

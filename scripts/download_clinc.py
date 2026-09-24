@@ -1,4 +1,4 @@
-"""CLINC150 → data/raw/clinc_*.csv: the out-of-scope queries the router must refuse (6.2).
+"""CLINC150 → data/raw/: out-of-scope queries (6.2) and a second routing dataset (6.4).
 
     python scripts/download_clinc.py
 
@@ -7,11 +7,16 @@ intents, however irrelevant the message. CLINC150 (Larson et al., EMNLP 2019) sh
 deliberately out-of-scope queries for exactly this test, plus 150 in-scope intents over 10
 domains, which Phase 6.4 reuses as the second dataset.
 
-Two files:
-- `clinc_oos.csv`   — the 1,000 test out-of-scope queries ("how much has the dow changed").
-- `clinc_full.csv`  — every in-scope query with its intent (for 6.4).
+Files:
+- `clinc_oos.csv`   — the 1,200 out-of-scope queries ("how much has the dow changed"). Only ever
+  scored against, never trained on.
+- `clinc_full.csv`  — every in-scope query with its intent and split.
+- `clinc150/{train,test}.csv` + `categories.json` — the in-scope data in Banking77's layout, so
+  every script runs on it with `DISTILROUTE_DATASET=clinc150`: train 15,000 (100 per intent),
+  test 4,500 (30 per intent). The 3,000-row val split is not used; the students hold out their
+  own calibration slice, as on Banking77.
 
-Source: github.com/clinc/oos-eval (CC BY 3.0). Nothing here is used for training.
+Source: github.com/clinc/oos-eval (CC BY 3.0).
 """
 
 from __future__ import annotations
@@ -25,9 +30,12 @@ import pandas as pd
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import RAW  # noqa: E402
+from distilroute.data import ROOT  # noqa: E402
 
 URL = "https://raw.githubusercontent.com/clinc/oos-eval/master/data/data_full.json"
+# Explicit, not `data.RAW`: that follows DISTILROUTE_DATASET, and this script writes for both.
+RAW = ROOT / "data" / "raw"
+CLINC = RAW / "clinc150"
 
 
 def main() -> None:
@@ -48,9 +56,17 @@ def main() -> None:
     )
     full.to_csv(RAW / "clinc_full.csv", index=False)
 
+    CLINC.mkdir(exist_ok=True)
+    for split in ("train", "test"):
+        part = full[full.split == split].drop(columns="split").reset_index(drop=True)
+        part.to_csv(CLINC / f"{split}.csv", index=False)
+    cats = sorted(full.category.unique())
+    (CLINC / "categories.json").write_text(json.dumps(cats, indent=2), encoding="utf-8")
+
     print(f"out-of-scope: {len(oos):,} queries ({dict(oos.split.value_counts())})")
     print(f"in-scope:     {len(full):,} queries, {full.category.nunique()} intents")
     print(f"-> {RAW / 'clinc_oos.csv'}\n-> {RAW / 'clinc_full.csv'}")
+    print(f"-> {CLINC} (train / test / categories, {len(cats)} intents)")
     dup = set(oos.text) & set(pd.read_csv(RAW / "test.csv").text)
     print(f"overlap with the Banking77 test split: {len(dup)}")
 

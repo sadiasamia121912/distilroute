@@ -1,4 +1,4 @@
-"""Label a Banking77 split with the teacher LLM, resumably, within free-tier limits.
+"""Label a dataset split with the teacher LLM, resumably, within free-tier limits.
 
     python scripts/label.py --split test                 # 3,080 queries, ~155 calls
     python scripts/label.py --split train --limit 2000   # first 2,000 of train
@@ -25,11 +25,8 @@ import requests
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from distilroute.data import DESCRIPTIONS, LABELS, RAW, ROOT  # noqa: E402
 from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
-
-ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data" / "raw"
-LABELS = ROOT / "data" / "labels"
 
 
 def load_done(path: Path) -> set[int]:
@@ -61,7 +58,7 @@ def main() -> None:
     add(
         "--descriptions",
         action="store_true",
-        help="add data/intent_descriptions.json to the prompt",
+        help="add the dataset's intent_descriptions.json to the prompt",
     )
     add("--reasoning", default="low", choices=["low", "medium", "high"], help="gpt-oss only")
     add("--top-k", type=int, default=1, help="ask for a ranked top-k list (soft labels)")
@@ -90,7 +87,7 @@ def main() -> None:
 
     desc, desc_version = None, None
     if args.descriptions:
-        raw = json.loads((ROOT / "data" / "intent_descriptions.json").read_text(encoding="utf-8"))
+        raw = json.loads(DESCRIPTIONS.read_text(encoding="utf-8"))
         desc_version = raw.get("_version", "v1")
         desc = {k: v for k, v in raw.items() if not k.startswith("_")}
         missing = [n for n in labels if n not in desc]

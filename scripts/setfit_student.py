@@ -30,7 +30,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import load_split, teacher_train_labels  # noqa: E402
+from distilroute.data import MODELS, RESULTS, load_split, rel, teacher_train_labels  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
 ENCODER = "sentence-transformers/all-MiniLM-L6-v2"
@@ -143,7 +143,7 @@ def main() -> None:
         d = model_dir(name, "minilm", encoder="encoder", temperature=t)
         encoder.save(str(d / "encoder"))
     joblib.dump(head, d / "head.joblib")
-    print(f"  -> results/{name}.json, models/{name}/")
+    print(f"  -> {rel(RESULTS)}/{name}.json, {rel(MODELS)}/{name}/")
 
 
 if __name__ == "__main__":

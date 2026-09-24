@@ -30,14 +30,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import RESULTS, ROOT, load_split, teacher_train_labels  # noqa: E402
+from distilroute.data import MODELS, RESULTS, ROOT, load_split, teacher_train_labels  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from baseline import build as build_tfidf  # noqa: E402
 from setfit_student import ENCODER  # noqa: E402
 
 CURVES = RESULTS / "curves"
-CACHE = ROOT / "models" / "cache"
+CACHE = MODELS / "cache"
 SIZES = [250, 500, 1000, 2000, 5000]  # plus the full pool, whatever its size
 
 

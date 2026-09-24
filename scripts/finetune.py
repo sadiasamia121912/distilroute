@@ -36,7 +36,14 @@ from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import DataLoader, TensorDataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import ROOT, categories, load_split, teacher_train_labels  # noqa: E402
+from distilroute.data import (  # noqa: E402
+    RESULTS,
+    ROOT,
+    categories,
+    load_split,
+    rel,
+    teacher_train_labels,
+)
 from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
 
 # name -> (hub id, params, learning rate). Small encoders need a higher LR: at 5e-5 MiniLM and
@@ -304,7 +311,7 @@ def main() -> None:
     )
     if args.export_onnx:
         model_dir(name, "onnx", hf_model=hf_name, temperature=metrics["temperature"])
-    print(f"  -> results/{name}.json")
+    print(f"  -> {rel(RESULTS)}/{name}.json")
 
 
 if __name__ == "__main__":

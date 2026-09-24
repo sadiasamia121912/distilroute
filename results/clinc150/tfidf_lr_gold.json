@@ -1,0 +1,13 @@
+{
+  "model": "tfidf+lr",
+  "params": 0,
+  "trained_on": "gold",
+  "n_train": 13500,
+  "accuracy": 0.928,
+  "macro_f1": 0.9273001841892862,
+  "p50_ms": 1.4961499837227166,
+  "p95_ms": 1.8383100279606879,
+  "fit_seconds": 30.00797390937805,
+  "temperature": 0.6362117624464869,
+  "n_calib": 1500
+}
