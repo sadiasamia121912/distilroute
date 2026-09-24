@@ -1,6 +1,6 @@
 # distilroute — Roadmap
 
-_Last updated: 2026-09-18. Project 2 of `../tabaudit/AI_ML_Portfolio_Projects.md`. Budget: **$0**._
+_Last updated: 2026-09-25. Project 2 of `../tabaudit/AI_ML_Portfolio_Projects.md`. Budget: **$0**._
 
 ## The pitch
 
@@ -87,19 +87,25 @@ free tier costs a day.
   count, ~2× output tokens. Students train on a soft target (rank-weighted, Hinton-style
   distillation) as well as the hard top-1; report both. Gate: top-1 accuracy on the 200-query
   sample must not drop vs. the single-label prompt.
-- [~] **1b.2 Confidence cascade.** Student answers when confident, escalates to the LLM
+- [x] **1b.2 Confidence cascade.** Student answers when confident, escalates to the LLM
   otherwise. Curve: accuracy and LLM-cost vs. escalation fraction. Needs a *calibrated*
   student → report ECE, apply temperature scaling. _(2026-09-18: `distilroute/calibration.py`;
   every student holds out a stratified 10 % of its training pool (`runs.split_calib`), fits T
   there, `evaluate.py` applies it. On gold: both LR heads are **under**-confident (T ≈ 0.7),
   ECE 0.074 → 0.011 (MiniLM), 0.090 → 0.007 (TF-IDF); the holdout costs ~0.3 pt. Threshold
   cascade table in results.md: MiniLM below 0.8 → escalate 14 %, **97.5 %** on the rest. The
-  mixed-system column fills in when the test split is fully labelled.)_
-- [~] **1b.3 Data-efficiency curve.** Student accuracy vs. number of teacher labels
+  mixed-system column fills in when the test split is fully labelled.)_ _(Closed 2026-09-25: the
+  test split is fully labelled and the column is filled — fine-tuned MiniLM on teacher labels,
+  escalating below 0.8: 15 % to the LLM, **0.874** overall, above the LLM alone (0.867). The
+  cost-aware version, with thresholds chosen on held-out data, is 6.5.)_
+- [x] **1b.3 Data-efficiency curve.** Student accuracy vs. number of teacher labels
   (500 / 1k / 2k / 5k / 10k). "How many LLM calls do you actually need?" _(`scripts/data_curve.py`,
   2026-09-18, on gold: frozen MiniLM 0.61 / 0.74 / 0.84 / 0.89 / 0.92 / 0.93 at 250 / 500 / 1k / 2k /
   5k / 10k; TF-IDF 0.44 → 0.91 over the same sizes — the pretrained encoder is worth ~10 pts at 1k
-  labels, 2 pts at 10k. Re-run with `--labels teacher` once train is labelled.)_
+  labels, 2 pts at 10k. Re-run with `--labels teacher` once train is labelled.)_ _(Closed
+  2026-09-25: re-run on teacher labels up to all 3,000 bought — frozen MiniLM 0.567 / 0.715 /
+  0.787 / 0.834 / 0.846 at 250 / 500 / 1k / 2k / 3k, TF-IDF 0.402 → 0.808; the curve flattens
+  near the teacher's 0.867, which gold labels do not. In results.md.)_
 - [x] **1b.4 Model-size Pareto.** TinyBERT (14M) / MiniLM-L6 (22M) / DistilBERT (66M) on
   Colab; accuracy vs. params vs. CPU latency. Then ONNX + int8 quantisation of the winner.
   _(2026-09-23, Colab round 2 with the fixed recipe — per-model LR, ≥2,000 steps, MiniLM from
@@ -133,12 +139,12 @@ free tier costs a day.
 ## Phase 2 — Students  (2 days)
 
 - [x] **2.1** Baseline: TF-IDF (word + char n-grams) + logistic regression. Trained on **gold** first as the reference (what supervised learning gets), then on **teacher** labels (the distilled version). _(2026-09-17: gold-trained baseline done; teacher-trained waits on 1.6)_
-- [~] **2.2** `scripts/setfit_student.py` (all-MiniLM-L6-v2, 22M): `--mode frozen` (embeddings + LR head, all rows) and `--mode setfit` (contrastive few-shot, `--per-class 16`). _(2026-09-18: **frozen on gold = 0.930 / 0.930 macro-F1, 15 ms** — beats TF-IDF 0.913 and matches published fine-tuned DistilBERT with no fine-tuning. SetFit few-shot 16/intent (1,232 rows, 624 s CPU) = **0.867** — few-shot costs ~6 pts vs the frozen encoder on all 10k rows.)_
-- [~] **2.3** `scripts/finetune.py` (distilbert 66M / minilm 22M / tinybert 14M; hard or `--soft`
+- [x] **2.2** `scripts/setfit_student.py` (all-MiniLM-L6-v2, 22M): `--mode frozen` (embeddings + LR head, all rows) and `--mode setfit` (contrastive few-shot, `--per-class 16`). _(2026-09-18: **frozen on gold = 0.930 / 0.930 macro-F1, 15 ms** — beats TF-IDF 0.913 and matches published fine-tuned DistilBERT with no fine-tuning. SetFit few-shot 16/intent (1,232 rows, 624 s CPU) = **0.867** — few-shot costs ~6 pts vs the frozen encoder on all 10k rows.)_ _(Closed 2026-09-25: both modes also ran on teacher labels — frozen **0.848**, SetFit 7 per intent 0.789; in results.md.)_
+- [x] **2.3** `scripts/finetune.py` (distilbert 66M / minilm 22M / tinybert 14M; hard or `--soft`
   top-3 targets; `--export-onnx` → fp32 + dynamic-int8 graphs, int8 accuracy and latency recorded)
   + `notebooks/finetune_colab.ipynb` that clones the repo, runs every config on a T4 and zips
   `results/` + `models/` back. _(2026-09-18: written and smoke-tested on CPU end to end (TinyBERT
-  int8: 2.1 ms p50, 14.6 MB). Still to do: run it on Colab — gold now, teacher once 1.6 lands.)_
+  int8: 2.1 ms p50, 14.6 MB). Still to do: run it on Colab — gold now, teacher once 1.6 lands.)_ _(Closed 2026-09-23: ran on Colab, round 2 — see 1b.4.)_
 - [x] **2.4** `scripts/evaluate.py` → `docs/results.md`: every run in `results/` (metrics JSON + test probabilities, the contract in `baseline.py::save_run`) × {acc, macro-F1, agreement w/ teacher, ECE, latency} + the cascade preview table (1b.2). _(2026-09-18; fills in as runs land)_
 
 ## Phase 3 — Serving + the cost/latency table  (1–2 days)
@@ -170,7 +176,7 @@ results on questions teams actually have. Ordered by payoff per effort at $0. Al
 are offline (no LLM calls) and start once the shuffled test labels and Colab round 2 give the
 honest baselines.
 
-- [~] **6.1 Student beats its teacher.** _(`scripts/denoise.py`, 2026-09-23. On 3,000 teacher
+- [x] **6.1 Student beats its teacher.** _(Closed 2026-09-25 as **not met** at 3,000 labels; the open lever is more labels, 1.6.)_ _(`scripts/denoise.py`, 2026-09-23. On 3,000 teacher
   labels, all six variants reported, none cherry-picked: base 0.842 · soft 0.840 · filter 0.846
   · self 0.847 · **filter+self 0.849** · all 0.849, against a teacher at **0.867**. So: the
   levers are worth **+0.7 pt**, the student still sits **1.8 pt below its teacher**, and the
