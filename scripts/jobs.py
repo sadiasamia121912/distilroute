@@ -1,7 +1,7 @@
 """Every pending LLM job, in order, resumable: stop it any time and run it again later.
 
-    python scripts/queue.py            # run what is left (both lanes at once)
-    python scripts/queue.py --status   # what is done, what is left, how far along
+    python scripts/jobs.py            # run what is left (both lanes at once)
+    python scripts/jobs.py --status   # what is done, what is left, how far along
 
 The free tiers cap tokens *per day*, so the remaining labelling needs about a week of calendar
 time but only ~an hour of running per day: start this, let it use the day's allowance, stop it
@@ -238,7 +238,7 @@ def take_lock():
 
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
-        sys.exit("another queue.py is already running (logs/queue.lock); not starting a second")
+        sys.exit("another jobs.py is already running (logs/queue.lock); not starting a second")
     return f
 
 
