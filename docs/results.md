@@ -100,6 +100,7 @@ Same student and the same budget, but the rows are chosen rather than drawn at r
 | random | 0.708 ± 0.009 | 0.799 ± 0.007 | 0.822 ± 0.005 | 0.835 ± 0.002 | 0.842 ± 0.005 |
 | uncertainty | 0.708 ± 0.009 | 0.800 ± 0.008 | 0.826 ± 0.003 | 0.840 ± 0.006 | 0.847 ± 0.003 |
 | disagreement | 0.708 ± 0.009 | 0.801 ± 0.009 | 0.831 ± 0.003 | 0.840 ± 0.003 | 0.843 ± 0.004 |
+| diverse | 0.785 ± 0.005 | 0.822 ± 0.005 | 0.831 ± 0.004 | 0.837 ± 0.001 | 0.839 ± 0.001 |
 
 ## Cost per 1M requests
 

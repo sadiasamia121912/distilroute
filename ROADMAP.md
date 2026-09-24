@@ -198,7 +198,7 @@ honest baselines.
   each calibrated-confidence threshold, the share of OOS queries escalated vs the share of
   in-scope queries wrongly escalated (ROC-style table). Also test whether temperature scaling
   helps or hurts OOS separation. _Script: `scripts/oos.py` + `scripts/download_clinc.py`._
-- [ ] **6.3 Active labelling — spend LLM calls where they matter.** Simulated entirely inside
+- [x] **6.3 Active labelling — spend LLM calls where they matter.** _(Closed 2026-09-24; the session logs of 09-23 and 09-24 have the full story. 3 seeds: **diverse** (k-means, no model) 0.785 ± 0.005 at 500 labels vs random 0.708, and 0.822 vs 0.799 at 1,000, which is random's 1,500-label score. It ties random at 1,500 and trails it slightly at 2,000–2,500 (0.839 vs 0.842). Uncertainty / disagreement: +0.5 pt. So the "2× fewer calls" claim holds for the first ~1,000 labels only, and it comes from diversity, not from uncertainty.)_ Simulated entirely inside
   the 3,000 labelled rows: pick N rows by (i) random, (ii) TF-IDF/MiniLM disagreement,
   (iii) lowest student confidence after a 500-row seed round; train the frozen student on each
   N and compare on test. Claim shape: "same accuracy with ~2× fewer LLM calls". _Extends
@@ -231,6 +231,17 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-24 (6.3 diverse, 4.1 README)** — The 3-seed diverse run finished (seeds reproduce: 0.779 /
+0.786 / 0.789 at 500). Mean ± half-range: 0.785 ± 0.005 / 0.822 / 0.831 / 0.837 / 0.839 at 500 → 2,500,
+against random's 0.708 / 0.799 / 0.822 / 0.835 / 0.842. So choosing the most *typical* rows is worth
++7.7 pt at 500 labels (≈ half the LLM calls for the same accuracy) and +2.3 at 1,000. It stops helping
+by 1,500, and past 2,000 it is slightly worse: k-means centroids are the easy, typical queries, and
+once the student has those, the rare and hard ones matter more. It also buys dirtier labels than random
+(18–20 % wrong vs the 15.2 % base rate), for the same reason uncertainty does. The practical recipe is
+diverse for the first ~1,000 LLM calls, random after that. README rewritten for 4.1 around the final
+table and six findings. 6.1 is stated as *not met* (student 1.8 pt below teacher), since the old
+framing rule assumed it would be.
 
 **2026-09-24 (latency re-bench)** — Handoff item 1 closed. `bench_latency.py` (500 queries,
 in-process) on an idle, mains-powered machine (OneDrive shut down; it was holding more than a core), then
@@ -282,14 +293,14 @@ existing labels are committed, so every student, report and table reproduces wit
    (2.5× slow), during a k-means job, or on Colab's CPU (marked †). Run
    `python scripts/bench_latency.py` once on an idle, mains-powered machine, then
    `python scripts/cost.py` and `python scripts/evaluate.py`, since the cost table divides by it.
-2. **6.3 `diverse` strategy** — incomplete. Seed 0 gave 0.779 at 500 labels vs random's 0.708
+2. ~~**6.3 `diverse` strategy**~~ — _done 2026-09-24, see session log._ Was incomplete. Seed 0 gave 0.779 at 500 labels vs random's 0.708
    (a 7-point cold-start gain, the most promising active-labelling result), but the 3-seed run
    was interrupted. `python scripts/active.py --strategies diverse` finishes it; k-means with
    k≈2,500 is slow, so give it an hour.
 3. **Colab models** — `results/*_ft_*.json` and their test probabilities are committed, so the
    table is intact, but `models/*_ft_*/` (the int8 ONNX graphs) are not. Re-run
    `notebooks/finetune_colab.ipynb` if the served artefacts are wanted.
-4. Then: **3.4** Dockerfile (needs Docker installed), **4.1** README with the final table,
+4. Then: **3.4** Dockerfile (_written 2026-09-24; needs a `docker build` check_), **4.1** README with the final table (_written 2026-09-24_),
    and **Phase 6.4–6.8**.
 
 **2026-09-23 (Colab round 2, 6.3)** — All seven fine-tune runs landed with the fixed recipe;
