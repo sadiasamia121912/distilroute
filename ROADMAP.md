@@ -203,7 +203,7 @@ honest baselines.
   (iii) lowest student confidence after a 500-row seed round; train the frozen student on each
   N and compare on test. Claim shape: "same accuracy with ~2× fewer LLM calls". _Extends
   `data_curve.py` with a `--select` strategy._
-- [ ] **6.4 Second domain** — Phase 5, now concrete: CLINC150 (150 intents, 10 domains) through
+- [~] **6.4 Second domain** — _(2026-09-24: `DISTILROUTE_DATASET=clinc150` runs every script on CLINC150; `download_clinc.py` writes `data/raw/clinc150/` (train 15,000 / test 4,500, 150 intents). Gold: TF-IDF 0.928, frozen MiniLM 0.954. Teacher gate, names only, 200 test queries: **0.890**, top-3 0.965, so no descriptions file (4× smaller prompt, ~2,000 labels/day on Groq). Labelling 1,500 test + 3,000 train with the Banking77 config otherwise (gpt-oss-120b, low, top-3, batch 20, shuffled). Then: teacher-trained TF-IDF / MiniLM, cascade, the cross-dataset comparison.)_ Phase 5, now concrete: CLINC150 (150 intents, 10 domains) through
   the same scripts with only a download script + descriptions file added. Together with 6.2 it
   reuses one dataset for two results.
 - [ ] **6.5 Three-tier cascade + cost Pareto.** TF-IDF (1.8 ms) → MiniLM → LLM with a threshold
