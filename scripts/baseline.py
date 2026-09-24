@@ -12,7 +12,6 @@ the project.
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import time
 from pathlib import Path
@@ -26,7 +25,14 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.pipeline import FeatureUnion, Pipeline
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import LABELS, MODELS, RAW, RESULTS, rel  # noqa: E402
+from distilroute.data import (  # noqa: E402
+    MODELS,
+    RAW,
+    RESULTS,
+    TEACHER_ROWS,
+    rel,
+    teacher_train_labels,
+)
 from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
 
@@ -34,12 +40,8 @@ def load_train(labels: str) -> pd.DataFrame:
     df = pd.read_csv(RAW / "train.csv")
     if labels == "gold":
         return df.rename(columns={"category": "y"})
-    recs = [json.loads(line) for line in (LABELS / "train.jsonl").open(encoding="utf-8")]
-    lab = pd.DataFrame(recs).set_index("idx")["teacher"]
-    df = df.join(lab, how="inner")  # only the queries the teacher has labelled so far
-    n_unparsed = df.teacher.isna().sum()
-    df = df.dropna(subset=["teacher"]).rename(columns={"teacher": "y"})
-    print(f"teacher labels: {len(df):,} usable, {n_unparsed} unparsed dropped")
+    df = teacher_train_labels()  # the first TEACHER_ROWS labelled rows, unparsed dropped
+    print(f"teacher labels: {len(df):,} usable of the first {TEACHER_ROWS:,} labelled")
     return df
 
 

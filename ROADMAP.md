@@ -75,6 +75,35 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
   _2026-09-17: v1 run stopped at 2,460 (kept as `test.v1_partial.jsonl`; file is intent-sorted so it covers ~60 of 77 intents — not a random sample). It exposed that 33 descriptions mis-described the dataset's actual intent semantics (`get_physical_card` = PIN questions, 0 % correct). v2 descriptions written from TRAIN examples. Next: `scripts/gates.ps1` (v2 / top-3 / batch 50 / batch 100 on the 200-query sample), then relabel test with the winner._
   _2026-09-19: 3,080 / 3,080, 0 unparsed, read 0.948 — **but see 2026-09-21: invalid.** The test CSV is intent-sorted, so every batch of 20 was a single intent and the teacher used the batch as a hint: on the same 200 queries it scores 0.98 in sorted batches vs 0.905 in random ones. Kept as `test.sorted_batches.jsonl` for the record; the labeller now always shuffles. **Relabelled in shuffled order 2026-09-23**: 3,080 / 3,080, 0 unparsed, 155 calls. **Teacher = 0.867 accuracy / 0.864 macro-F1**, gold in top-3 94.7 % — 8 points below the leaked number and in line with the 0.905 gate (which was an easier random sample of 200). This is the ceiling the project reports._
 - [~] **1.6** Label the **train** split (10,003). Commit `data/labels/*.jsonl`. _(3,000-row random subset (`--limit 3000 --seed 0`) done 2026-09-21: 0 unparsed, 150 calls, 283k in / 174k out. Teacher vs gold on it: **0.848**, top-3 hit 0.936 — random batches, so this is the honest zero-shot number on the train distribution. Remaining 7,003 rows: later, if the data curve says they matter.)_
+  **Retraining plan (written 2026-09-25, before the remaining 7,003 labels land).** The question:
+  6.1 left the student 1.8 pt below its teacher at 3,000 labels, and the data curve was still
+  rising (0.834 at 2k → 0.846 at 3k). Do all 10,003 labels close the gap, or does the student
+  flatten at the teacher's own error rate?
+  0. *Done now — reproducibility guard.* `DISTILROUTE_TEACHER_ROWS` (default **3,000**) caps how
+     many labelled rows a student sees: the first N of `train.jsonl`, which is in the labeller's
+     seed-0 order, so any N is a random sample and nested in every larger one. The default keeps
+     every published command and number reproducible as the file grows (verified: TF-IDF and
+     frozen MiniLM on teacher labels re-run byte-identical, test probabilities included). Any
+     other N writes to `results/teacher<N>/`, `models/…`, `docs/…`, never over the published runs.
+  1. *Check the labels* (no training): unparsed rate, and teacher accuracy vs gold on the new
+     7,003 (gold is read for this report only). It should match the first 3,000 (0.848).
+  2. *CPU students at N = 10,003* (`DISTILROUTE_TEACHER_ROWS=10003`, minutes each): `baseline.py`
+     and `setfit_student.py --mode frozen` on teacher labels, `denoise.py --variants
+     base,soft,filter` (`self` has nothing left to pseudo-label once every row is labelled),
+     `data_curve.py --labels teacher` for the 5k and 10k points, then `evaluate.py`.
+  3. *Fine-tuned students* on Colab (`notebooks/finetune_colab.ipynb`, user runs it; ~30 min on a
+     T4): MiniLM, DistilBERT, TinyBERT at N = 10,003, int8 ONNX exported.
+  4. *Decide:* the served model changes only if the fine-tuned MiniLM at 10k beats the current one
+     (0.842 int8) by more than run-to-run noise (±0.3 pt, 1b.4). If it does: release `model-v2`,
+     rebuild the demo (`build_demo.py`), re-run `cascade.py` and `robustness.py`, re-bench latency,
+     and point the Docker CI at model-v2. If it does not, the finding is that the labels are
+     saturated and the gap is the teacher's error rate.
+  5. *Report* either way: README finding 5 and the case study's "What did not work" get the 10k
+     number; the data curve gains its 5k/10k teacher points. Adopting 10k as the default (bumping
+     `DEFAULT_TEACHER_ROWS`) is a separate, explicit decision, because it changes every published
+     teacher-label number at once.
+  *Cost, for the write-up:* 7,003 more labels at the paid, batched price ($26.62 per 1M) is about
+  **$0.19**, the cheapest lever in the project if it works.
 - [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(generated on the full test split 2026-09-19)_ Still to do: self-agreement run (300 test queries relabelled).
 
 ## Phase 1b — Make it advanced, for free  (decided 2026-09-17)
