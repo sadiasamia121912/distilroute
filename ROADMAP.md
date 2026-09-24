@@ -136,7 +136,7 @@ free tier costs a day.
 
 ## Phase 4 — Publish  (½ day)
 
-- [ ] **4.1** README results table, résumé bullet numbers into `../tabaudit/AI_ML_Portfolio_Projects.md`.
+- [x] **4.1** README results table, résumé bullet numbers into `../tabaudit/AI_ML_Portfolio_Projects.md`. _(2026-09-24: README rewritten around the final table and six findings; Project 2 section of the portfolio file rewritten with the final numbers, a résumé bullet and interview talking points.)_
 - [ ] **4.2** Public repo, LinkedIn post.
 
 ## Phase 5 — Stretch: prove it is a method, not a banking demo  (optional, ~1 day)
