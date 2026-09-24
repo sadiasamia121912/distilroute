@@ -14,6 +14,11 @@ teacher 0.867). Three levers try to beat that **without ever seeing a human labe
   pick above `--filter-q`), the label is probably wrong. Drop those rows. Confident-learning
   in miniature (roadmap 1b.5, the tabaudit idea).
 - **filter_self** — the two that help, combined; **all** adds the soft target on top.
+- **tabaudit** / **tabaudit_suspected** — the same idea with the project-1 tool
+  (`pip install tabaudit`, roadmap 1b.5): its label-noise check on a table of the embeddings
+  plus the teacher's label, run as a normal `run_audit`. It uses a different model (regularised
+  gradient boosting) and a plain threshold on out-of-fold self-confidence; drop its "likely"
+  tier (< 0.2), or also its "suspected" one (< 0.3).
 - **self**  — pseudo-label the 7,003 train rows the teacher never saw, keep those above
   `--self-p`, retrain on teacher labels + pseudo-labels. Free extra data, and the standard way
   to exceed a noisy teacher. The threshold is applied to *calibrated* probabilities (the head
@@ -51,6 +56,7 @@ from data_curve import minilm_embeddings  # noqa: E402
 
 RANK_W = np.array([1.0, 0.5, 1 / 3])
 VARIANTS = ["base", "soft", "filter", "self", "filter_self", "all"]
+TABAUDIT = ["tabaudit", "tabaudit_suspected"]  # opt-in: needs `pip install tabaudit`
 
 
 def soft_targets(ranked: pd.Series, y: pd.Series, classes: list[str], alpha: float) -> np.ndarray:
@@ -95,9 +101,29 @@ def oof_proba(x: np.ndarray, target: np.ndarray, y: np.ndarray, folds: int = 5) 
     return out
 
 
+def tabaudit_flags(x: np.ndarray, y: pd.Series) -> tuple[np.ndarray, np.ndarray]:
+    """(likely, suspected) row masks from tabaudit's label-noise check, run as a user would.
+
+    The leakage check runs first because label_noise expects it to have excluded any leaky
+    column (none here: 384 embedding dimensions, no identifiers).
+    """
+    from tabaudit import run_audit
+
+    df = pd.DataFrame(x, columns=[f"emb_{i}" for i in range(x.shape[1])])
+    df["intent"] = y.to_numpy()
+    report = run_audit(df, target="intent", checks=["leakage", "label_noise"])
+    likely, suspected = np.zeros(len(df), bool), np.zeros(len(df), bool)
+    for f in report.findings:
+        if f.check == "label_noise":
+            likely[f.evidence["rows_likely"]] = True
+            suspected[f.evidence["rows"]] = True
+            print(f"tabaudit: {f.severity.value.upper()} — {f.title}")
+    return likely, suspected
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--variants", default=",".join(VARIANTS))
+    ap.add_argument("--variants", default=",".join(VARIANTS), help=f"also: {', '.join(TABAUDIT)}")
     ap.add_argument("--soft-alpha", type=float, default=0.3)
     ap.add_argument("--filter-p", type=float, default=0.10, help="drop if teacher's label < p")
     ap.add_argument("--filter-q", type=float, default=0.70, help="...and student's pick > q")
@@ -135,6 +161,19 @@ def main() -> None:
                 f"{(wrong[~keep]).sum()}/{wrong.sum()} of all teacher errors caught"
             )
         print(msg)
+
+    flags = {}
+    if set(TABAUDIT) & set(args.variants.split(",")):
+        likely, suspected = tabaudit_flags(x_train, train.y)
+        flags = {"tabaudit": likely, "tabaudit_suspected": suspected}
+        if gold_train is not None:
+            wrong = train.y.values != gold_train
+            for name, m in flags.items():
+                print(
+                    f"{name}: flags {m.sum()} of {len(train):,} rows — "
+                    f"{wrong[m].mean() if m.any() else 0:.0%} of them really are teacher errors "
+                    f"(base rate {wrong.mean():.0%}); {wrong[m].sum()}/{wrong.sum()} caught"
+                )
 
     def run(
         name: str, x: np.ndarray, target: np.ndarray, note: str, n_real: int | None = None
@@ -188,6 +227,15 @@ def main() -> None:
             soft_targets(train.ranked[keep], train.y[keep], classes, 0.0),
             f"{(~keep).sum()} noisy labels dropped",
         )
+
+    for name, flagged in flags.items():
+        if name in args.variants.split(","):
+            run(
+                name,
+                x_train[~flagged],
+                soft_targets(train.ranked[~flagged], train.y[~flagged], classes, 0.0),
+                f"{flagged.sum()} rows tabaudit flags dropped",
+            )
 
     def self_train(seed_rows: np.ndarray, target: np.ndarray) -> tuple[np.ndarray, np.ndarray, int]:
         """Pseudo-label the unlabelled rows with a head fitted on `seed_rows`, keep the

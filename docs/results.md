@@ -15,6 +15,8 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.867** on the full 3,080-query 
 | MiniLM-L6 frozen + filter_self | 23M | teacher | 7,811 | **0.849** | 0.846 | 0.883 | 0.020 → 0.077 (T=0.60) | — |
 | MiniLM-L6 frozen + self | 23M | teacher | 7,449 | **0.847** | 0.845 | 0.884 | 0.026 → 0.037 (T=0.79) | — |
 | MiniLM-L6 frozen + soft | 23M | teacher | 2,700 | **0.840** | 0.838 | 0.882 | 0.192 → 0.033 (T=0.54) | — |
+| MiniLM-L6 frozen + tabaudit | 23M | teacher | 2,219 | **0.827** | 0.824 | 0.860 | 0.098 → 0.102 (T=0.42) | — |
+| MiniLM-L6 frozen + tabaudit_suspected | 23M | teacher | 2,118 | **0.820** | 0.815 | 0.853 | 0.101 → 0.098 (T=0.45) | — |
 | MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.863 | 0.074 → 0.011 (T=0.71) | 11.1 / 13.7 |
 | MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 11.0 / 13.9 |
 | minilm fine-tuned | 23M | gold | 9,000 | **0.927** | 0.927 | 0.864 | 0.024 → 0.016 (T=0.93) | 2.7 / 4.7 |
@@ -43,6 +45,8 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | MiniLM-L6 frozen + filter_self | teacher | 0.849 | 0.860 | 0.868 | 0.873 | 0.874 |
 | MiniLM-L6 frozen + self | teacher | 0.847 | 0.858 | 0.866 | 0.873 | 0.873 |
 | MiniLM-L6 frozen + soft | teacher | 0.840 | 0.849 | 0.861 | 0.869 | 0.873 |
+| MiniLM-L6 frozen + tabaudit | teacher | 0.827 | 0.844 | 0.853 | 0.864 | 0.870 |
+| MiniLM-L6 frozen + tabaudit_suspected | teacher | 0.820 | 0.838 | 0.852 | 0.865 | 0.871 |
 | MiniLM-L6 frozen | gold | 0.927 | 0.936 | 0.927 | 0.917 | 0.902 |
 | MiniLM-L6 frozen | teacher | 0.848 | 0.859 | 0.866 | 0.869 | 0.871 |
 | minilm fine-tuned | gold | 0.927 | 0.931 | 0.931 | 0.923 | 0.908 |
@@ -69,6 +73,8 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | MiniLM-L6 frozen + filter_self | teacher | 3% · 0.867 · 0.855 | 10% · 0.900 · 0.869 | 14% · 0.911 · 0.872 | 20% · 0.925 · 0.872 | 25% · 0.939 · 0.874 |
 | MiniLM-L6 frozen + self | teacher | 7% · 0.884 · 0.863 | 16% · 0.914 · 0.870 | 21% · 0.931 · 0.873 | 30% · 0.945 · 0.873 | 40% · 0.959 · 0.871 |
 | MiniLM-L6 frozen + soft | teacher | 6% · 0.866 · 0.853 | 17% · 0.909 · 0.866 | 24% · 0.929 · 0.870 | 35% · 0.952 · 0.871 | 48% · 0.960 · 0.869 |
+| MiniLM-L6 frozen + tabaudit | teacher | 3% · 0.846 · 0.839 | 10% · 0.875 · 0.854 | 13% · 0.886 · 0.860 | 19% · 0.907 · 0.864 | 24% · 0.921 · 0.867 |
+| MiniLM-L6 frozen + tabaudit_suspected | teacher | 4% · 0.845 · 0.837 | 12% · 0.875 · 0.855 | 16% · 0.891 · 0.860 | 21% · 0.908 · 0.866 | 27% · 0.920 · 0.869 |
 | MiniLM-L6 frozen | gold | 4% · 0.948 · 0.933 | 10% · 0.965 · 0.927 | 14% · 0.975 · 0.924 | 20% · 0.986 · 0.915 | 29% · 0.991 · 0.904 |
 | MiniLM-L6 frozen | teacher | 7% · 0.880 · 0.863 | 17% · 0.916 · 0.868 | 24% · 0.935 · 0.871 | 35% · 0.952 · 0.872 | 48% · 0.963 · 0.870 |
 | minilm fine-tuned | gold | 2% · 0.937 · 0.930 | 6% · 0.955 · 0.932 | 9% · 0.965 · 0.932 | 15% · 0.975 · 0.929 | 29% · 0.988 · 0.909 |

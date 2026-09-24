@@ -1,0 +1,13 @@
+{
+  "model": "MiniLM-L6 frozen + tabaudit",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "n_train": 2219,
+  "accuracy": 0.8266233766233766,
+  "macro_f1": 0.8236961346941326,
+  "variant": "tabaudit",
+  "note": "535 rows tabaudit flags dropped",
+  "soft_alpha": null,
+  "temperature": 0.42140617546972775,
+  "n_calib": 246
+}

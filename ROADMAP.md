@@ -111,8 +111,22 @@ free tier costs a day.
   hurt here too (0.836 vs 0.839), matching 6.1 on the frozen student: two architectures, same
   conclusion. Round 1 (lr 5e-5 for everything) had MiniLM at 0.52 and TinyBERT at 0.39 — those
   runs were under-trained, not bad models, and were discarded.)_
-- [ ] **1b.5 tabaudit on the teacher labels.** Run `tabaudit audit` on the LLM-labelled train
+- [x] **1b.5 tabaudit on the teacher labels.** Run `tabaudit audit` on the LLM-labelled train
   set; does dropping the flagged label-noise rows help the student? Cross-project.
+  _(2026-09-25: `denoise.py --variants tabaudit,tabaudit_suspected`, tabaudit 0.3.0 from PyPI run
+  as `run_audit` on the 3,000 rows as a table of 384 MiniLM dimensions + the teacher's label, then
+  the same frozen-MiniLM student as 6.1 without the flagged rows. **It hurts.** tabaudit says HIGH,
+  "~535 rows (17.8 %) likely mislabeled" — a fair estimate of the true 15.2 % — but row by row only
+  44 % of its flags are real teacher errors (3× the base rate; 234 of 457 caught), and dropping
+  them costs **1.6 pt** (0.842 → 0.827; the looser tier: 647 rows, 40 %, −2.2). 6.1's own filter
+  drops 39 rows at 77 % precision and gains 0.4. Why: tabaudit's defaults were tuned on tabular
+  data with few classes. Here there are 77 classes and ~35 rows each, so its regularised boosting
+  (`min_samples_leaf=40`) can barely fit a class, gives low self-confidence to many correct rows,
+  and a fixed 0.2 cut means something different when chance is 1/77. Dropping 300 correct rows
+  from the hard, rare intents costs more than removing 234 wrong ones gains. Lessons for tabaudit:
+  scale the thresholds (or the leaf size) with the number of classes, and trust its *rate*
+  estimate more than its row list. Also found: tabaudit's `encode_features` inserted columns one
+  by one — one pandas fragmentation warning per column on wide data; fixed in the tabaudit repo.)_
 - [ ] **1b.6 (later)** Second teacher (Gemini Flash) on the test split: agreement as a noise
   signal, and "which free teacher is best".
 
