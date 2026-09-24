@@ -1,0 +1,476 @@
+<title>Distilling a ticket router</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root {
+  --bg: #f4f6f7;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --ink-2: #4a5764;
+  --muted: #6b7883;
+  --rule: #d9e0e4;
+  --grid: #e7ecef;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --focus: #2a78d6;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f151b; --surface: #161d24; --ink: #edf1f3; --ink-2: #b8c2c9; --muted: #8a97a2;
+    --rule: #28323b; --grid: #1f2830; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --focus: #3987e5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f151b; --surface: #161d24; --ink: #edf1f3; --ink-2: #b8c2c9; --muted: #8a97a2;
+  --rule: #28323b; --grid: #1f2830; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --focus: #3987e5;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 18px/1.62 var(--serif); }
+.page { max-width: 1000px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: grid; gap: 44px; }
+.col { max-width: 680px; }
+article { display: grid; gap: 44px; }
+section { display: grid; gap: 14px; }
+.kicker { font: 500 12px/1 var(--mono); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 700 clamp(34px, 5.6vw, 58px)/1.02 var(--display); letter-spacing: -.02em; margin: 0; text-wrap: balance; max-width: 16ch; }
+h2 { font: 600 clamp(22px, 3vw, 28px)/1.15 var(--display); letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.standfirst { font-size: 21px; line-height: 1.5; color: var(--ink-2); }
+.meta { font: 400 13px/1.5 var(--mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 18px; }
+a { color: var(--s1); text-underline-offset: 3px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+b, strong { font-weight: 600; }
+.num { font-family: var(--mono); font-size: .88em; font-variant-numeric: tabular-nums; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.tile { padding: 16px 16px 18px 0; display: grid; gap: 6px; align-content: start; }
+.tile + .tile { padding-left: 16px; border-left: 1px solid var(--rule); }
+.tile b { font: 600 clamp(26px, 3.6vw, 36px)/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tile span { font: 400 14px/1.4 var(--serif); color: var(--ink-2); }
+.tile small { font: 400 12px/1.4 var(--mono); color: var(--muted); }
+@media (max-width: 760px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tile:nth-child(3) { padding-left: 0; border-left: 0; }
+  .tile:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+
+figure { margin: 0; display: grid; gap: 10px; }
+figcaption { font: 400 15px/1.5 var(--serif); color: var(--ink-2); max-width: 680px; }
+figcaption b { color: var(--ink); }
+.fig-title { font: 600 15px/1.3 var(--display); color: var(--ink); }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--mono); fill: var(--muted); }
+.chart .lbl { fill: var(--ink); font-weight: 500; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font: 400 13px/1.3 var(--mono); color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend i.line { width: 16px; height: 2px; border-radius: 1px; vertical-align: 3px; }
+.legend i.dash { width: 16px; height: 0; border-top: 2px dashed var(--muted); border-radius: 0; background: none !important; vertical-align: 3px; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; font: 400 12.5px/1.45 var(--mono); box-shadow: 0 4px 16px rgb(0 0 0 / .12); white-space: nowrap; z-index: 2; }
+.tip b { font-weight: 500; }
+details { font: 400 14px/1.5 var(--serif); }
+summary { cursor: pointer; font: 400 13px/1.4 var(--mono); color: var(--muted); }
+.tablewrap { overflow-x: auto; margin-top: 8px; }
+table { border-collapse: collapse; font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; min-width: 100%; }
+th, td { padding: 6px 14px 6px 0; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 500; color: var(--muted); }
+
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; max-width: 680px; border-top: 2px solid var(--ink); }
+.pair div { padding: 14px 16px 14px 0; display: grid; gap: 4px; }
+.pair div + div { padding-left: 16px; border-left: 1px solid var(--rule); }
+.pair b { font: 700 clamp(34px, 5vw, 48px)/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.pair .wrong b { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 2px; }
+.pair span { font-size: 15px; color: var(--ink-2); line-height: 1.4; }
+.pending { border: 1px dashed var(--rule); border-radius: 8px; padding: 14px 16px; font-size: 16px; color: var(--ink-2); max-width: 680px; }
+.pending .kicker { display: block; margin-bottom: 6px; }
+ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
+footer { border-top: 1px solid var(--rule); padding-top: 16px; font: 400 13px/1.6 var(--mono); color: var(--muted); display: grid; gap: 6px; }
+</style>
+
+<div class="page">
+  <header class="col" style="display:grid;gap:18px">
+    <div class="kicker">Case study · distilroute · Banking77</div>
+    <h1>Distilling a 120B ticket router into 22M parameters</h1>
+    <p class="standfirst">A zero-shot LLM labelled 3,000 banking support messages. A small model trained only on those labels now routes new messages on a laptop CPU in under 3 ms. With a confidence-based fallback to the LLM, it beats the LLM on its own for a fraction of the cost.</p>
+    <div class="meta"><span>Built for $0: free-tier LLM, free Colab GPU, laptop CPU</span><span id="m-test"></span></div>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <article>
+    <section class="col">
+      <h2>The setup</h2>
+      <p>Banking77 is 13,083 real messages from a banking app's support inbox, each labelled by a person with one of 77 intents: <span class="num">card_arrival</span>, <span class="num">top_up_by_card_charge</span>, <span class="num">compromised_card</span> and so on. Many intents are near-synonyms, which makes it a hard routing problem.</p>
+      <p>The teacher is <b>gpt-oss-120b</b> on Groq's free tier, prompted zero-shot with the 77 intent names and a one-line description of each, and no example messages. It labelled <span class="num" id="n-train"></span> training messages. The students never see a human label. Every accuracy on this page is measured against the human labels on <span class="num" id="n-test2"></span> held-out test messages that nobody trained or tuned on.</p>
+    </section>
+
+    <figure>
+      <div class="fig-title col">Accuracy against cost for every system</div>
+      <div class="legend" id="lg-pareto"></div>
+      <div class="chart" id="c-pareto"></div>
+      <figcaption id="cap-pareto"></figcaption>
+      <details><summary>Show the numbers</summary><div class="tablewrap" id="t-pareto"></div></details>
+    </figure>
+
+    <section class="col">
+      <h2>The number that was too good</h2>
+      <p>The teacher's first full run on the test set scored 0.948. The real number is 0.867.</p>
+      <div class="pair" id="leak"></div>
+      <p>The test file is sorted by intent, and the labeller sent messages in batches of 20. So every batch was 20 messages with the same intent, and the LLM used the batch as a hint. On the same 200 messages it scored 0.98 in sorted batches and 0.905 in shuffled ones. The labeller now always shuffles. The general lesson: when an LLM labels in batches, the batch is part of the prompt.</p>
+    </section>
+
+    <section class="col">
+      <h2>Let the student ask for help</h2>
+      <p>After temperature scaling, a student's confidence means what it says: of the messages it is 90 % sure about, about 90 % are right. That makes a simple policy possible. The student answers when it is confident, and sends everything else to the LLM.</p>
+    </section>
+
+    <figure>
+      <div class="fig-title col">Accuracy as more messages go to the LLM</div>
+      <div class="legend" id="lg-cascade"></div>
+      <div class="chart" id="c-cascade"></div>
+      <figcaption id="cap-cascade"></figcaption>
+      <details><summary>Show the numbers</summary><div class="tablewrap" id="t-cascade"></div></details>
+    </figure>
+
+    <section class="col">
+      <p id="three-tier"></p>
+    </section>
+
+    <section class="col">
+      <h2>How many LLM calls does it take?</h2>
+      <p>Each point trains the same student on a random sample of the labelled pool. Human labels keep paying off to 10,000 messages. Teacher labels flatten out near the teacher's own accuracy, because the student learns the teacher's mistakes along with its answers.</p>
+    </section>
+
+    <figure>
+      <div class="fig-title col">Student accuracy by number of training labels</div>
+      <div class="legend" id="lg-data"></div>
+      <div class="chart" id="c-data"></div>
+      <figcaption>Frozen MiniLM encoder with a logistic head, mean over 3 random samples per size. Teacher labels stop at 3,000 because that is how many were bought.</figcaption>
+      <details><summary>Show the numbers</summary><div class="tablewrap" id="t-data"></div></details>
+    </figure>
+
+    <section class="col">
+      <h2>Which messages are worth an LLM call?</h2>
+      <p>If you pay per LLM call, you can choose which messages to label. The usual advice is to label the ones the model is least sure about. Here that bought only half a point, because the ambiguous messages are exactly the ones the LLM mislabels: it got 19.8 % of them wrong, against 15.2 % on average.</p>
+      <p>What did work is choosing the most typical messages first: cluster all messages by meaning and label the one nearest the centre of each cluster. No model is needed, so it works before you have one.</p>
+    </section>
+
+    <figure>
+      <div class="fig-title col">Accuracy by labels bought, three ways of choosing them</div>
+      <div class="legend" id="lg-active"></div>
+      <div class="chart" id="c-active"></div>
+      <figcaption id="cap-active"></figcaption>
+      <details><summary>Show the numbers</summary><div class="tablewrap" id="t-active"></div></details>
+    </figure>
+
+    <section class="col">
+      <h2>Knowing a message is not its job</h2>
+      <p id="oos-text"></p>
+    </section>
+
+    <section class="col">
+      <h2>What did not work</h2>
+      <ul class="plain">
+        <li><b>Beating the teacher.</b> Soft labels, a filter for likely-wrong teacher labels and self-training on unlabelled messages added 0.7 points together. The student still sits 1.8 points below the teacher at 3,000 labels. The data curve says more labels would close the gap sooner than more tricks.</li>
+        <li><b>Soft labels.</b> Training on the teacher's top-3 guesses instead of its top answer made students slightly worse, on both the frozen and the fine-tuned model. With 77 near-synonym intents, the teacher's second and third guesses are more often noise than signal.</li>
+        <li><b>Uncertainty sampling</b>, as above: the messages it picks are the ones the teacher gets wrong.</li>
+        <li><b>A bigger student.</b> DistilBERT (67M) is no more accurate than MiniLM (22M), and it is twice as slow.</li>
+      </ul>
+    </section>
+
+    <section class="col" id="robustness">
+      <h2>Messy input</h2>
+    </section>
+
+    <section class="col" id="domain">
+      <h2>A second dataset</h2>
+    </section>
+
+    <section class="col">
+      <h2>Try it, check it</h2>
+      <p>The served student runs in your browser on the <a href="https://claude.ai/artifact/MkYEhKKtUj5oJ2b8NUsqoz">live demo page</a>: type a message and see its intent, its calibrated confidence, and whether it would go to the LLM. Every number here comes from a script in the <a href="https://github.com/sadiasamia121912/distilroute">repository</a> that can be re-run. The teacher's labels are committed, so none of it needs an API key.</p>
+    </section>
+  </article>
+
+  <footer>
+    <span>Scope: this recipe covers "read a short message, pick a queue" tasks such as routing, triage and moderation. It does not cover free-text outputs like summaries or replies.</span>
+    <span>Costs: the LLM at Groq's paid list price, one message per call. Students as CPU time on an AWS t3.small at on-demand price, which is an upper bound; on hardware you already own they cost nothing. Latency is single-message, in-process, on a laptop CPU.</span>
+  </footer>
+</div>
+
+<script>
+const D = {"teacher":{"acc":0.8672077922077922,"usd":216.15,"batched_usd":26.62},"leak":{"sorted":0.9483766233766234,"shuffled":0.8672077922077922},"n_test":3080,"n_train_labels":2697,"students":[{"run":"tfidf_lr_teacher","label":"TF-IDF + LR","params":null,"acc":0.812012987012987,"p50":1.6469500842504203,"usd":0.012312261866923007},{"run":"tinybert_ft_teacher","label":"TinyBERT","params":"14M","acc":0.7964285714285714,"p50":1.9430500105954707,"usd":0.011920752691105006},{"run":"minilm_ft_teacher","label":"MiniLM, fine-tuned","params":"22M","acc":0.8467532467532467,"p50":2.8294000076130033,"usd":0.017631455107695523},{"run":"minilm_frozen_teacher","label":"MiniLM, frozen","params":"22M","acc":0.8483766233766233,"p50":10.99490001797676,"usd":0.0652134727075075},{"run":"distilbert_ft_teacher","label":"DistilBERT","params":"67M","acc":0.8389610389610389,"p50":6.167850049678236,"usd":0.03943697795344309}],"served":{"run":"minilm_ft_teacher","label":"MiniLM, fine-tuned","params":"22M","acc":0.8467532467532467,"p50":2.8294000076130033,"usd":0.017631455107695523},"gold_reference":0.9266233766233766,"cascade":{"curve":[{"budget":0.0,"llm":0.0,"acc":0.8467532467532468,"usd":0.017631455107695527},{"budget":0.05,"llm":0.04681818181818182,"acc":0.8603246753246754,"usd":10.137381455107697},{"budget":0.1,"llm":0.08922077922077923,"acc":0.8674025974025973,"usd":19.302702883679125},{"budget":0.15,"llm":0.1377922077922078,"acc":0.8715584415584416,"usd":29.80141716939341},{"budget":0.2,"llm":0.167012987012987,"acc":0.8730519480519481,"usd":36.11748859796483},{"budget":0.3,"llm":0.19655844155844154,"acc":0.8738961038961038,"usd":42.50373859796483}],"best":{"budget":0.3,"llm":0.19655844155844154,"acc":0.8738961038961038,"usd":42.50373859796483},"two_tier_match":{"acc":0.8662987012987013,"llm":0.0887012987012987,"usd":19.190417169393406},"three_tier_match":{"acc":0.8642857142857142,"llm":0.06357142857142857,"usd":13.760648556635653,"ms":3.4068930440829077,"first":0.5818831168831168},"seeds":5},"data_curve":{"gold":[[250,0.6099567099567099,0.022727272727272707],[500,0.742099567099567,0.020454545454545447],[1000,0.8405844155844155,0.009577922077922074],[2000,0.8853896103896104,0.0050324675324674994],[5000,0.9175324675324674,0.0022727272727272596],[10003,0.9301948051948052,0.0]],"teacher":[[250,0.5674242424242425,0.0025974025974025983],[500,0.714935064935065,0.006655844155844193],[1000,0.7874458874458874,0.010227272727272696],[2000,0.8343073593073593,0.00275974025974024],[3000,0.8457792207792207,0.0]]},"active":{"random":[[500,0.7075757575757576,0.008603896103896058],[1000,0.7990259740259741,0.006655844155844193],[1500,0.8221861471861471,0.0050324675324674994],[2000,0.8346320346320346,0.0021103896103895625],[2500,0.8416666666666668,0.004545454545454575]],"diverse":[[500,0.7847402597402597,0.0051948051948051965],[1000,0.8221861471861471,0.004545454545454519],[1500,0.8314935064935064,0.003733766233766256],[2000,0.8374458874458875,0.0014610389610389407],[2500,0.838961038961039,0.0011363636363636576]],"uncertainty":[[500,0.7075757575757576,0.008603896103896058],[1000,0.8003246753246754,0.007629870129870153],[1500,0.825865800865801,0.00324675324675322],[2000,0.8396103896103896,0.005519480519480535],[2500,0.8467532467532468,0.0025974025974025983]]},"oos":{"caught_min":0.9358333333333333,"caught_max":0.9741666666666666,"auroc_min":0.9728612012987012,"auroc_max":0.9873712121212121},"robustness":{"threshold":0.8,"changed":{"typo1":0.9954545454545455,"typo3":1.0,"chat":0.9746753246753247,"slang":0.6522727272727272,"wrap":1.0},"examples":{"clean":["How do I locate my card?","I still have not received my new card, I ordered over a week ago.","I ordered a card but it has not arrived. Help please!"],"typo1":["How do I loocate my card?","I still have not received my new card, I ordeed over a week ago.","I ordered a cad but it has not arrived. Help please!"],"typo3":["Ho do I locaet my cad?","I still have nott received my neww card, I ordered over a week aggo.","I ordered a crad but it hass not arrrived. Help please!"],"chat":["how do i locate my card","i still have not received my new card i ordered over a week ago","i ordered a card but it has not arrived help please"],"slang":["How do I locate my card?","I still have not received my new card, I ordered over a week ago.","I ordered a card but it has not arrived. Help pls!"],"wrap":["good morning, How do I locate my card? thx in advance","good morning, I still have not received my new card, I ordered over a week ago. thx in advance","good morning, I ordered a card but it has not arrived. Help please! thank you"]},"students":[{"model":"tfidf_lr_teacher","kinds":{"clean":{"acc":0.812012987012987,"acc_changed":null,"escalated":0.3155844155844156,"kept_acc":0.9236242884250474},"typo1":{"acc":0.7733766233766234,"acc_changed":0.7736464448793215,"escalated":0.3964285714285714,"kept_acc":0.9150080688542227},"typo3":{"acc":0.6905844155844156,"acc_changed":0.6905844155844156,"escalated":0.5688311688311688,"kept_acc":0.8983433734939759},"chat":{"acc":0.8025974025974026,"acc_changed":0.8051299133910726,"escalated":0.3399350649350649,"kept_acc":0.9203148057058534},"slang":{"acc":0.798051948051948,"acc_changed":0.7765057242409159,"escalated":0.3425324675324675,"kept_acc":0.9209876543209876},"wrap":{"acc":0.7983766233766234,"acc_changed":0.7983766233766234,"escalated":0.42337662337662335,"kept_acc":0.9375}}},{"model":"tinybert_ft_teacher","kinds":{"clean":{"acc":0.7918831168831169,"acc_changed":null,"escalated":0.3220779220779221,"kept_acc":0.9008620689655172},"typo1":{"acc":0.634090909090909,"acc_changed":0.6330724070450098,"escalated":0.5487012987012987,"kept_acc":0.8733812949640288},"typo3":{"acc":0.36168831168831167,"acc_changed":0.36168831168831167,"escalated":0.8136363636363636,"kept_acc":0.7665505226480837},"chat":{"acc":0.788961038961039,"acc_changed":0.7908061292471685,"escalated":0.3373376623376623,"kept_acc":0.9049485546300833},"slang":{"acc":0.7597402597402597,"acc_changed":0.7282229965156795,"escalated":0.3912337662337662,"kept_acc":0.904},"wrap":{"acc":0.7503246753246753,"acc_changed":0.7503246753246753,"escalated":0.43116883116883115,"kept_acc":0.9046803652968036}}},{"model":"minilm_ft_teacher","kinds":{"clean":{"acc":0.8422077922077922,"acc_changed":null,"escalated":0.15681818181818183,"kept_acc":0.9014247208317289},"typo1":{"acc":0.7448051948051948,"acc_changed":0.7439660795825179,"escalated":0.31396103896103894,"kept_acc":0.8826313298627544},"typo3":{"acc":0.5412337662337663,"acc_changed":0.5412337662337663,"escalated":0.5792207792207792,"kept_acc":0.8472222222222222},"chat":{"acc":0.8425324675324676,"acc_changed":0.8451032644903398,"escalated":0.15974025974025974,"kept_acc":0.9010819165378671},"slang":{"acc":0.8295454545454546,"acc_changed":0.8038825286212046,"escalated":0.20584415584415586,"kept_acc":0.9010629599345871},"wrap":{"acc":0.8301948051948052,"acc_changed":0.8301948051948052,"escalated":0.18474025974025973,"kept_acc":0.9000398247710075}}},{"model":"minilm_frozen_teacher","kinds":{"clean":{"acc":0.8483766233766233,"acc_changed":null,"escalated":0.23733766233766235,"kept_acc":0.9348659003831418},"typo1":{"acc":0.7613636363636364,"acc_changed":0.7606001304631441,"escalated":0.4107142857142857,"kept_acc":0.9245179063360881},"typo3":{"acc":0.5551948051948052,"acc_changed":0.5551948051948052,"escalated":0.6711038961038961,"kept_acc":0.8864758144126358},"chat":{"acc":0.8461038961038961,"acc_changed":0.8484343770819454,"escalated":0.24642857142857144,"kept_acc":0.934080137871607},"slang":{"acc":0.8308441558441558,"acc_changed":0.8073668491786958,"escalated":0.287012987012987,"kept_acc":0.936247723132969},"wrap":{"acc":0.8308441558441558,"acc_changed":0.8308441558441558,"escalated":0.2915584415584416,"kept_acc":0.9349220898258478}}},{"model":"distilbert_ft_teacher","kinds":{"clean":{"acc":0.8376623376623377,"acc_changed":null,"escalated":0.17987012987012987,"kept_acc":0.9117181314330958},"typo1":{"acc":0.7438311688311688,"acc_changed":0.7436399217221135,"escalated":0.3912337662337662,"kept_acc":0.8992},"typo3":{"acc":0.5045454545454545,"acc_changed":0.5045454545454545,"escalated":0.7181818181818181,"kept_acc":0.8870967741935484},"chat":{"acc":0.8357142857142857,"acc_changed":0.8381079280479681,"escalated":0.20162337662337662,"kept_acc":0.9129727531516877},"slang":{"acc":0.8194805194805195,"acc_changed":0.7864609258337482,"escalated":0.2616883116883117,"kept_acc":0.9204045734388743},"wrap":{"acc":0.8207792207792208,"acc_changed":0.8207792207792208,"escalated":0.26396103896103895,"kept_acc":0.9219232465813851}}},{"model":"minilm_ft_gold","kinds":{"clean":{"acc":0.9246753246753247,"acc_changed":null,"escalated":0.09253246753246754,"kept_acc":0.964221824686941},"typo1":{"acc":0.837987012987013,"acc_changed":0.8372472276581866,"escalated":0.2422077922077922,"kept_acc":0.9443016281062554},"typo3":{"acc":0.6217532467532467,"acc_changed":0.6217532467532467,"escalated":0.5097402597402597,"kept_acc":0.8980132450331125},"chat":{"acc":0.9224025974025974,"acc_changed":0.9243837441705529,"escalated":0.09610389610389611,"kept_acc":0.9644396551724138},"slang":{"acc":0.8918831168831168,"acc_changed":0.874066699850672,"escalated":0.15,"kept_acc":0.9583651642475172},"wrap":{"acc":0.9123376623376623,"acc_changed":0.9123376623376623,"escalated":0.12435064935064935,"kept_acc":0.9610678531701891}}},{"model":"tfidf_lr_gold","kinds":{"clean":{"acc":0.910064935064935,"acc_changed":null,"escalated":0.15,"kept_acc":0.972498090145149},"typo1":{"acc":0.8792207792207792,"acc_changed":0.8789954337899544,"escalated":0.21493506493506492,"kept_acc":0.9656741108354011},"typo3":{"acc":0.8094155844155844,"acc_changed":0.8094155844155844,"escalated":0.3918831168831169,"kept_acc":0.9524826481580352},"chat":{"acc":0.9025974025974026,"acc_changed":0.905396402398401,"escalated":0.1698051948051948,"kept_acc":0.9722330856472429},"slang":{"acc":0.8987012987012987,"acc_changed":0.8899950223992036,"escalated":0.175,"kept_acc":0.9696969696969697},"wrap":{"acc":0.9025974025974026,"acc_changed":0.9025974025974026,"escalated":0.22435064935064936,"kept_acc":0.9790707408957723}}}],"teacher":{}},"second_domain":null};
+const $ = (id) => document.getElementById(id);
+const pct = (x, d = 0) => (x * 100).toFixed(d) + " %";
+const usd = (x) => x >= 10 ? "$" + x.toFixed(0) : x >= 1 ? "$" + x.toFixed(2) : "$" + x.toFixed(3);
+const f3 = (x) => x.toFixed(3);
+const NS = "http://www.w3.org/2000/svg";
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function el(tag, attrs = {}, parent) {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (parent) parent.append(n);
+  return n;
+}
+function legend(id, items) {
+  $(id).replaceChildren(...items.map(([label, color, kind]) => {
+    const s = document.createElement("span");
+    const i = document.createElement("i");
+    if (kind) i.className = kind;
+    if (kind !== "dash") i.style.background = `var(${color})`;
+    s.append(i, label);
+    return s;
+  }));
+}
+function table(id, head, rows) {
+  const t = document.createElement("table");
+  const tr = t.createTHead().insertRow();
+  for (const h of head) { const th = document.createElement("th"); th.textContent = h; tr.append(th); }
+  const tb = t.createTBody();
+  for (const r of rows) { const row = tb.insertRow(); for (const c of r) row.insertCell().textContent = c; }
+  $(id).replaceChildren(t);
+}
+
+// One chart: x/y scales, gridlines, axis ticks, reference lines, series (lines and/or dots), labels.
+function chart(id, opt) {
+  const box = $(id);
+  const draw = () => {
+    const W = Math.max(300, box.clientWidth);
+    const narrow = W < 560;
+    const H = narrow ? 300 : 380;
+    const m = { t: 16, r: narrow ? 16 : 28, b: 44, l: 52 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const [x0, x1] = opt.x.domain, [y0, y1] = opt.y.domain;
+    const tx = opt.x.log ? (v) => (Math.log10(v) - Math.log10(x0)) / (Math.log10(x1) - Math.log10(x0)) : (v) => (v - x0) / (x1 - x0);
+    const X = (v) => m.l + tx(v) * iw;
+    const Y = (v) => m.t + (1 - (v - y0) / (y1 - y0)) * ih;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opt.aria });
+    const fs = narrow ? 11 : 12;
+    for (const v of opt.y.ticks) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), stroke: css("--grid"), "stroke-width": 1 }, svg);
+      el("text", { x: m.l - 8, y: Y(v) + 4, "text-anchor": "end", "font-size": fs }, svg).textContent = opt.y.fmt(v);
+    }
+    const xt = narrow && opt.x.ticksNarrow ? opt.x.ticksNarrow : opt.x.ticks;
+    for (const v of xt) {
+      el("line", { x1: X(v), x2: X(v), y1: m.t + ih, y2: m.t + ih + 5, stroke: css("--rule") }, svg);
+      el("text", { x: X(v), y: m.t + ih + 20, "text-anchor": "middle", "font-size": fs }, svg).textContent = opt.x.fmt(v);
+    }
+    el("line", { x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih, stroke: css("--rule") }, svg);
+    el("text", { x: m.l + iw, y: H - 4, "text-anchor": "end", "font-size": fs }, svg).textContent = opt.x.label;
+    el("text", { x: m.l - 44, y: m.t - 4, "text-anchor": "start", "font-size": fs }, svg).textContent = opt.y.label;
+    for (const r of opt.refs || []) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: Y(r.y), y2: Y(r.y), stroke: css("--muted"), "stroke-width": 1.5, "stroke-dasharray": "5 4" }, svg);
+      el("text", { x: m.l + iw, y: Y(r.y) - 6, "text-anchor": "end", "font-size": fs, class: "lbl" }, svg).textContent = r.label;
+    }
+    const tip = document.createElement("div");
+    tip.className = "tip"; tip.hidden = true;
+    const hits = [];
+    for (const s of opt.series) {
+      const color = css(s.color);
+      if (s.line) {
+        const d = s.points.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join("");
+        el("path", { d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+      }
+      for (const p of s.points) {
+        el("circle", { cx: X(p.x), cy: Y(p.y), r: s.line ? 4 : 6, fill: color, stroke: css("--bg"), "stroke-width": 2 }, svg);
+        hits.push({ cx: X(p.x), cy: Y(p.y), p, s });
+        if (p.label && (!narrow || p.labelNarrow !== false)) {
+          const right = p.side ? p.side === "right" : X(p.x) < m.l + iw * 0.72;
+          el("text", { x: X(p.x) + (right ? 10 : -10), y: Y(p.y) + (p.dy || 4), "text-anchor": right ? "start" : "end", "font-size": fs, class: "lbl" }, svg).textContent = p.label;
+        }
+      }
+    }
+    for (const h of hits) {
+      const c = el("circle", { cx: h.cx, cy: h.cy, r: 14, fill: "transparent", tabindex: 0 }, svg);
+      const show = () => {
+        tip.replaceChildren();
+        const b = document.createElement("b"); b.textContent = h.p.name || h.s.name; tip.append(b);
+        for (const line of opt.tip(h.p, h.s)) { tip.append(document.createElement("br"), line); }
+        tip.hidden = false;
+        const left = Math.min(Math.max(h.cx / W * box.clientWidth + 12, 0), box.clientWidth - tip.offsetWidth);
+        tip.style.left = left + "px";
+        tip.style.top = Math.max(h.cy / H * svg.getBoundingClientRect().height - tip.offsetHeight - 12, 0) + "px";
+      };
+      c.addEventListener("pointerenter", show); c.addEventListener("focus", show);
+      c.addEventListener("pointerleave", () => { tip.hidden = true; }); c.addEventListener("blur", () => { tip.hidden = true; });
+    }
+    box.replaceChildren(svg, tip);
+  };
+  draw();
+  let w = box.clientWidth;
+  new ResizeObserver(() => { if (box.clientWidth !== w) { w = box.clientWidth; draw(); } }).observe(box);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+}
+
+function render() {
+  const t = D.teacher, s = D.served, c = D.cascade, tt = c.three_tier_match;
+  $("m-test").textContent = `${D.n_test.toLocaleString("en-US")} held-out test messages · accuracy against human labels`;
+  $("n-train").textContent = D.n_train_labels.toLocaleString("en-US");
+  $("n-test2").textContent = D.n_test.toLocaleString("en-US");
+
+  const tiles = [
+    [f3(s.acc), `student accuracy, ${pct(s.acc / t.acc)} of the LLM's ${f3(t.acc)}`, "MiniLM, 22M parameters"],
+    [s.p50.toFixed(1) + " ms", "per message on a laptop CPU", "int8 ONNX, one core"],
+    [usd(s.usd), `per 1M messages, against ${usd(t.usd)} for the LLM`, `${Math.round(t.usd / s.usd).toLocaleString("en-US")}× cheaper`],
+    [f3(c.best.acc), `with ${pct(c.best.llm)} of messages sent to the LLM`, "beats the LLM alone"],
+  ];
+  $("tiles").replaceChildren(...tiles.map(([b, span, small]) => {
+    const d = document.createElement("div"); d.className = "tile";
+    const B = document.createElement("b"); B.textContent = b;
+    const S = document.createElement("span"); S.textContent = span;
+    const M = document.createElement("small"); M.textContent = small;
+    d.append(B, S, M); return d;
+  }));
+
+  // Figure 1: accuracy vs $ per 1M, log x.
+  // Label placement is set by hand: the students crowd between $0.01 and $0.07.
+  const place = {
+    tfidf_lr_teacher: { side: "left", dy: 4, labelNarrow: false },
+    tinybert_ft_teacher: { side: "left", dy: 4, labelNarrow: false },
+    minilm_ft_teacher: { side: "left", dy: 4 },
+    minilm_frozen_teacher: { side: "right", dy: -8, labelNarrow: false },
+    distilbert_ft_teacher: { side: "right", dy: 16, labelNarrow: false },
+  };
+  const studentPts = D.students.map((x) => ({ x: x.usd, y: x.acc, name: x.label, label: x.label, info: x, ...place[x.run] }));
+  const cascadePts = [
+    { x: c.two_tier_match.usd, y: c.two_tier_match.acc, name: "MiniLM → LLM, cheapest match", label: "MiniLM → LLM", side: "left", dy: -10, labelNarrow: false },
+    { x: tt.usd, y: tt.acc, name: "TF-IDF → MiniLM → LLM, cheapest match", label: "TF-IDF → MiniLM → LLM", side: "left", dy: 18, labelNarrow: false },
+    { x: c.best.usd, y: c.best.acc, name: "MiniLM → LLM, most accurate", label: "most accurate cascade", side: "left", dy: -10 },
+  ];
+  legend("lg-pareto", [["Students alone", "--s1"], ["Cascades (student, then LLM)", "--s3"], ["LLM alone", "--s2"]]);
+  chart("c-pareto", {
+    aria: "Scatter of accuracy against cost per million messages on a log scale",
+    x: { domain: [0.001, 500], log: true, ticks: [0.001, 0.01, 0.1, 1, 10, 100], ticksNarrow: [0.01, 1, 100], fmt: (v) => "$" + (v < 1 ? v : v.toFixed(0)), label: "$ per 1M messages (log scale)" },
+    y: { domain: [0.78, 0.89], ticks: [0.78, 0.80, 0.82, 0.84, 0.86, 0.88], fmt: (v) => v.toFixed(2), label: "accuracy" },
+    series: [
+      { name: "Students alone", color: "--s1", points: studentPts },
+      { name: "Cascades", color: "--s3", points: cascadePts },
+      { name: "LLM alone", color: "--s2", points: [{ x: t.usd, y: t.acc, name: "gpt-oss-120b alone", label: "LLM alone", side: "left", dy: 18 }] },
+    ],
+    tip: (p) => [`accuracy ${f3(p.y)}`, `${usd(p.x)} per 1M messages`, ...(p.info ? [`p50 ${p.info.p50.toFixed(1)} ms`] : [])],
+  });
+  $("cap-pareto").innerHTML = "";
+  $("cap-pareto").append(
+    "Each dot is a whole system, scored on the same test set. The students cost four orders of magnitude less than the LLM and lose 2–7 points. ",
+    Object.assign(document.createElement("b"), { textContent: "The cascades land above the LLM or level with it, at 5–20 % of its cost. " }),
+    "Cascade thresholds are chosen on one half of the test set and scored on the other, so the tuning never sees the messages it is scored on."
+  );
+  table("t-pareto", ["system", "accuracy", "$ per 1M", "p50 ms"], [
+    ["LLM alone", f3(t.acc), usd(t.usd), "API"],
+    ...D.students.map((x) => [x.label, f3(x.acc), usd(x.usd), x.p50.toFixed(1)]),
+    ["MiniLM → LLM, cheapest match", f3(c.two_tier_match.acc), usd(c.two_tier_match.usd), "—"],
+    ["TF-IDF → MiniLM → LLM, cheapest match", f3(tt.acc), usd(tt.usd), "—"],
+    ["MiniLM → LLM, most accurate", f3(c.best.acc), usd(c.best.usd), "—"],
+  ]);
+
+  // Leak.
+  $("leak").innerHTML = "";
+  for (const [cls, v, text] of [["wrong", D.leak.sorted, "labelled in batches sorted by intent"], ["", D.leak.shuffled, "the same messages, shuffled first"]]) {
+    const d = document.createElement("div"); if (cls) d.className = cls;
+    const b = document.createElement("b"); b.textContent = f3(v);
+    const s2 = document.createElement("span"); s2.textContent = text;
+    d.append(b, s2); $("leak").append(d);
+  }
+
+  // Figure 2: cascade curve.
+  const cc = c.curve.map((r) => ({ x: r.llm * 100, y: r.acc, name: `at most ${pct(r.budget)} to the LLM`, r }));
+  legend("lg-cascade", [["MiniLM → LLM", "--s3", "line"], ["LLM alone", "--muted", "dash"]]);
+  chart("c-cascade", {
+    aria: "Line chart of cascade accuracy against the share of messages sent to the LLM",
+    x: { domain: [0, 21], ticks: [0, 5, 10, 15, 20], fmt: (v) => v + " %", label: "share of messages sent to the LLM" },
+    y: { domain: [0.84, 0.88], ticks: [0.84, 0.85, 0.86, 0.87, 0.88], fmt: (v) => v.toFixed(2), label: "accuracy" },
+    refs: [{ y: t.acc, label: `LLM alone ${f3(t.acc)}` }],
+    series: [{ name: "MiniLM → LLM", color: "--s3", line: true, points: cc }],
+    tip: (p) => [`${pct(p.r.llm, 1)} sent to the LLM`, `accuracy ${f3(p.y)}`, `${usd(p.r.usd)} per 1M messages`],
+  });
+  $("cap-cascade").textContent = `The fine-tuned MiniLM answers alone at 0 %. Sending its least confident ${pct(c.two_tier_match.llm)} to the LLM matches the LLM's accuracy for ${usd(c.two_tier_match.usd)} per 1M messages. At about ${pct(c.best.llm)} the cascade reaches ${f3(c.best.acc)}, better than the LLM by itself: the student is right on some messages the LLM gets wrong. Mean of ${c.seeds * 2} held-out halves.`;
+  table("t-cascade", ["LLM budget", "sent to the LLM", "accuracy", "$ per 1M"], c.curve.map((r) => [pct(r.budget), pct(r.llm, 1), f3(r.acc), usd(r.usd)]));
+  $("three-tier").textContent = `A cheaper first tier helps a little. Putting TF-IDF (${D.students.find((x) => x.run === "tfidf_lr_teacher").p50.toFixed(1)} ms) in front of MiniLM lets it answer ${pct(tt.first)} of messages itself and cuts the share sent to the LLM to ${pct(tt.llm, 1)}. Matching the LLM then costs ${usd(tt.usd)} per 1M messages instead of ${usd(c.two_tier_match.usd)}, cheaper in all ${c.seeds * 2} test halves. It does not make the system more accurate, and it adds a little CPU time, because the MiniLM behind it takes only 3 ms.`;
+
+  // Figure 3: data curve.
+  const dc = D.data_curve;
+  legend("lg-data", [["Human labels", "--s1", "line"], ["Teacher labels", "--s2", "line"], ["Teacher's own accuracy", "--muted", "dash"]]);
+  chart("c-data", {
+    aria: "Line chart of student accuracy against number of training labels, log scale",
+    x: { domain: [200, 12000], log: true, ticks: [250, 500, 1000, 2000, 5000, 10000], ticksNarrow: [250, 1000, 5000], fmt: (v) => v >= 1000 ? v / 1000 + "k" : v, label: "training labels (log scale)" },
+    y: { domain: [0.55, 0.95], ticks: [0.6, 0.7, 0.8, 0.9], fmt: (v) => v.toFixed(1), label: "accuracy" },
+    refs: [{ y: t.acc, label: `teacher ${f3(t.acc)}` }],
+    series: [
+      { name: "Human labels", color: "--s1", line: true, points: dc.gold.map(([n, a, pm]) => ({ x: n, y: a, pm })) },
+      { name: "Teacher labels", color: "--s2", line: true, points: dc.teacher.map(([n, a, pm]) => ({ x: n, y: a, pm })) },
+    ],
+    tip: (p, s) => [`${p.x.toLocaleString("en-US")} labels`, `accuracy ${f3(p.y)}${p.pm ? " ± " + p.pm.toFixed(3) : ""}`],
+  });
+  const ns = [...new Set([...dc.gold, ...dc.teacher].map((r) => r[0]))].sort((a, b) => a - b);
+  const find = (arr, n) => { const r = arr.find((x) => x[0] === n); return r ? f3(r[1]) : "—"; };
+  table("t-data", ["labels", "human labels", "teacher labels"], ns.map((n) => [n.toLocaleString("en-US"), find(dc.gold, n), find(dc.teacher, n)]));
+
+  // Figure 4: active labelling.
+  const A = D.active;
+  legend("lg-active", [["Most typical first", "--s3", "line"], ["Least confident first", "--s2", "line"], ["Random", "--s1", "line"]]);
+  chart("c-active", {
+    aria: "Line chart of accuracy by labels bought for three selection strategies",
+    x: { domain: [400, 2600], ticks: [500, 1000, 1500, 2000, 2500], fmt: (v) => v.toLocaleString("en-US"), label: "labels bought from the LLM" },
+    y: { domain: [0.68, 0.86], ticks: [0.70, 0.74, 0.78, 0.82, 0.86], fmt: (v) => v.toFixed(2), label: "accuracy" },
+    series: [
+      { name: "Random", color: "--s1", line: true, points: A.random.map(([n, a, pm]) => ({ x: n, y: a, pm })) },
+      { name: "Least confident first", color: "--s2", line: true, points: A.uncertainty.map(([n, a, pm]) => ({ x: n, y: a, pm })) },
+      { name: "Most typical first", color: "--s3", line: true, points: A.diverse.map(([n, a, pm]) => ({ x: n, y: a, pm })) },
+    ],
+    tip: (p) => [`${p.x.toLocaleString("en-US")} labels`, `accuracy ${f3(p.y)} ± ${p.pm.toFixed(3)}`],
+  });
+  const d500 = A.diverse[0][1], r500 = A.random[0][1];
+  $("cap-active").textContent = `At 500 labels, picking the most typical messages scores ${f3(d500)} against ${f3(r500)} for a random 500, about what random needs 900 labels for. The lead is gone by 1,500 labels, and at 2,000 and beyond random is slightly ahead. So pick typical messages for the first thousand or so calls, then switch to random. Frozen MiniLM student, 3 seeds each; "least confident first" starts with 500 random labels, so it matches random there.`;
+  table("t-active", ["labels", "random", "least confident first", "most typical first"], A.random.map(([n], i) => [n.toLocaleString("en-US"), f3(A.random[i][1]), f3(A.uncertainty[i][1]), f3(A.diverse[i][1])]));
+
+  // OOS.
+  const o = D.oos;
+  $("oos-text").textContent = `A banking router will also receive messages that are not about banking at all. To test this, 1,200 off-topic questions from the CLINC150 dataset ("how much has the dow changed today") were sent to every student, which never saw anything like them. Flagging a message when the model's probability is spread across many intents (high entropy) catches ${pct(o.caught_min)}–${pct(o.caught_max)} of them while flagging only 10 % of real banking messages. That score works better than the model's top confidence on every student. Temperature scaling, which makes the cascade work, slightly hurts this separation, so the two need different scores.`;
+
+  // Robustness (6.6), when the run has finished.
+  const rob = $("robustness");
+  if (D.robustness) {
+    const R = D.robustness;
+    const kinds = ["typo1", "typo3", "chat", "slang", "wrap"];
+    const names = { typo1: "1 typo", typo3: "3 typos", chat: "lowercase, no punctuation", slang: "u / pls / acct", wrap: "greeting and sign-off" };
+    const row = (r) => [r.model.replace("_teacher", "").replace("_gold", " (human labels)"), f3(r.kinds.clean.acc), ...kinds.map((k) => (r.kinds[k].acc - r.kinds.clean.acc >= 0 ? "+" : "") + ((r.kinds[k].acc - r.kinds.clean.acc) * 100).toFixed(1))];
+    const p = document.createElement("p");
+    const tf = R.students.find((r) => r.model === "tfidf_lr_teacher"), mf = R.students.find((r) => r.model === "minilm_ft_teacher");
+    p.textContent = `Real messages have typos. Re-scoring every student on noisy copies of the test set shows the fine-tuned transformers are the fragile ones: three typos cost the served MiniLM ${((mf.kinds.clean.acc - mf.kinds.typo3.acc) * 100).toFixed(0)} points, against ${((tf.kinds.clean.acc - tf.kinds.typo3.acc) * 100).toFixed(0)} for TF-IDF, whose character n-grams still overlap with a misspelt word. Lowercase text, texting abbreviations and greetings barely matter. The cascade softens the blow: the students also get less sure, so with three typos the served MiniLM sends ${pct(mf.kinds.typo3.escalated)} of messages to the LLM instead of ${pct(mf.kinds.clean.escalated)}, and stays ${f3(mf.kinds.typo3.kept_acc)} accurate on the rest. Messy input turns into LLM cost rather than silent mistakes.`;
+    const wrap = document.createElement("div"); wrap.className = "tablewrap"; wrap.id = "t-rob";
+    rob.append(p, wrap);
+    table("t-rob", ["model", "clean", ...kinds.map((k) => names[k])], R.students.map(row));
+    const note = document.createElement("p"); note.className = "num"; note.style.color = "var(--muted)";
+    note.textContent = "Points of accuracy lost against clean text, on the full test set, through the serving code path.";
+    rob.append(note);
+  } else {
+    const d = document.createElement("div"); d.className = "pending";
+    d.innerHTML = '<span class="kicker">In progress</span>Every student is being re-scored on noisy copies of the test set: typos, lowercase text, texting abbreviations, and greetings and sign-offs. Early numbers show the fine-tuned transformers lose far more to typos than TF-IDF does.';
+    rob.append(d);
+  }
+
+  // Second dataset (6.4).
+  const dom = $("domain");
+  if (D.second_domain) {
+    const S2 = D.second_domain;
+    const p = document.createElement("p");
+    p.textContent = `The same scripts, pointed at CLINC150 (150 intents across 10 domains), with no descriptions file: the teacher scores ${f3(S2.teacher)} on ${S2.n_teacher.toLocaleString("en-US")} test messages. Students trained on its labels: TF-IDF ${S2.tfidf_lr_teacher ? f3(S2.tfidf_lr_teacher) : "—"}, frozen MiniLM ${S2.minilm_frozen_teacher ? f3(S2.minilm_frozen_teacher) : "—"}. With human labels: ${S2.tfidf_lr_gold ? f3(S2.tfidf_lr_gold) : "—"} and ${S2.minilm_frozen_gold ? f3(S2.minilm_frozen_gold) : "—"}.`;
+    dom.append(p);
+  } else {
+    const d = document.createElement("div"); d.className = "pending";
+    d.innerHTML = '<span class="kicker">In progress</span>The same scripts are running on CLINC150 (150 intents across 10 domains) to check that the recipe is not specific to banking. The teacher, prompted with intent names only, scores 0.901 on 1,500 test messages. Training labels are still coming in under the free tier\'s daily limit.';
+    dom.append(d);
+  }
+}
+
+render();
+</script>
