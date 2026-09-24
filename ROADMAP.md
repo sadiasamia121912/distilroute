@@ -281,6 +281,46 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 
 ## Session log
 
+**2026-09-25 (HANDOFF — where to start next session)**
+
+**Resume:** open the repo and run `.venv\Scripts\python scripts\jobs.py` (or ask Claude to
+"run the jobs"). `scripts/jobs.py --status` shows what is left. It runs every pending LLM job in
+order, skips finished steps, is safe to stop at any time (Ctrl-C or shutting the laptop), and
+refuses to run twice. The free tiers cap tokens per day, so give it ~1 hour a day for ~6 days,
+or add a card to Groq (pay-as-you-go, no fee, whole queue ≈ $0.50) and it finishes in one sitting.
+The runner never commits: review each finished step's output, then commit.
+
+**Pending in the runner** (state at shutdown: CLINC150 train labels 1,940 / 3,000; Gemma gate
+20 / 200; both files are on disk, untracked until complete):
+- groq lane, in order: CLINC150 train labels → CLINC150 students on teacher labels (fills the
+  case study's second-dataset table: `build_case_study.py`, republish) → teacher latency (3.2;
+  only the teacher entry changes, students keep the 2026-09-24 numbers) → self-agreement 300
+  (1.7; `teacher_report.py` then has the stable-vs-unstable error split) → teacher on 5 noise
+  kinds × 300 (6.6) → `robustness.py` with the teacher section → the remaining 7,003 Banking77
+  train labels (1.6).
+- openrouter lane: three second-teacher gates, 200 test messages each (1b.6): gemma-4-31b,
+  qwen3.8-27b, glm-5.2 (free models, ~50 requests/day). Then pick the best and decide whether to
+  label the full test split with it (~4 days).
+
+**After the runner, decisions for the user:**
+- 1.6 retraining on all 10,003 labels: follow the plan in 1.6 (`DISTILROUTE_TEACHER_ROWS=10003`,
+  writes under `results/teacher10003/`, never over published runs). Fine-tuned students need a
+  Colab run. Replace the served model only if int8 MiniLM beats 0.842 by more than ±0.3 pt.
+- 4.2: repo is public. Still to do: share the case study
+  (https://claude.ai/artifact/CqwqgvREwra9bT7zJgGb7p) and demo
+  (https://claude.ai/artifact/MkYEhKKtUj5oJ2b8NUsqoz) from their Share menus, then post. Draft and
+  notes: `../tabaudit/linkedin_post_distilroute.md`; image `docs/case-study/media/pareto_linkedin.png`.
+  Post the two tabaudit drafts first.
+
+**Done 2026-09-24/25:** latency re-bench on an idle mains-powered machine (3.2); Dockerfile, then
+built and routed in GitHub Actions against the `model-v1` release file (3.4, 457 MB); README with
+final table (4.1); 6.3 diverse; 6.4 dataset switch + CLINC150 teacher 0.901; 6.5 multi-tier
+cascade ($13.76 / 1M to match the LLM); 6.6 student robustness (3 typos: transformers −29 to −43,
+TF-IDF −12); 6.7 in-browser demo; 6.8 case study page (generated from results/); 1b.5 tabaudit on
+teacher labels (hurts, −1.6 pt), which led to tabaudit 0.3.1 on PyPI (wide-frame fix, 3.11 in CI,
+limit documented); headlines quote the served int8 model (0.842, 97 %); roadmap markers tidied;
+`DISTILROUTE_TEACHER_ROWS` guard; resumable `jobs.py`.
+
 **2026-09-24 (6.3 diverse, 4.1 README)** — The 3-seed diverse run finished (seeds reproduce: 0.779 /
 0.786 / 0.789 at 500). Mean ± half-range: 0.785 ± 0.005 / 0.822 / 0.831 / 0.837 / 0.839 at 500 → 2,500,
 against random's 0.708 / 0.799 / 0.822 / 0.835 / 0.842. So choosing the most *typical* rows is worth
