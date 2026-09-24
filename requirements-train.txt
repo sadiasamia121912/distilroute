@@ -6,4 +6,4 @@ setfit>=1.1
 onnx>=1.16
 onnxruntime>=1.18
 # Only for denoise.py --variants tabaudit,tabaudit_suspected (roadmap 1b.5)
-tabaudit==0.3.0
+tabaudit==0.3.1
