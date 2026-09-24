@@ -30,18 +30,21 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute import students  # noqa: E402
 from distilroute.data import RESULTS, load_split  # noqa: E402
+from distilroute.teacher import RateLimited  # noqa: E402
 
 OUT = RESULTS / "latency.json"
 
 
 def bench(call, texts: list[str], warmup: int = 20) -> dict:
+    """`call(text)` may return its own duration in ms (the teacher does, to leave out
+    rate-limit waits); otherwise the whole call is timed."""
     for t in texts[:warmup]:
         call(t)
     times = []
     for t in texts:
         t0 = time.perf_counter()
-        call(t)
-        times.append((time.perf_counter() - t0) * 1000)
+        own = call(t)
+        times.append(own if isinstance(own, float) else (time.perf_counter() - t0) * 1000)
     return {
         "p50_ms": float(np.percentile(times, 50)),
         "p95_ms": float(np.percentile(times, 95)),
@@ -60,8 +63,8 @@ def main() -> None:
 
     texts = load_split("test").text.sample(frac=1, random_state=0).tolist()
     names = [n for n in students.available() if n != students.TEACHER]
-    if args.models:
-        names = args.models.split(",")
+    if args.models is not None:  # "" = no students (teacher only)
+        names = [m for m in args.models.split(",") if m]  # --models "" = no students
     if args.teacher:
         names.append(students.TEACHER)
 
@@ -76,6 +79,21 @@ def main() -> None:
                 requests.post(url, json={"text": t, "model": name}, timeout=120).raise_for_status()
 
             mode = "http"
+        elif name == students.TEACHER:
+            router = students.load(name)
+
+            def call(t, router=router) -> float:
+                """Time only the request that succeeds: waiting out the free tier's rate limit
+                is not the LLM's latency, and a paid tier would not make us wait."""
+                while True:
+                    t0 = time.perf_counter()
+                    try:
+                        router.route(t)
+                        return (time.perf_counter() - t0) * 1000
+                    except RateLimited as e:
+                        time.sleep(e.retry_after or 10)
+
+            mode = "in-process"
         else:
             router = students.load(name)
 

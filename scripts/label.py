@@ -32,10 +32,30 @@ from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
 
 
 def load_done(path: Path) -> set[int]:
+    """Row ids already labelled. A run stopped mid-write (Ctrl-C, a closed laptop) can leave a
+    half-written last line: drop it, so the rest of the file stays valid JSONL and that batch is
+    simply labelled again."""
     if not path.exists():
         return set()
-    with path.open(encoding="utf-8") as f:
-        return {json.loads(line)["idx"] for line in f if line.strip()}
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    done, good = set(), 0
+    for i, line in enumerate(lines):
+        if not line.strip():
+            good = i + 1
+            continue
+        try:
+            done.add(json.loads(line)["idx"])
+        except (json.JSONDecodeError, KeyError):
+            if i != len(lines) - 1:
+                raise  # damage in the middle is not a crash artefact: stop and look
+            print(f"  {path.name}: dropped a half-written last line, relabelling that batch")
+            break
+        good = i + 1
+    nl = "\n"
+    if good < len(lines) or (lines and not lines[-1].endswith(nl)):
+        with path.open("w", encoding="utf-8") as f:
+            f.writelines(line if line.endswith(nl) else line + nl for line in lines[:good])
+    return done
 
 
 def main() -> None:
