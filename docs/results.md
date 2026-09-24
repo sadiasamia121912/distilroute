@@ -6,19 +6,25 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.867** on the full 3,080-query 
 
 | model | params | trained on | n train | acc vs gold | macro-F1 | agree w/ teacher | ECE raw → calibrated (T) | p50 / p95 ms |
 |---|---:|---|---:|---:|---:|---:|---:|---:|
-| distilbert fine-tuned | 67M | gold | 9,000 | **0.918** | 0.918 | 0.860 | 0.046 → 0.011 (T=0.83) | 81.5 / 114.8 † |
+| distilbert fine-tuned | 67M | gold | 9,000 | **0.928** | 0.928 | 0.866 | 0.035 → 0.011 (T=1.20) | 6.4 / 11.7 |
+| distilbert fine-tuned (soft top-3) | 67M | teacher | 2,697 | **0.836** | 0.835 | 0.874 | 0.036 → 0.025 (T=0.87) | 6.4 / 12.3 |
+| distilbert fine-tuned | 67M | teacher | 2,697 | **0.839** | 0.837 | 0.869 | 0.114 → 0.055 (T=1.40) | 6.2 / 11.6 |
 | MiniLM-L6 frozen + all | 23M | teacher | 7,725 | **0.849** | 0.847 | 0.887 | 0.057 → 0.073 (T=0.55) | — |
 | MiniLM-L6 frozen + base | 23M | teacher | 2,700 | **0.842** | 0.840 | 0.880 | 0.095 → 0.034 (T=0.68) | — |
 | MiniLM-L6 frozen + filter | 23M | teacher | 2,665 | **0.846** | 0.844 | 0.881 | 0.095 → 0.073 (T=0.50) | — |
 | MiniLM-L6 frozen + filter_self | 23M | teacher | 7,811 | **0.849** | 0.846 | 0.883 | 0.020 → 0.077 (T=0.60) | — |
 | MiniLM-L6 frozen + self | 23M | teacher | 7,449 | **0.847** | 0.845 | 0.884 | 0.026 → 0.037 (T=0.79) | — |
 | MiniLM-L6 frozen + soft | 23M | teacher | 2,700 | **0.840** | 0.838 | 0.882 | 0.192 → 0.033 (T=0.54) | — |
-| MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.863 | 0.074 → 0.011 (T=0.71) | 11.5 / 14.6 |
-| MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 27.5 / 37.4 † |
-| MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.831 | 0.214 → 0.059 (T=0.69) | 12.4 / 16.3 † |
-| MiniLM-L6 setfit (7/intent) | 23M | teacher | 462 | **0.789** | 0.785 | 0.805 | 0.268 → 0.018 (T=0.55) | 27.6 / 38.9 † |
-| tfidf+lr | — | gold | 9,000 | **0.910** | 0.910 | 0.846 | 0.090 → 0.007 (T=0.66) | 1.8 / 2.5 |
-| tfidf+lr | — | teacher | 2,697 | **0.812** | 0.809 | 0.838 | 0.149 → 0.046 (T=0.67) | 6.6 / 20.2 † |
+| MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.863 | 0.074 → 0.011 (T=0.71) | 11.1 / 13.7 |
+| MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 11.0 / 13.9 |
+| minilm fine-tuned | 23M | gold | 9,000 | **0.927** | 0.927 | 0.864 | 0.024 → 0.016 (T=0.93) | 2.7 / 4.7 |
+| minilm fine-tuned | 23M | teacher | 2,697 | **0.847** | 0.845 | 0.884 | 0.074 → 0.042 (T=1.12) | 2.8 / 4.9 |
+| MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.831 | 0.214 → 0.059 (T=0.69) | 12.7 / 16.4 |
+| MiniLM-L6 setfit (7/intent) | 23M | teacher | 462 | **0.789** | 0.785 | 0.805 | 0.268 → 0.018 (T=0.55) | 12.5 / 15.9 |
+| tfidf+lr | — | gold | 9,000 | **0.910** | 0.910 | 0.846 | 0.090 → 0.007 (T=0.66) | 1.7 / 2.1 |
+| tfidf+lr | — | teacher | 2,697 | **0.812** | 0.809 | 0.838 | 0.149 → 0.046 (T=0.67) | 1.6 / 2.0 |
+| tinybert fine-tuned | 14M | gold | 9,000 | **0.892** | 0.891 | 0.838 | 0.039 → 0.035 (T=0.97) | 1.8 / 3.3 |
+| tinybert fine-tuned | 14M | teacher | 2,697 | **0.796** | 0.794 | 0.829 | 0.107 → 0.021 (T=1.35) | 1.9 / 3.2 |
 
 Latency: single query, in-process, CPU of `Samin` (`scripts/bench_latency.py`); † = as recorded by the training script instead (possibly another machine).
 
@@ -28,7 +34,9 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 
 | model | trained on | 0 % | 5 % | 10 % | 20 % | 30 % |
 |---|---|---:|---:|---:|---:|---:|
-| distilbert fine-tuned | gold | 0.918 | 0.926 | 0.925 | 0.917 | 0.906 |
+| distilbert fine-tuned | gold | 0.928 | 0.935 | 0.931 | 0.919 | 0.909 |
+| distilbert fine-tuned (soft top-3) | teacher | 0.836 | 0.853 | 0.866 | 0.869 | 0.870 |
+| distilbert fine-tuned | teacher | 0.839 | 0.850 | 0.861 | 0.871 | 0.871 |
 | MiniLM-L6 frozen + all | teacher | 0.849 | 0.860 | 0.867 | 0.874 | 0.874 |
 | MiniLM-L6 frozen + base | teacher | 0.842 | 0.856 | 0.864 | 0.869 | 0.871 |
 | MiniLM-L6 frozen + filter | teacher | 0.846 | 0.856 | 0.865 | 0.870 | 0.873 |
@@ -37,10 +45,14 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | MiniLM-L6 frozen + soft | teacher | 0.840 | 0.849 | 0.861 | 0.869 | 0.873 |
 | MiniLM-L6 frozen | gold | 0.927 | 0.936 | 0.927 | 0.917 | 0.902 |
 | MiniLM-L6 frozen | teacher | 0.848 | 0.859 | 0.866 | 0.869 | 0.871 |
+| minilm fine-tuned | gold | 0.927 | 0.931 | 0.931 | 0.923 | 0.908 |
+| minilm fine-tuned | teacher | 0.847 | 0.861 | 0.869 | 0.874 | 0.872 |
 | MiniLM-L6 setfit (16/intent) | gold | 0.864 | 0.876 | 0.884 | 0.895 | 0.895 |
 | MiniLM-L6 setfit (7/intent) | teacher | 0.789 | 0.804 | 0.819 | 0.842 | 0.856 |
 | tfidf+lr | gold | 0.910 | 0.919 | 0.923 | 0.919 | 0.908 |
 | tfidf+lr | teacher | 0.812 | 0.826 | 0.835 | 0.851 | 0.867 |
+| tinybert fine-tuned | gold | 0.892 | 0.909 | 0.917 | 0.915 | 0.908 |
+| tinybert fine-tuned | teacher | 0.796 | 0.815 | 0.830 | 0.846 | 0.857 |
 
 ## Cascade by confidence threshold — the policy a service would actually run
 
@@ -48,7 +60,9 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 
 | model | trained on | < 0.5 | < 0.7 | < 0.8 | < 0.9 | < 0.95 |
 |---|---|---:|---:|---:|---:|---:|
-| distilbert fine-tuned | gold | 3% · 0.937 · 0.924 | 9% · 0.962 · 0.927 | 12% · 0.971 · 0.924 | 20% · 0.981 · 0.917 | 27% · 0.987 · 0.910 |
+| distilbert fine-tuned | gold | 3% · 0.943 · 0.934 | 6% · 0.959 · 0.935 | 9% · 0.967 · 0.932 | 12% · 0.976 · 0.928 | 18% · 0.982 · 0.922 |
+| distilbert fine-tuned (soft top-3) | teacher | 5% · 0.864 · 0.853 | 14% · 0.902 · 0.868 | 21% · 0.920 · 0.869 | 39% · 0.945 · 0.871 | 77% · 0.949 · 0.869 |
+| distilbert fine-tuned | teacher | 5% · 0.862 · 0.851 | 11% · 0.889 · 0.863 | 16% · 0.904 · 0.870 | 25% · 0.925 · 0.872 | 42% · 0.948 · 0.871 |
 | MiniLM-L6 frozen + all | teacher | 4% · 0.869 · 0.857 | 11% · 0.899 · 0.867 | 15% · 0.912 · 0.870 | 21% · 0.927 · 0.873 | 27% · 0.940 · 0.874 |
 | MiniLM-L6 frozen + base | teacher | 7% · 0.878 · 0.859 | 18% · 0.914 · 0.868 | 23% · 0.933 · 0.871 | 34% · 0.951 · 0.871 | 45% · 0.963 · 0.871 |
 | MiniLM-L6 frozen + filter | teacher | 3% · 0.864 · 0.853 | 11% · 0.894 · 0.866 | 16% · 0.908 · 0.868 | 22% · 0.927 · 0.872 | 28% · 0.941 · 0.872 |
@@ -57,10 +71,14 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | MiniLM-L6 frozen + soft | teacher | 6% · 0.866 · 0.853 | 17% · 0.909 · 0.866 | 24% · 0.929 · 0.870 | 35% · 0.952 · 0.871 | 48% · 0.960 · 0.869 |
 | MiniLM-L6 frozen | gold | 4% · 0.948 · 0.933 | 10% · 0.965 · 0.927 | 14% · 0.975 · 0.924 | 20% · 0.986 · 0.915 | 29% · 0.991 · 0.904 |
 | MiniLM-L6 frozen | teacher | 7% · 0.880 · 0.863 | 17% · 0.916 · 0.868 | 24% · 0.935 · 0.871 | 35% · 0.952 · 0.872 | 48% · 0.963 · 0.870 |
+| minilm fine-tuned | gold | 2% · 0.937 · 0.930 | 6% · 0.955 · 0.932 | 9% · 0.965 · 0.932 | 15% · 0.975 · 0.929 | 29% · 0.988 · 0.909 |
+| minilm fine-tuned | teacher | 4% · 0.869 · 0.859 | 9% · 0.889 · 0.869 | 15% · 0.903 · 0.874 | 24% · 0.920 · 0.875 | 59% · 0.950 · 0.868 |
 | MiniLM-L6 setfit (16/intent) | gold | 11% · 0.913 · 0.886 | 26% · 0.957 · 0.894 | 36% · 0.977 · 0.890 | 53% · 0.989 · 0.880 | 69% · 0.994 · 0.873 |
 | MiniLM-L6 setfit (7/intent) | teacher | 11% · 0.840 · 0.823 | 28% · 0.899 · 0.855 | 39% · 0.932 · 0.866 | 55% · 0.953 · 0.870 | 69% · 0.958 · 0.868 |
 | tfidf+lr | gold | 5% · 0.938 · 0.918 | 11% · 0.962 · 0.924 | 15% · 0.972 · 0.922 | 22% · 0.984 · 0.919 | 29% · 0.990 · 0.910 |
 | tfidf+lr | teacher | 12% · 0.860 · 0.838 | 24% · 0.905 · 0.861 | 32% · 0.924 · 0.868 | 42% · 0.943 · 0.869 | 52% · 0.952 · 0.870 |
+| tinybert fine-tuned | gold | 3% · 0.910 · 0.903 | 9% · 0.941 · 0.917 | 14% · 0.960 · 0.919 | 27% · 0.976 · 0.909 | 50% · 0.988 · 0.891 |
+| tinybert fine-tuned | teacher | 8% · 0.838 · 0.827 | 19% · 0.871 · 0.845 | 29% · 0.894 · 0.856 | 75% · 0.928 · 0.869 | 100% · — · 0.867 |
 
 ## Data efficiency — accuracy vs. number of training labels
 
@@ -73,6 +91,16 @@ How many labelled tickets does a student need? Each cell is accuracy vs gold on 
 | tfidf+lr | gold | 0.442 ± 0.036 | 0.586 ± 0.023 | 0.738 ± 0.012 | 0.822 ± 0.006 | — | 0.889 ± 0.003 | 0.913 |
 | tfidf+lr | teacher | 0.402 ± 0.012 | 0.564 ± 0.007 | 0.694 ± 0.016 | 0.772 ± 0.008 | 0.808 | — | — |
 
+## Active labelling — which tickets are worth an LLM call (`scripts/active.py`)
+
+Same student and the same budget, but the rows are chosen rather than drawn at random: **uncertainty** and **disagreement** spend a first 500 labels at random and then pick, **diverse** picks by k-means over the embeddings with no model at all. Simulated inside the teacher-labelled pool, 3 seeds, mean ± half-range.
+
+| selection | 500 labels | 1,000 labels | 1,500 labels | 2,000 labels | 2,500 labels |
+|---|---:|---:|---:|---:|---:|
+| random | 0.708 ± 0.009 | 0.799 ± 0.007 | 0.822 ± 0.005 | 0.835 ± 0.002 | 0.842 ± 0.005 |
+| uncertainty | 0.708 ± 0.009 | 0.800 ± 0.008 | 0.826 ± 0.003 | 0.840 ± 0.006 | 0.847 ± 0.003 |
+| disagreement | 0.708 ± 0.009 | 0.801 ± 0.009 | 0.831 ± 0.003 | 0.840 ± 0.003 | 0.843 ± 0.004 |
+
 ## Cost per 1M requests
 
 Teacher at the provider's **paid** list price (openai/gpt-oss-120b on Groq (paid tier): $0.15 in / $0.6 out per 1M tokens) — the free tier we labelled with is rate-capped and not a production option. Tokens per query measured on the final config (~1,330 fixed prompt + 27 per query in, 21 out). Students: mean in-process latency × a AWS t3.small (2 vCPU, us-east-1, on-demand) at $0.0208/h, one request at a time on one core — an upper bound; on hardware you already own it is $0. Prices checked 2026-09-18 (`scripts/cost.py`).
@@ -81,5 +109,16 @@ Teacher at the provider's **paid** list price (openai/gpt-oss-120b on Groq (paid
 |---|---|---:|---:|
 | openai/gpt-oss-120b on Groq (paid tier) | 20 queries per call | 94 + 21 tokens | **26.62** |
 | openai/gpt-oss-120b on Groq (paid tier) | one query per call | 1,357 + 21 tokens | **216.15** |
-| minilm_frozen_gold | AWS t3.small | 11.7 ms CPU | **0.07** |
-| tfidf_lr_gold | AWS t3.small | 1.9 ms CPU | **0.01** |
+| minilm_frozen_gold | AWS t3.small | 11.4 ms CPU | **0.07** |
+| tfidf_lr_gold | AWS t3.small | 1.8 ms CPU | **0.01** |
+| distilbert_ft_gold | AWS t3.small | 7.0 ms CPU | **0.04** |
+| distilbert_ft_soft_teacher | AWS t3.small | 7.1 ms CPU | **0.04** |
+| distilbert_ft_teacher | AWS t3.small | 6.8 ms CPU | **0.04** |
+| minilm_frozen_teacher | AWS t3.small | 11.3 ms CPU | **0.07** |
+| minilm_ft_gold | AWS t3.small | 3.0 ms CPU | **0.02** |
+| minilm_ft_teacher | AWS t3.small | 3.1 ms CPU | **0.02** |
+| minilm_setfit_16pc_gold | AWS t3.small | 13.1 ms CPU | **0.08** |
+| minilm_setfit_7pc_teacher | AWS t3.small | 12.9 ms CPU | **0.07** |
+| tfidf_lr_teacher | AWS t3.small | 2.1 ms CPU | **0.01** |
+| tinybert_ft_gold | AWS t3.small | 2.0 ms CPU | **0.01** |
+| tinybert_ft_teacher | AWS t3.small | 2.1 ms CPU | **0.01** |

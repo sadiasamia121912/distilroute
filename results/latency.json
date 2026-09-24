@@ -1,17 +1,17 @@
 {
   "minilm_frozen_gold": {
-    "p50_ms": 11.504850001074374,
-    "p95_ms": 14.569514978211371,
-    "mean_ms": 11.716420600540005,
+    "p50_ms": 11.1055500456132,
+    "p95_ms": 13.7468250002712,
+    "mean_ms": 11.380188799463212,
     "n": 500,
     "host": "Samin",
     "mode": "in-process",
     "kind": "minilm"
   },
   "tfidf_lr_gold": {
-    "p50_ms": 1.8054500105790794,
-    "p95_ms": 2.523640007711947,
-    "mean_ms": 1.903992599225603,
+    "p50_ms": 1.745849964208901,
+    "p95_ms": 2.1157699287869036,
+    "mean_ms": 1.7886746022850275,
     "n": 500,
     "host": "Samin",
     "mode": "in-process",
@@ -34,5 +34,104 @@
     "host": "Samin",
     "mode": "http",
     "kind": "tfidf"
+  },
+  "distilbert_ft_gold": {
+    "p50_ms": 6.415550014935434,
+    "p95_ms": 11.690089956391603,
+    "mean_ms": 7.0245235993061215,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "distilbert_ft_soft_teacher": {
+    "p50_ms": 6.4493000390939415,
+    "p95_ms": 12.29326497414149,
+    "mean_ms": 7.10137000028044,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "distilbert_ft_teacher": {
+    "p50_ms": 6.167850049678236,
+    "p95_ms": 11.593250022269785,
+    "mean_ms": 6.825630799634382,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_frozen_teacher": {
+    "p50_ms": 10.99490001797676,
+    "p95_ms": 13.93396001658402,
+    "mean_ms": 11.2869471993763,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "minilm"
+  },
+  "minilm_ft_gold": {
+    "p50_ms": 2.692549955099821,
+    "p95_ms": 4.711685003712771,
+    "mean_ms": 2.965364001924172,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_ft_teacher": {
+    "p50_ms": 2.8294000076130033,
+    "p95_ms": 4.933950072154402,
+    "mean_ms": 3.051597999408841,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_setfit_16pc_gold": {
+    "p50_ms": 12.699200015049428,
+    "p95_ms": 16.398474952438846,
+    "mean_ms": 13.064758999971673,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "minilm"
+  },
+  "minilm_setfit_7pc_teacher": {
+    "p50_ms": 12.465300038456917,
+    "p95_ms": 15.851709980051965,
+    "mean_ms": 12.882607602514327,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "minilm"
+  },
+  "tfidf_lr_teacher": {
+    "p50_ms": 1.6469500842504203,
+    "p95_ms": 1.995144941611215,
+    "mean_ms": 2.1309684000443667,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "tfidf"
+  },
+  "tinybert_ft_gold": {
+    "p50_ms": 1.8402999849058688,
+    "p95_ms": 3.264685056637972,
+    "mean_ms": 1.977817599195987,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "tinybert_ft_teacher": {
+    "p50_ms": 1.9430500105954707,
+    "p95_ms": 3.160884964745491,
+    "mean_ms": 2.0632071965374053,
+    "n": 500,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "onnx"
   }
 }

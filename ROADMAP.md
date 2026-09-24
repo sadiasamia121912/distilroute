@@ -130,7 +130,7 @@ free tier costs a day.
 ## Phase 3 — Serving + the cost/latency table  (1–2 days)
 
 - [x] **3.1** FastAPI `POST /route` with a `model=` switch (teacher | tfidf | setfit | distilbert); same request/response schema for all. _(2026-09-18: `distilroute/serve.py` over `distilroute/students.py`, a loader for every `models/<run>/meta.json` (tfidf / minilm / onnx) plus the teacher; lazy-loaded, `GET /models`, `/health`; 5 tests with a fake router. Student scripts now persist their models.)_
-- [~] **3.2** `scripts/bench_latency.py`: 500 requests per model, p50/p95, on this laptop (CPU). Teacher latency measured end-to-end through the free-tier API. _(2026-09-18: in-process — MiniLM frozen 11.5 / 14.6 ms, TF-IDF 1.8 / 2.5 ms; `--http` mode too, but Windows loopback delayed-ACK adds ~30 ms so the table uses in-process. `--teacher N` written, not yet run: it would share Groq's rate limit with the labeller.)_
+- [~] **3.2** `scripts/bench_latency.py`: 500 requests per model, p50/p95, on this laptop (CPU). Teacher latency measured end-to-end through the free-tier API. _(2026-09-18: in-process — MiniLM frozen 11.5 / 14.6 ms, TF-IDF 1.8 / 2.5 ms; `--http` mode too, but Windows loopback delayed-ACK adds ~30 ms so the table uses in-process. `--teacher N` written, not yet run: it would share Groq's rate limit with the labeller. 2026-09-24: re-benched all 13 students on an idle, mains-powered machine; no † left in the table. TinyBERT FT 1.8 / 3.3 ms, MiniLM FT 2.7 / 4.7, DistilBERT FT 6.4 / 11.7, MiniLM frozen 11.1 / 13.7, TF-IDF 1.7 / 2.1. `--http` rows not re-run.)_
 - [x] **3.3** Cost per 1M requests: teacher from the provider's *paid* price list (the free tier is not a production option — say so), students from CPU-seconds on a priced cloud VM. _(2026-09-18: `scripts/cost.py` → `results/cost.json` → results.md. gpt-oss-120b on Groq paid ($0.15 / $0.60 per 1M tokens): **$220 / 1M** one ticket per call, $28 batched 20; MiniLM frozen **$0.07**, TF-IDF $0.01 on a t3.small ($0.0208/h) — ~3,000× cheaper than the single-query teacher; $0 on owned hardware. Tokens per query measured on the final config: 118 at batch 20.)_
 - [ ] **3.4** Dockerfile (student only — ~300 MB image), `docker run` → `/route` works. README with the final table + the pitch.
 
@@ -232,6 +232,16 @@ of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 
 ## Session log
 
+**2026-09-24 (latency re-bench)** — Handoff item 1 closed. `bench_latency.py` (500 queries,
+in-process) on an idle, mains-powered machine (OneDrive shut down; it was holding more than a core), then
+`cost.py` and `evaluate.py`. Every latency cell is now from one run on one machine: the fine-tuned
+ONNX int8 students are the fastest transformers — TinyBERT **1.8 ms**, MiniLM **2.7 ms** (as fast as
+TF-IDF at 1.7 ms, and 3.5 points more accurate on teacher labels), DistilBERT 6.4 ms — while the frozen
+and SetFit MiniLMs (PyTorch encoder) sit at 11–13 ms. The old † numbers (27 ms MiniLM, 6.6 ms TF-IDF)
+were 2.5–4× inflated. Cost per 1M on a t3.small: $0.01–0.08 for every student. `results.md` also
+gains the six Colab fine-tuned rows, which the round-2 commit had not rebuilt it with. `--http` rows are
+still the 2026-09-18 ones.
+
 **2026-09-23 (HANDOFF — machine compromised, work moves to a new device)**
 
 The laptop this project was built on is infected with `Trojan:Win32/JScealTaskExec` (an
@@ -268,7 +278,7 @@ existing labels are committed, so every student, report and table reproduces wit
 
 **What is pending, in priority order:**
 
-1. **Latency re-bench** — every number in the latency column is stale: measured on battery
+1. ~~**Latency re-bench**~~ — _done 2026-09-24, see session log._ Every number in the latency column is stale: measured on battery
    (2.5× slow), during a k-means job, or on Colab's CPU (marked †). Run
    `python scripts/bench_latency.py` once on an idle, mains-powered machine, then
    `python scripts/cost.py` and `python scripts/evaluate.py`, since the cost table divides by it.
