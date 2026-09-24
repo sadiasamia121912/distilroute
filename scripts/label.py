@@ -3,6 +3,7 @@
     python scripts/label.py --split test                 # 3,080 queries, ~155 calls
     python scripts/label.py --split train --limit 2000   # first 2,000 of train
     python scripts/label.py --split test --run self_agreement --limit 300 --seed 1
+    python scripts/label.py --split test --perturb typo3 --limit 300   # robustness (6.6)
 
 Every labelled query is appended to data/labels/<split>[.<run>].jsonl as soon as its batch
 returns, so a rate-limit stop, a crash, or Ctrl-C loses at most one batch; re-running the
@@ -26,6 +27,7 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import DESCRIPTIONS, LABELS, RAW, ROOT  # noqa: E402
+from distilroute.perturb import KINDS, perturb  # noqa: E402
 from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
 
 
@@ -62,6 +64,12 @@ def main() -> None:
     )
     add("--reasoning", default="low", choices=["low", "medium", "high"], help="gpt-oss only")
     add("--top-k", type=int, default=1, help="ask for a ranked top-k list (soft labels)")
+    add(
+        "--perturb",
+        choices=KINDS,
+        default=None,
+        help="label a noisy copy of each query (roadmap 6.6); writes <split>.perturb_<kind>.jsonl",
+    )
     args = ap.parse_args()
 
     load_dotenv(ROOT / ".env")
@@ -73,6 +81,9 @@ def main() -> None:
     if args.limit:
         order = order[: args.limit]
 
+    if args.perturb:
+        df = df.assign(text=[perturb(t, args.perturb) for t in df.text])
+        args.run = args.run or f"perturb_{args.perturb}"
     name = f"{args.split}{'.' + args.run if args.run else ''}.jsonl"
     out = LABELS / name
     LABELS.mkdir(parents=True, exist_ok=True)

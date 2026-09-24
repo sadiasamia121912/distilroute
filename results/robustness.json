@@ -1,0 +1,332 @@
+{
+  "threshold": 0.8,
+  "changed": {
+    "typo1": 0.9954545454545455,
+    "typo3": 1.0,
+    "chat": 0.9746753246753247,
+    "slang": 0.6522727272727272,
+    "wrap": 1.0
+  },
+  "examples": {
+    "clean": [
+      "How do I locate my card?",
+      "I still have not received my new card, I ordered over a week ago.",
+      "I ordered a card but it has not arrived. Help please!"
+    ],
+    "typo1": [
+      "How do I loocate my card?",
+      "I still have not received my new card, I ordeed over a week ago.",
+      "I ordered a cad but it has not arrived. Help please!"
+    ],
+    "typo3": [
+      "Ho do I locaet my cad?",
+      "I still have nott received my neww card, I ordered over a week aggo.",
+      "I ordered a crad but it hass not arrrived. Help please!"
+    ],
+    "chat": [
+      "how do i locate my card",
+      "i still have not received my new card i ordered over a week ago",
+      "i ordered a card but it has not arrived help please"
+    ],
+    "slang": [
+      "How do I locate my card?",
+      "I still have not received my new card, I ordered over a week ago.",
+      "I ordered a card but it has not arrived. Help pls!"
+    ],
+    "wrap": [
+      "good morning, How do I locate my card? thx in advance",
+      "good morning, I still have not received my new card, I ordered over a week ago. thx in advance",
+      "good morning, I ordered a card but it has not arrived. Help please! thank you"
+    ]
+  },
+  "students": [
+    {
+      "model": "tfidf_lr_teacher",
+      "kinds": {
+        "clean": {
+          "acc": 0.812012987012987,
+          "acc_changed": null,
+          "escalated": 0.3155844155844156,
+          "kept_acc": 0.9236242884250474
+        },
+        "typo1": {
+          "acc": 0.7733766233766234,
+          "acc_changed": 0.7736464448793215,
+          "escalated": 0.3964285714285714,
+          "kept_acc": 0.9150080688542227
+        },
+        "typo3": {
+          "acc": 0.6905844155844156,
+          "acc_changed": 0.6905844155844156,
+          "escalated": 0.5688311688311688,
+          "kept_acc": 0.8983433734939759
+        },
+        "chat": {
+          "acc": 0.8025974025974026,
+          "acc_changed": 0.8051299133910726,
+          "escalated": 0.3399350649350649,
+          "kept_acc": 0.9203148057058534
+        },
+        "slang": {
+          "acc": 0.798051948051948,
+          "acc_changed": 0.7765057242409159,
+          "escalated": 0.3425324675324675,
+          "kept_acc": 0.9209876543209876
+        },
+        "wrap": {
+          "acc": 0.7983766233766234,
+          "acc_changed": 0.7983766233766234,
+          "escalated": 0.42337662337662335,
+          "kept_acc": 0.9375
+        }
+      }
+    },
+    {
+      "model": "tinybert_ft_teacher",
+      "kinds": {
+        "clean": {
+          "acc": 0.7918831168831169,
+          "acc_changed": null,
+          "escalated": 0.3220779220779221,
+          "kept_acc": 0.9008620689655172
+        },
+        "typo1": {
+          "acc": 0.634090909090909,
+          "acc_changed": 0.6330724070450098,
+          "escalated": 0.5487012987012987,
+          "kept_acc": 0.8733812949640288
+        },
+        "typo3": {
+          "acc": 0.36168831168831167,
+          "acc_changed": 0.36168831168831167,
+          "escalated": 0.8136363636363636,
+          "kept_acc": 0.7665505226480837
+        },
+        "chat": {
+          "acc": 0.788961038961039,
+          "acc_changed": 0.7908061292471685,
+          "escalated": 0.3373376623376623,
+          "kept_acc": 0.9049485546300833
+        },
+        "slang": {
+          "acc": 0.7597402597402597,
+          "acc_changed": 0.7282229965156795,
+          "escalated": 0.3912337662337662,
+          "kept_acc": 0.904
+        },
+        "wrap": {
+          "acc": 0.7503246753246753,
+          "acc_changed": 0.7503246753246753,
+          "escalated": 0.43116883116883115,
+          "kept_acc": 0.9046803652968036
+        }
+      }
+    },
+    {
+      "model": "minilm_ft_teacher",
+      "kinds": {
+        "clean": {
+          "acc": 0.8422077922077922,
+          "acc_changed": null,
+          "escalated": 0.15681818181818183,
+          "kept_acc": 0.9014247208317289
+        },
+        "typo1": {
+          "acc": 0.7448051948051948,
+          "acc_changed": 0.7439660795825179,
+          "escalated": 0.31396103896103894,
+          "kept_acc": 0.8826313298627544
+        },
+        "typo3": {
+          "acc": 0.5412337662337663,
+          "acc_changed": 0.5412337662337663,
+          "escalated": 0.5792207792207792,
+          "kept_acc": 0.8472222222222222
+        },
+        "chat": {
+          "acc": 0.8425324675324676,
+          "acc_changed": 0.8451032644903398,
+          "escalated": 0.15974025974025974,
+          "kept_acc": 0.9010819165378671
+        },
+        "slang": {
+          "acc": 0.8295454545454546,
+          "acc_changed": 0.8038825286212046,
+          "escalated": 0.20584415584415586,
+          "kept_acc": 0.9010629599345871
+        },
+        "wrap": {
+          "acc": 0.8301948051948052,
+          "acc_changed": 0.8301948051948052,
+          "escalated": 0.18474025974025973,
+          "kept_acc": 0.9000398247710075
+        }
+      }
+    },
+    {
+      "model": "minilm_frozen_teacher",
+      "kinds": {
+        "clean": {
+          "acc": 0.8483766233766233,
+          "acc_changed": null,
+          "escalated": 0.23733766233766235,
+          "kept_acc": 0.9348659003831418
+        },
+        "typo1": {
+          "acc": 0.7613636363636364,
+          "acc_changed": 0.7606001304631441,
+          "escalated": 0.4107142857142857,
+          "kept_acc": 0.9245179063360881
+        },
+        "typo3": {
+          "acc": 0.5551948051948052,
+          "acc_changed": 0.5551948051948052,
+          "escalated": 0.6711038961038961,
+          "kept_acc": 0.8864758144126358
+        },
+        "chat": {
+          "acc": 0.8461038961038961,
+          "acc_changed": 0.8484343770819454,
+          "escalated": 0.24642857142857144,
+          "kept_acc": 0.934080137871607
+        },
+        "slang": {
+          "acc": 0.8308441558441558,
+          "acc_changed": 0.8073668491786958,
+          "escalated": 0.287012987012987,
+          "kept_acc": 0.936247723132969
+        },
+        "wrap": {
+          "acc": 0.8308441558441558,
+          "acc_changed": 0.8308441558441558,
+          "escalated": 0.2915584415584416,
+          "kept_acc": 0.9349220898258478
+        }
+      }
+    },
+    {
+      "model": "distilbert_ft_teacher",
+      "kinds": {
+        "clean": {
+          "acc": 0.8376623376623377,
+          "acc_changed": null,
+          "escalated": 0.17987012987012987,
+          "kept_acc": 0.9117181314330958
+        },
+        "typo1": {
+          "acc": 0.7438311688311688,
+          "acc_changed": 0.7436399217221135,
+          "escalated": 0.3912337662337662,
+          "kept_acc": 0.8992
+        },
+        "typo3": {
+          "acc": 0.5045454545454545,
+          "acc_changed": 0.5045454545454545,
+          "escalated": 0.7181818181818181,
+          "kept_acc": 0.8870967741935484
+        },
+        "chat": {
+          "acc": 0.8357142857142857,
+          "acc_changed": 0.8381079280479681,
+          "escalated": 0.20162337662337662,
+          "kept_acc": 0.9129727531516877
+        },
+        "slang": {
+          "acc": 0.8194805194805195,
+          "acc_changed": 0.7864609258337482,
+          "escalated": 0.2616883116883117,
+          "kept_acc": 0.9204045734388743
+        },
+        "wrap": {
+          "acc": 0.8207792207792208,
+          "acc_changed": 0.8207792207792208,
+          "escalated": 0.26396103896103895,
+          "kept_acc": 0.9219232465813851
+        }
+      }
+    },
+    {
+      "model": "minilm_ft_gold",
+      "kinds": {
+        "clean": {
+          "acc": 0.9246753246753247,
+          "acc_changed": null,
+          "escalated": 0.09253246753246754,
+          "kept_acc": 0.964221824686941
+        },
+        "typo1": {
+          "acc": 0.837987012987013,
+          "acc_changed": 0.8372472276581866,
+          "escalated": 0.2422077922077922,
+          "kept_acc": 0.9443016281062554
+        },
+        "typo3": {
+          "acc": 0.6217532467532467,
+          "acc_changed": 0.6217532467532467,
+          "escalated": 0.5097402597402597,
+          "kept_acc": 0.8980132450331125
+        },
+        "chat": {
+          "acc": 0.9224025974025974,
+          "acc_changed": 0.9243837441705529,
+          "escalated": 0.09610389610389611,
+          "kept_acc": 0.9644396551724138
+        },
+        "slang": {
+          "acc": 0.8918831168831168,
+          "acc_changed": 0.874066699850672,
+          "escalated": 0.15,
+          "kept_acc": 0.9583651642475172
+        },
+        "wrap": {
+          "acc": 0.9123376623376623,
+          "acc_changed": 0.9123376623376623,
+          "escalated": 0.12435064935064935,
+          "kept_acc": 0.9610678531701891
+        }
+      }
+    },
+    {
+      "model": "tfidf_lr_gold",
+      "kinds": {
+        "clean": {
+          "acc": 0.910064935064935,
+          "acc_changed": null,
+          "escalated": 0.15,
+          "kept_acc": 0.972498090145149
+        },
+        "typo1": {
+          "acc": 0.8792207792207792,
+          "acc_changed": 0.8789954337899544,
+          "escalated": 0.21493506493506492,
+          "kept_acc": 0.9656741108354011
+        },
+        "typo3": {
+          "acc": 0.8094155844155844,
+          "acc_changed": 0.8094155844155844,
+          "escalated": 0.3918831168831169,
+          "kept_acc": 0.9524826481580352
+        },
+        "chat": {
+          "acc": 0.9025974025974026,
+          "acc_changed": 0.905396402398401,
+          "escalated": 0.1698051948051948,
+          "kept_acc": 0.9722330856472429
+        },
+        "slang": {
+          "acc": 0.8987012987012987,
+          "acc_changed": 0.8899950223992036,
+          "escalated": 0.175,
+          "kept_acc": 0.9696969696969697
+        },
+        "wrap": {
+          "acc": 0.9025974025974026,
+          "acc_changed": 0.9025974025974026,
+          "escalated": 0.22435064935064936,
+          "kept_acc": 0.9790707408957723
+        }
+      }
+    }
+  ],
+  "teacher": {}
+}
