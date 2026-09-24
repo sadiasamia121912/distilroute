@@ -157,7 +157,7 @@ free tier costs a day.
 ## Phase 4 — Publish  (½ day)
 
 - [x] **4.1** README results table, résumé bullet numbers into `../tabaudit/AI_ML_Portfolio_Projects.md`. _(2026-09-24: README rewritten around the final table and six findings; Project 2 section of the portfolio file rewritten with the final numbers, a résumé bullet and interview talking points.)_
-- [ ] **4.2** Public repo, LinkedIn post.
+- [~] **4.2** Public repo, LinkedIn post. _(2026-09-25: **repo public**, checked anonymously. Post drafted in `../tabaudit/linkedin_post_distilroute.md`, image `docs/case-study/media/pareto_linkedin.png` (`scripts/post_image.py`). Still to do: share the case-study and demo artifacts, then post — after the two tabaudit posts.)_
 
 ## Phase 5 — Stretch: prove it is a method, not a banking demo  (optional, ~1 day)
 
