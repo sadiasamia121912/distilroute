@@ -1,0 +1,52 @@
+name: Docker
+
+# Builds the student-only image and calls it the way a user would (roadmap 3.4). models/ is
+# gitignored, so the served model comes from the GitHub release, checked against its SHA-256.
+
+on:
+  push:
+    branches: [main]
+    paths: [Dockerfile, .dockerignore, requirements-serve.txt, "distilroute/**", .github/workflows/docker.yml]
+  pull_request:
+    paths: [Dockerfile, .dockerignore, requirements-serve.txt, "distilroute/**", .github/workflows/docker.yml]
+  workflow_dispatch:
+
+env:
+  MODEL: minilm_ft_teacher
+  MODEL_URL: https://github.com/sadiasamia121912/distilroute/releases/download/model-v1/minilm_ft_teacher.zip
+  MODEL_SHA256: a1b09014263815d0e14613f1ce59fd68fafa2f33e82ea4c069aa70dcef5601c4
+
+jobs:
+  build-and-route:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch the served model
+        run: |
+          curl -fsSL -o model.zip "$MODEL_URL"
+          echo "$MODEL_SHA256  model.zip" | sha256sum -c -
+          unzip -q model.zip && rm model.zip
+          ls -la "models/$MODEL"
+
+      - name: Build
+        run: |
+          docker build -t distilroute .
+          docker image ls distilroute --format 'image size: {{.Size}}'
+
+      - name: Run and route
+        run: |
+          docker run -d --name router -p 8000:8000 distilroute
+          for i in $(seq 1 30); do curl -fs 127.0.0.1:8000/health && break; sleep 2; done
+          echo; curl -fs 127.0.0.1:8000/models; echo
+          out=$(curl -fs -X POST 127.0.0.1:8000/route -H 'content-type: application/json' \
+                -d '{"text": "my card still has not arrived"}')
+          echo "$out"
+          echo "$out" | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["model"]=="'"$MODEL"'", r; assert r["intent"]=="card_arrival", r; assert r["calibrated"] is True, r; print("route OK:", r["intent"], round(r["confidence"], 3))'
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST 127.0.0.1:8000/route \
+                 -H 'content-type: application/json' -d '{"text": ""}')
+          test "$code" = 422 && echo "empty text rejected: 422"
+
+      - name: Container logs
+        if: always()
+        run: docker logs router || true

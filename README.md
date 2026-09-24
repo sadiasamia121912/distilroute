@@ -136,10 +136,13 @@ curl -X POST 127.0.0.1:8000/route -H 'content-type: application/json' \
 # {"intent": "card_arrival", "confidence": 0.977, "ranked": [...], "calibrated": true, ...}
 ```
 
-Or as a container: one ONNX student, no torch, no API key (`--build-arg MODEL=` picks it; build
-from a checkout that has `models/<MODEL>/`):
+Or as a container: the served student (int8 ONNX, trained on teacher labels only), no torch,
+no API key. The model is a [release file](https://github.com/sadiasamia121912/distilroute/releases/tag/model-v1);
+CI builds this image and calls `/route` on every change.
 
 ```bash
+curl -fsSLO https://github.com/sadiasamia121912/distilroute/releases/download/model-v1/minilm_ft_teacher.zip
+unzip minilm_ft_teacher.zip                 # -> models/minilm_ft_teacher/
 docker build -t distilroute .
 docker run --rm -p 8000:8000 distilroute
 ```
