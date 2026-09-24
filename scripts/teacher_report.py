@@ -32,7 +32,57 @@ DEFAULT_RUNS = [
     ("test.gate_v2_b50", "gate: v2, batch 50"),
     ("test.gate_v2_b100", "gate: v2, batch 100"),
     ("test.gate_nemotron550", "gate: second teacher nemotron-3-ultra-550b (OpenRouter)"),
+    ("test.self_agreement", "self-agreement: main config, relabelled in a different shuffle"),
 ]
+
+
+def self_agreement_lines() -> list[str]:
+    """The same queries labelled twice with the same config, in different batches (roadmap 1.7).
+
+    Splits the teacher's errors into *stable* ones (wrong the same way both times: a student
+    learns them as if they were true) and *unstable* ones (the answer changes: noise, which
+    training partly averages out). That split says how much of the teacher's error rate the
+    student cannot avoid inheriting.
+    """
+    if not (LABELS / "test.self_agreement.jsonl").exists():
+        return []
+    a = load_labels("test")
+    b = load_labels("test.self_agreement")
+    idx = b.index.intersection(a.index)
+    a, b = a.loc[idx], b.loc[idx]
+    both = a.teacher.notna() & b.teacher.notna()
+    a, b = a[both], b[both]
+    same = a.teacher == b.teacher
+    right_a, right_b = a.teacher == a.gold, b.teacher == b.gold
+    n = len(a)
+    top3 = [
+        len(set(x) & set(y)) / max(len(x), len(y), 1)
+        for x, y in zip(a.ranked, b.ranked, strict=True)
+    ]
+    rows = [
+        ("both right", (right_a & right_b).sum()),
+        ("both wrong, same wrong label (stable error)", (~right_a & ~right_b & same).sum()),
+        ("both wrong, different labels", (~right_a & ~right_b & ~same).sum()),
+        ("right once, wrong once", (right_a != right_b).sum()),
+    ]
+    wrong_a = (~right_a).sum()
+    stable = (~right_a & ~right_b & same).sum()
+    return [
+        "",
+        "## Self-agreement — does the teacher give the same answer twice?",
+        "",
+        f"{n} test queries labelled a second time with the main run's config, in a different "
+        "shuffle (so in different batches). Agreement between the two passes: "
+        f"**{same.mean():.3f}** on the top answer; the top-3 lists share "
+        f"{sum(top3) / n:.0%} of their intents. Of the main run's {wrong_a} errors on these "
+        f"queries, **{stable / max(wrong_a, 1):.0%} are stable** (the same wrong label both "
+        "times): those a student learns as if they were true. The rest changed between passes, "
+        "which is noise that training partly averages out.",
+        "",
+        "| outcome | queries | share |",
+        "|---|---:|---:|",
+        *[f"| {k} | {v} | {v / n:.1%} |" for k, v in rows],
+    ]
 
 
 def score(name: str) -> dict:
@@ -105,6 +155,7 @@ def main() -> None:
             "|---|---|---:|",
             *[f"| `{g}` | `{t}` | {c} |" for (g, t), c in conf.items()],
         ]
+    lines += self_agreement_lines()
 
     DOCS.mkdir(exist_ok=True)
     out = DOCS / "teacher.md"
