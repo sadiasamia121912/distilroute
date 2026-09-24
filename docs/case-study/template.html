@@ -458,16 +458,42 @@ function render() {
     rob.append(d);
   }
 
-  // Second dataset (6.4).
+  // Second dataset (6.4): the same scripts on CLINC150, side by side with Banking77.
   const dom = $("domain");
   if (D.second_domain) {
-    const S2 = D.second_domain;
-    const p = document.createElement("p");
-    p.textContent = `The same scripts, pointed at CLINC150 (150 intents across 10 domains), with no descriptions file: the teacher scores ${f3(S2.teacher)} on ${S2.n_teacher.toLocaleString("en-US")} test messages. Students trained on its labels: TF-IDF ${S2.tfidf_lr_teacher ? f3(S2.tfidf_lr_teacher) : "—"}, frozen MiniLM ${S2.minilm_frozen_teacher ? f3(S2.minilm_frozen_teacher) : "—"}. With human labels: ${S2.tfidf_lr_gold ? f3(S2.tfidf_lr_gold) : "—"} and ${S2.minilm_frozen_gold ? f3(S2.minilm_frozen_gold) : "—"}.`;
-    dom.append(p);
+    const [B, C] = D.second_domain;
+    const acc = (d, run) => (d.runs[run] ? f3(d.runs[run].acc) : "—");
+    const keep = (d) => (d.runs.minilm_frozen_teacher ? pct(d.runs.minilm_frozen_teacher.acc / d.teacher) : "—");
+    const gap = (d) => (d.runs.minilm_frozen_teacher && d.runs.minilm_frozen_gold
+      ? ((d.runs.minilm_frozen_gold.acc - d.runs.minilm_frozen_teacher.acc) * 100).toFixed(1) + " pt" : "—");
+    const intro = document.createElement("p");
+    intro.textContent = `Is the recipe specific to banking? The same scripts ran on CLINC150: ${C.intents} intents across 10 domains (banking, travel, cooking, small talk and more), switched with one environment variable and no code changes. Its teacher prompt uses the intent names only, with no descriptions file, which makes the prompt a quarter the size.`;
+    const wrap = document.createElement("div"); wrap.className = "tablewrap"; wrap.id = "t-domain";
+    dom.append(intro, wrap);
+    table("t-domain", ["", B.name, C.name], [
+      ["intents", String(B.intents), String(C.intents)],
+      ["teacher prompt", B.prompt, C.prompt],
+      ["LLM teacher accuracy", `${f3(B.teacher)} (n=${B.n_teacher.toLocaleString("en-US")})`, `${f3(C.teacher)} (n=${C.n_teacher.toLocaleString("en-US")})`],
+      ["TF-IDF, human labels", acc(B, "tfidf_lr_gold"), acc(C, "tfidf_lr_gold")],
+      ["MiniLM frozen, human labels", acc(B, "minilm_frozen_gold"), acc(C, "minilm_frozen_gold")],
+      ["TF-IDF, teacher labels", acc(B, "tfidf_lr_teacher"), acc(C, "tfidf_lr_teacher")],
+      ["MiniLM frozen, teacher labels", acc(B, "minilm_frozen_teacher"), acc(C, "minilm_frozen_teacher")],
+      ["student keeps, of the teacher", keep(B), keep(C)],
+      ["accuracy lost to teacher labels", gap(B), gap(C)],
+    ]);
+    const out = document.createElement("p");
+    if (C.complete) {
+      const kb = B.runs.minilm_frozen_teacher.acc / B.teacher, kc = C.runs.minilm_frozen_teacher.acc / C.teacher;
+      out.textContent = `The student keeps ${pct(kc)} of its teacher on CLINC150 against ${pct(kb)} on Banking77. A student trained on an LLM's labels lands close to the LLM on both, and the gap to human labels is the teacher's own error rate passing through.`;
+    } else {
+      out.textContent = `The same LLM scores higher on CLINC150 than on Banking77 (${f3(C.teacher)} against ${f3(B.teacher)}), with a smaller prompt: CLINC150's intent names say more on their own. The students trained on its labels are still to come: the free tier's daily limit is delivering the 3,000 training labels, and the empty cells fill in on the next build.`;
+    }
+    const note = document.createElement("p"); note.className = "num"; note.style.color = "var(--muted)";
+    note.textContent = `Teacher accuracy on ${C.n_teacher.toLocaleString("en-US")} of CLINC150's ${C.n_test.toLocaleString("en-US")} test messages (a random subset, to save free-tier calls); students on all ${C.n_test.toLocaleString("en-US")}. Banking77: all ${B.n_test.toLocaleString("en-US")}.`;
+    dom.append(out, note);
   } else {
     const d = document.createElement("div"); d.className = "pending";
-    d.innerHTML = '<span class="kicker">In progress</span>The same scripts are running on CLINC150 (150 intents across 10 domains) to check that the recipe is not specific to banking. The teacher, prompted with intent names only, scores 0.901 on 1,500 test messages. Training labels are still coming in under the free tier\'s daily limit.';
+    d.innerHTML = '<span class="kicker">In progress</span>The same scripts are running on CLINC150 (150 intents across 10 domains) to check that the recipe is not specific to banking.';
     dom.append(d);
   }
 }

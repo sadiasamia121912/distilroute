@@ -10,6 +10,7 @@ follows. Sections whose results do not exist yet (robustness, the second dataset
 
 from __future__ import annotations
 
+import csv
 import json
 import sys
 from pathlib import Path
@@ -40,6 +41,32 @@ def mean_by_n(curve: dict) -> list[list[float]]:
 def teacher_accuracy(name: str) -> float:
     lab = load_labels(name)
     return float((lab.teacher == lab.gold).mean())
+
+
+DOMAIN_RUNS = ["tfidf_lr_gold", "minilm_frozen_gold", "tfidf_lr_teacher", "minilm_frozen_teacher"]
+
+
+def domain(name: str, results: Path, labels: Path, raw: Path, prompt: str) -> dict:
+    """One dataset's row in the two-dataset comparison: teacher, and the same two students on
+    human labels and on teacher labels (whichever runs exist yet)."""
+    lab = [json.loads(x) for x in (labels / "test.jsonl").open(encoding="utf-8")]
+    runs = {}
+    for run in DOMAIN_RUNS:
+        path = results / f"{run}.json"
+        if path.exists():
+            m = json.loads(path.read_text())
+            runs[run] = {"acc": m["accuracy"], "n_train": m.get("n_train")}
+    return {
+        "name": name,
+        "prompt": prompt,
+        "intents": len(json.loads((raw / "categories.json").read_text(encoding="utf-8"))),
+        "n_test": sum(1 for _ in csv.reader((raw / "test.csv").open(encoding="utf-8")))
+        - 1,  # quoted newlines
+        "teacher": float(np.mean([x["teacher"] == x["gold"] for x in lab])),
+        "n_teacher": len(lab),
+        "runs": runs,
+        "complete": all(r in runs for r in DOMAIN_RUNS),
+    }
 
 
 def main() -> None:
@@ -128,24 +155,26 @@ def main() -> None:
             data["robustness"] = r
 
     # The second dataset lives under its own subdirectories (DISTILROUTE_DATASET=clinc150).
-    clinc = ROOT / "results" / "clinc150"
+    # Shown as soon as its teacher has labelled the test split; student cells stay empty
+    # until those runs exist, so the section is true at every stage.
     clinc_labels = ROOT / "data" / "labels" / "clinc150" / "test.jsonl"
-    if (clinc / "minilm_frozen_teacher.json").exists() and clinc_labels.exists():
-        lab = [json.loads(x) for x in clinc_labels.open(encoding="utf-8")]
-        data["second_domain"] = {
-            "teacher": float(np.mean([x["teacher"] == x["gold"] for x in lab])),
-            "n_teacher": len(lab),
-            **{
-                k: json.loads((clinc / f"{k}.json").read_text())["accuracy"]
-                for k in (
-                    "tfidf_lr_gold",
-                    "minilm_frozen_gold",
-                    "tfidf_lr_teacher",
-                    "minilm_frozen_teacher",
-                )
-                if (clinc / f"{k}.json").exists()
-            },
-        }
+    if clinc_labels.exists():
+        data["second_domain"] = [
+            domain(
+                "Banking77",
+                RESULTS,
+                ROOT / "data" / "labels",
+                ROOT / "data" / "raw",
+                "names + one-line descriptions",
+            ),
+            domain(
+                "CLINC150",
+                ROOT / "results" / "clinc150",
+                clinc_labels.parent,
+                ROOT / "data" / "raw" / "clinc150",
+                "names only",
+            ),
+        ]
 
     template = (PAGE / "template.html").read_text(encoding="utf-8")
     page = template.replace("/*__DATA__*/null", json.dumps(data, separators=(",", ":")))
