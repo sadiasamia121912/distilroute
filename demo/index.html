@@ -1,0 +1,454 @@
+<title>distilroute live router</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f4f6f3;
+  --surface: #ffffff;
+  --ink: #1b2430;
+  --muted: #5b6770;
+  --rule: #d8ded8;
+  --accent: #0f6e8c;
+  --accent-soft: #e1eff3;
+  --amber: #a8650f;
+  --amber-soft: #f7ecdc;
+  --plum: #7a3e6e;
+  --plum-soft: #f2e6ef;
+  --bar: #c9d6d8;
+  --focus: #0f6e8c;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f151b; --surface: #17202a; --ink: #e5eaec; --muted: #94a2ab; --rule: #2a3642;
+    --accent: #5bb6d1; --accent-soft: #16323d; --amber: #e2a452; --amber-soft: #3a2c19;
+    --plum: #cf95c2; --plum-soft: #35222f; --bar: #2f4450; --focus: #5bb6d1;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f151b; --surface: #17202a; --ink: #e5eaec; --muted: #94a2ab; --rule: #2a3642;
+  --accent: #5bb6d1; --accent-soft: #16323d; --amber: #e2a452; --amber-soft: #3a2c19;
+  --plum: #cf95c2; --plum-soft: #35222f; --bar: #2f4450; --focus: #5bb6d1;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 40px; display: grid; gap: 28px; }
+header { display: grid; gap: 8px; max-width: 68ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(26px, 4vw, 36px)/1.1 var(--cond); margin: 0; text-wrap: balance; }
+h2 { font: 600 17px/1.2 var(--cond); margin: 0; letter-spacing: .01em; }
+.lede { margin: 0; color: var(--muted); }
+.lede b { color: var(--ink); font-weight: 600; }
+.grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 14px; }
+form { display: grid; gap: 10px; }
+label.small { font: 500 12px/1 var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.row { display: flex; gap: 8px; }
+textarea { flex: 1; min-width: 0; resize: vertical; min-height: 64px; font: 15px/1.45 var(--sans); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; }
+textarea:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button { font: 600 14px/1 var(--sans); cursor: pointer; border-radius: 8px; }
+.go { background: var(--accent); color: var(--surface); border: 0; padding: 0 18px; min-height: 44px; align-self: flex-end; }
+.go:disabled { opacity: .5; cursor: progress; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 400 13px/1.3 var(--sans); background: transparent; color: var(--ink); border: 1px solid var(--rule); padding: 6px 10px; text-align: left; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip small { font-family: var(--mono); color: var(--muted); margin-right: 6px; font-size: 11px; }
+
+.verdict { display: grid; gap: 14px; }
+.query { font: 400 14px/1.45 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.query::before { content: "› "; color: var(--accent); }
+.switch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.lane { border: 1px solid var(--rule); border-radius: 8px; padding: 10px; display: grid; gap: 4px; color: var(--muted); }
+.lane b { font: 600 13px/1.2 var(--cond); letter-spacing: .02em; text-transform: uppercase; }
+.lane span { font-size: 12px; line-height: 1.35; }
+.lane.on.student { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.lane.on.student b { color: var(--accent); }
+.lane.on.llm { border-color: var(--amber); background: var(--amber-soft); color: var(--ink); }
+.lane.on.llm b { color: var(--amber); }
+.lane.on.oos { border-color: var(--plum); background: var(--plum-soft); color: var(--ink); }
+.lane.on.oos b { color: var(--plum); }
+@media (max-width: 480px) { .switch { grid-template-columns: minmax(0, 1fr); } }
+
+.intent { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.intent code { font: 500 20px/1.2 var(--mono); overflow-wrap: anywhere; }
+.intent .conf { font: 500 14px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.gauge { position: relative; height: 10px; background: var(--bar); border-radius: 5px; overflow: visible; }
+.gauge i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 5px; transition: width .35s ease; }
+.gauge.low i { background: var(--amber); }
+.gauge .mark { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+.gauge-legend { display: flex; justify-content: space-between; font: 400 11px/1 var(--mono); color: var(--muted); }
+.top3 { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.top3 li { display: grid; grid-template-columns: minmax(0, 1fr) 56px; gap: 10px; align-items: center; font: 400 13px/1.3 var(--mono); }
+.top3 .name { position: relative; padding: 4px 8px; overflow-wrap: anywhere; }
+.top3 .name i { position: absolute; inset: 0 auto 0 0; background: var(--accent-soft); border-radius: 4px; z-index: 0; }
+.top3 .name span { position: relative; }
+.top3 .p { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 16px; font: 400 12px/1.4 var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 500; }
+.tag { font: 500 11px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border: 1px dashed var(--rule); border-radius: 4px; padding: 4px 6px; justify-self: start; }
+
+.ledger { display: grid; gap: 12px; }
+.counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.count { display: grid; gap: 2px; }
+.count b { font: 500 24px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.count span { font-size: 12px; color: var(--muted); }
+.count.student b { color: var(--accent); } .count.llm b { color: var(--amber); } .count.oos b { color: var(--plum); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 0; border-top: 1px solid var(--rule); vertical-align: baseline; }
+td.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th { font: 500 11px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border-top: 0; }
+tr.hl td { font-weight: 600; }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+.load { display: grid; gap: 6px; }
+.load .bar { height: 4px; background: var(--bar); border-radius: 2px; overflow: hidden; }
+.load .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.load p { margin: 0; font: 400 12px/1.4 var(--mono); color: var(--muted); }
+.load.err p { color: var(--amber); }
+
+.how { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 820px) { .how { grid-template-columns: minmax(0, 1fr); } }
+.how div { display: grid; gap: 6px; align-content: start; }
+.how p { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 60ch; }
+.how p b { color: var(--ink); font-weight: 600; }
+footer { font: 400 12px/1.5 var(--mono); color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; border-top: 1px solid var(--rule); padding-top: 14px; }
+footer a { color: var(--accent); }
+.ok { color: var(--accent); } .bad { color: var(--amber); }
+@media (prefers-reduced-motion: reduce) { .gauge i, .load .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">distilroute · Banking77 · 77 intents</div>
+    <h1>Route a support message with a 22M-parameter model, in your browser</h1>
+    <p class="lede">A MiniLM student distilled from a 120B LLM, trained on <b>zero human labels</b>, runs here on your CPU. It files a message into one of 77 banking queues. It hands the message to the LLM when it isn't sure, and it flags messages that aren't banking questions at all.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="try-h">
+      <h2 id="try-h">Try a message</h2>
+      <form id="form">
+        <label class="small" for="msg">Customer message</label>
+        <div class="row">
+          <textarea id="msg" rows="2" maxlength="600">My card still hasn't arrived, it's been 2 weeks!</textarea>
+          <button class="go" id="go" type="submit" disabled>Route</button>
+        </div>
+        <div class="chips" id="chips"></div>
+      </form>
+
+      <div class="load" id="load">
+        <div class="bar"><i id="loadbar"></i></div>
+        <p id="loadmsg">Loading the model (45 MB, once)…</p>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite">
+        <span class="tag" id="vtag">Example · computed by the Python service</span>
+        <div class="query" id="vquery"></div>
+        <div class="switch">
+          <div class="lane student" id="lane-student"><b>Student answers</b><span>Confident: filed straight into the queue</span></div>
+          <div class="lane llm" id="lane-llm"><b>Escalate to LLM</b><span>Below 0.8 confidence: the LLM decides</span></div>
+          <div class="lane oos" id="lane-oos"><b>Not banking</b><span>Probability spread thin: send to a person</span></div>
+        </div>
+        <div class="intent"><code id="vintent"></code><span class="conf" id="vconf"></span></div>
+        <div>
+          <div class="gauge" id="gauge"><i id="gaugefill"></i><span class="mark" style="left:80%" title="escalation threshold 0.8"></span></div>
+          <div class="gauge-legend"><span>0</span><span>calibrated confidence · escalate below 0.8</span><span>1</span></div>
+        </div>
+        <ol class="top3" id="top3"></ol>
+        <div class="facts" id="vfacts"></div>
+      </div>
+    </section>
+
+    <aside class="panel ledger" aria-labelledby="meter-h">
+      <h2 id="meter-h">This session's bill</h2>
+      <div class="counts">
+        <div class="count"><b id="c-all">0</b><span>messages routed</span></div>
+        <div class="count student"><b id="c-student">0</b><span>answered by the student</span></div>
+        <div class="count llm"><b id="c-llm">0</b><span>escalated to the LLM</span></div>
+        <div class="count oos"><b id="c-oos">0</b><span>flagged not banking</span></div>
+      </div>
+      <table>
+        <thead><tr><th scope="col">If every message were routed by</th><th scope="col" class="n">$ per 1M messages</th></tr></thead>
+        <tbody>
+          <tr><td>the LLM alone (gpt-oss-120b, paid list price)</td><td class="n" id="p-llm"></td></tr>
+          <tr class="hl"><td>this student, escalating like this session</td><td class="n" id="p-mix">—</td></tr>
+          <tr><td>the student alone</td><td class="n" id="p-student"></td></tr>
+        </tbody>
+      </table>
+      <p class="note" id="savings">Route a few messages to see this session's mix.</p>
+      <p class="note">On the full 3,080-message test set, this cascade escalates 15 % of messages and scores <b>0.874</b>, above the LLM alone (0.867). The student by itself scores 0.847.</p>
+    </aside>
+  </div>
+
+  <section class="how" aria-label="How it works">
+    <div><h2>Distilled, not hand-labelled</h2><p>gpt-oss-120b labelled <b>3,000</b> Banking77 messages zero-shot. The student learned only from those labels, then was scored against the human labels on 3,080 held-out messages.</p></div>
+    <div><h2>Calibrated, so 0.8 means 0.8</h2><p>Confidence goes through <b>temperature scaling</b> (T = <span id="temp"></span>), fitted on held-out training labels. That makes the escalation threshold mean what it says.</p></div>
+    <div><h2>Out of scope by entropy</h2><p>A message the model has never seen the like of spreads probability over many intents. Above an entropy of <b id="ent"></b> it is flagged: that catches <b id="caught"></b> of CLINC150's off-topic questions while flagging 10 % of real banking ones.</p></div>
+  </section>
+
+  <footer>
+    <span>Model: MiniLM-L6, fine-tuned, int8 ONNX, onnxruntime-web (WebAssembly, 1 thread)</span>
+    <span id="selfcheck">Self-check: waiting for the model</span>
+    <span>No message leaves your browser. The LLM is never called: escalation is shown, not performed.</span>
+  </footer>
+</div>
+
+<script type="module">
+import * as ort from "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/ort.wasm.bundle.min.mjs";
+
+const EXAMPLES = [
+  ["typo", "my cardd hasnt arived yet"],
+  ["fee", "why was i charged a fee for topping up"],
+  ["fraud", "I think someone has my card details, pls freeze it"],
+  ["slang", "can u tell me y my transfer is still pending"],
+  ["vague", "it's not working again"],
+  ["off-topic", "whats the weather like in paris tomorrow"],
+];
+
+const $ = (id) => document.getElementById(id);
+const fmtUsd = (x) => x >= 100 ? "$" + x.toFixed(0) : x >= 1 ? "$" + x.toFixed(2) : "$" + x.toFixed(3);
+const pretty = (s) => s.replace(/_/g, " ");
+
+let cfg, vocab, session, tok;
+const tally = { all: 0, student: 0, llm: 0, oos: 0 };
+
+// ---- BERT WordPiece tokenizer, the same steps as the model's tokenizer.json ----
+function makeTokenizer(vocabList) {
+  const ids = new Map(vocabList.map((t, i) => [t, i]));
+  const CLS = ids.get("[CLS]"), SEP = ids.get("[SEP]"), UNK = ids.get("[UNK]");
+  const isPunct = (ch) => {
+    const c = ch.codePointAt(0);
+    if ((c >= 33 && c <= 47) || (c >= 58 && c <= 64) || (c >= 91 && c <= 96) || (c >= 123 && c <= 126)) return true;
+    return /\p{P}/u.test(ch);
+  };
+  const isCjk = (c) => (c >= 0x4e00 && c <= 0x9fff) || (c >= 0x3400 && c <= 0x4dbf) || (c >= 0x20000 && c <= 0x2a6df) ||
+    (c >= 0x2a700 && c <= 0x2b73f) || (c >= 0x2b740 && c <= 0x2b81f) || (c >= 0x2b820 && c <= 0x2ceaf) ||
+    (c >= 0xf900 && c <= 0xfaff) || (c >= 0x2f800 && c <= 0x2fa1f);
+  function normalize(text) {
+    let out = "";
+    for (const ch of text) {
+      const c = ch.codePointAt(0);
+      if (c === 0 || c === 0xfffd || (/\p{Cc}|\p{Cf}/u.test(ch) && !"\t\n\r".includes(ch))) continue;
+      if (/\s/u.test(ch)) { out += " "; continue; }
+      out += isCjk(c) ? ` ${ch} ` : ch;
+    }
+    // lowercase, and strip accents (BertNormalizer does both when lowercase is on)
+    return out.toLowerCase().normalize("NFD").replace(/\p{Mn}/gu, "");
+  }
+  function words(text) {
+    const out = [];
+    for (const chunk of text.split(" ")) {
+      let cur = "";
+      for (const ch of chunk) {
+        if (isPunct(ch)) { if (cur) out.push(cur); out.push(ch); cur = ""; }
+        else cur += ch;
+      }
+      if (cur) out.push(cur);
+    }
+    return out;
+  }
+  function wordpiece(word) {
+    const chars = [...word];
+    if (chars.length > 100) return [UNK];
+    const pieces = [];
+    let start = 0;
+    while (start < chars.length) {
+      let end = chars.length, found = null;
+      while (start < end) {
+        let sub = chars.slice(start, end).join("");
+        if (start > 0) sub = "##" + sub;
+        if (ids.has(sub)) { found = ids.get(sub); break; }
+        end--;
+      }
+      if (found === null) return [UNK];
+      pieces.push(found);
+      start = end;
+    }
+    return pieces;
+  }
+  return (text) => {
+    const body = words(normalize(text)).flatMap(wordpiece).slice(0, 62);
+    return [CLS, ...body, SEP];
+  };
+}
+
+// ---- inference ----
+function softmax(z) {
+  const m = Math.max(...z);
+  const e = z.map((v) => Math.exp(v - m));
+  const s = e.reduce((a, b) => a + b, 0);
+  return e.map((v) => v / s);
+}
+async function classify(text) {
+  const ids = tok(text);
+  const n = ids.length;
+  const feeds = {
+    input_ids: new ort.Tensor("int64", BigInt64Array.from(ids.map(BigInt)), [1, n]),
+    attention_mask: new ort.Tensor("int64", new BigInt64Array(n).fill(1n), [1, n]),
+  };
+  const t0 = performance.now();
+  const out = await session.run(feeds);
+  const ms = performance.now() - t0;
+  const p = softmax(Array.from(out.logits.data));
+  const cal = softmax(p.map((v) => Math.log(Math.max(v, 1e-12)) / cfg.temperature));
+  const entropy = -p.reduce((a, v) => a + v * Math.log(v + 1e-12), 0);
+  const order = cal.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 3);
+  return { ids, ms, entropy, top: order.map(([v, i]) => ({ intent: cfg.classes[i], p: v })) };
+}
+
+function decide(r) {
+  if (r.entropy > cfg.oos_entropy) return "oos";
+  return r.top[0].p >= cfg.escalate_below ? "student" : "llm";
+}
+
+function render(text, r, live) {
+  const lane = decide(r);
+  $("vtag").textContent = live ? "Live · computed in this browser" : "Example · computed by the Python service";
+  $("vquery").textContent = text;
+  for (const k of ["student", "llm", "oos"]) $("lane-" + k).classList.toggle("on", k === lane);
+  $("vintent").textContent = r.top[0].intent;
+  $("vconf").textContent = r.top[0].p.toFixed(3);
+  $("gaugefill").style.width = (r.top[0].p * 100).toFixed(1) + "%";
+  $("gauge").classList.toggle("low", r.top[0].p < cfg.escalate_below);
+  $("top3").replaceChildren(...r.top.map((t) => {
+    const li = document.createElement("li");
+    const name = document.createElement("div"); name.className = "name";
+    const fill = document.createElement("i"); fill.style.width = (t.p * 100).toFixed(1) + "%";
+    const label = document.createElement("span"); label.textContent = pretty(t.intent);
+    name.append(fill, label);
+    const p = document.createElement("div"); p.className = "p"; p.textContent = t.p.toFixed(3);
+    li.append(name, p); return li;
+  }));
+  const facts = [
+    ["tokens", r.ids ? r.ids.length : "—"],
+    ["entropy", r.entropy != null ? r.entropy.toFixed(2) : "—"],
+    ["inference", r.ms != null ? r.ms.toFixed(1) + " ms" : "—"],
+  ];
+  $("vfacts").replaceChildren(...facts.map(([k, v]) => {
+    const s = document.createElement("span"); s.append(k + " "); const b = document.createElement("b"); b.textContent = v; s.append(b); return s;
+  }));
+}
+
+function bill() {
+  const u = cfg.usd_per_1m;
+  $("c-all").textContent = tally.all; $("c-student").textContent = tally.student;
+  $("c-llm").textContent = tally.llm; $("c-oos").textContent = tally.oos;
+  if (!tally.all) return;
+  const share = tally.llm / tally.all;
+  const mix = u.student + share * u.llm;
+  $("p-mix").textContent = fmtUsd(mix);
+  const times = u.llm / mix;
+  const timesText = times >= 10 ? Math.round(times).toLocaleString("en-US") : times.toFixed(1);
+  $("savings").textContent = `${(share * 100).toFixed(0)} % of this session went to the LLM, so this mix costs ${timesText}× less than the LLM alone. Messages flagged "not banking" go to a person, not the LLM.`;
+}
+
+async function fetchWithProgress(urls, onProgress) {
+  const total = urls.reduce((a, [, size]) => a + size, 0);
+  let done = 0;
+  const out = [];
+  for (const [url] of urls) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+    const reader = res.body.getReader();
+    const chunks = [];
+    for (;;) {
+      const { done: end, value } = await reader.read();
+      if (end) break;
+      chunks.push(value); done += value.length; onProgress(Math.min(done / total, 1));
+    }
+    const buf = new Uint8Array(chunks.reduce((a, c) => a + c.length, 0));
+    let o = 0; for (const c of chunks) { buf.set(c, o); o += c.length; }
+    out.push(buf);
+  }
+  return out;
+}
+
+async function route(text) {
+  text = text.trim();
+  if (!text || !session) return;
+  $("go").disabled = true;
+  try {
+    const r = await classify(text);
+    render(text, r, true);
+    tally.all++; tally[decide(r)]++;
+    bill();
+  } finally {
+    $("go").disabled = false;
+  }
+}
+
+async function start() {
+  cfg = await (await fetch("demo.json")).json();
+  $("temp").textContent = cfg.temperature.toFixed(2);
+  $("ent").textContent = cfg.oos_entropy.toFixed(2);
+  $("caught").textContent = Math.round(cfg.oos_caught * 100) + " %";
+  $("p-llm").textContent = fmtUsd(cfg.usd_per_1m.llm);
+  $("p-student").textContent = fmtUsd(cfg.usd_per_1m.student);
+
+  // Resting state: the first reference message, as the Python service routed it.
+  const ex = cfg.checks[0];
+  render(ex.text, { top: [{ intent: ex.intent, p: ex.conf }], ids: ex.ids, entropy: null, ms: null }, false);
+  $("top3").replaceChildren();
+
+  for (const [tag, text] of EXAMPLES) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    const s = document.createElement("small"); s.textContent = tag;
+    b.append(s, text);
+    b.addEventListener("click", () => { $("msg").value = text; route(text); });
+    $("chips").append(b);
+  }
+
+  try {
+    const [v, wasm, ...parts] = await fetchWithProgress(
+      cfg.assets,
+      (f) => { $("loadbar").style.width = (f * 100).toFixed(0) + "%"; }
+    );
+    vocab = JSON.parse(new TextDecoder().decode(v));
+    tok = makeTokenizer(vocab);
+    ort.env.wasm.numThreads = 1;
+    ort.env.wasm.wasmBinary = wasm.buffer;
+    // The ONNX graph ships as base64 text in parts (binary files other than .wasm aren't served).
+    const model = new Uint8Array(cfg.model_bytes);
+    let at = 0;
+    for (const p of parts) {
+      const bin = atob(new TextDecoder().decode(p).trim());
+      for (let i = 0; i < bin.length; i++) model[at + i] = bin.charCodeAt(i);
+      at += bin.length;
+    }
+    if (at !== cfg.model_bytes) throw new Error(`model is ${at} bytes, expected ${cfg.model_bytes}`);
+    $("loadmsg").textContent = "Starting the model…";
+    session = await ort.InferenceSession.create(model, { executionProviders: ["wasm"] });
+  } catch (e) {
+    $("load").classList.add("err");
+    $("loadmsg").textContent = "The model could not load in this browser (" + e.message + "). The example above was computed by the Python service.";
+    return;
+  }
+  $("load").hidden = true;
+  $("go").disabled = false;
+
+  // Self-check: the browser must reproduce the Python service's tokens, intent and confidence.
+  let ok = 0;
+  for (const c of cfg.checks) {
+    const r = await classify(c.text);
+    const same = r.ids.length === c.ids.length && r.ids.every((x, i) => x === c.ids[i]);
+    if (same && r.top[0].intent === c.intent && Math.abs(r.top[0].p - c.conf) < 0.002) ok++;
+  }
+  const sc = $("selfcheck");
+  sc.textContent = `Self-check: ${ok} / ${cfg.checks.length} reference messages match the Python service`;
+  sc.className = ok === cfg.checks.length ? "ok" : "bad";
+
+  $("form").addEventListener("submit", (e) => { e.preventDefault(); route($("msg").value); });
+  $("msg").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); route($("msg").value); }
+  });
+  route($("msg").value);
+}
+
+start();
+</script>

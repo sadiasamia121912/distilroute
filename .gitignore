@@ -10,3 +10,7 @@ models/
 checkpoints/
 logs/
 data/raw/clinc_full.csv
+# demo page data, rebuilt by scripts/build_demo.py (45 MB)
+demo/*.txt
+demo/*.wasm
+demo/*.json

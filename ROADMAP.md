@@ -211,7 +211,7 @@ honest baselines.
   system that reaches 95 %".
 - [ ] **6.6 Robustness.** Typo / paraphrase perturbations of the test set (rule-based, free):
   does the student degrade more than the teacher? Support tickets are messy.
-- [ ] **6.7 Live demo page** (published artifact): type a message → intent, calibrated
+- [x] **6.7 Live demo page** _(2026-09-25: https://claude.ai/artifact/MkYEhKKtUj5oJ2b8NUsqoz, private until shared. `demo/index.html` + `scripts/build_demo.py`. The served student (MiniLM-ft, int8 ONNX, trained on teacher labels) runs **in the browser** with onnxruntime-web 1.30 (WebAssembly, one thread) and a JavaScript WordPiece tokenizer; nothing is sent anywhere. Per message: the routing verdict (student / escalate below 0.8 / not banking by entropy > 0.996, which flags 10 % of real banking messages and catches 89 % of CLINC150's out-of-scope ones), calibrated top-3, token count, in-browser latency; a session bill against the LLM alone. The page recomputes 6 reference messages on load and shows whether tokens, intent and confidence match the Python service. The ONNX graph ships as three base64 text parts, since artifact pages serve no other binaries than .wasm.)_ (published artifact): type a message → intent, calibrated
   confidence, escalate-or-not, running cost meter for teacher vs student. Judged in 30 seconds.
 - [ ] **6.8 Case study write-up** with the charts: cost table, cascade curve, data curve, and
   the batch-context leak as a lesson. The repo is the proof; the write-up is what gets read.
