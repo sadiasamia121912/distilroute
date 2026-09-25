@@ -14,3 +14,5 @@ data/raw/clinc_full.csv
 demo/*.txt
 demo/*.wasm
 demo/*.json
+# Hugging Face release, rebuilt by scripts/build_hf_release.py
+build/
