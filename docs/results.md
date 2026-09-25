@@ -29,6 +29,7 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.867** on the full 3,080-query 
 | tinybert fine-tuned | 14M | teacher | 2,697 | **0.796** | 0.794 | 0.829 | 0.107 → 0.021 (T=1.35) | 1.9 / 3.2 |
 
 Latency: single query, in-process, CPU of `Samin` (`scripts/bench_latency.py`); † = as recorded by the training script instead (possibly another machine).
+Teacher through the API, end to end: p50 **1,085 ms** / p95 1,517 ms over 30 queries.
 
 ## Cascade preview — escalate the least-confident queries to the teacher
 

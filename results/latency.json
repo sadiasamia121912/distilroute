@@ -133,5 +133,14 @@
     "host": "Samin",
     "mode": "in-process",
     "kind": "onnx"
+  },
+  "teacher": {
+    "p50_ms": 1085.3655498940498,
+    "p95_ms": 1517.3525500693358,
+    "mean_ms": 1095.9666966771085,
+    "n": 30,
+    "host": "Samin",
+    "mode": "in-process",
+    "kind": "teacher"
   }
 }
