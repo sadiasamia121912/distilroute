@@ -224,7 +224,10 @@ def run_lane(lane: str, log) -> None:
         if ok and s.done():
             log(f"{lane}: done   {s.name}")
         elif r.returncode == DAILY_LIMIT:
-            log(f"{lane}: daily limit reached in {s.name}; lane paused, run again tomorrow")
+            text = (LOGS / f"queue_{slug}.log").read_text(encoding="utf-8", errors="replace")
+            at = [ln.split(": ", 1)[1] for ln in text.splitlines() if ln.startswith("resume_at: ")]
+            when = f", back at {at[-1]}" if at else ""
+            log(f"{lane}: daily limit reached in {s.name}{when}; lane paused")
             return
         else:
             log(f"{lane}: FAILED {s.name} (exit {r.returncode}, see logs/queue_{slug}.log)")

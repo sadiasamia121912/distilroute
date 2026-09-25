@@ -18,7 +18,7 @@ import json
 import random
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -37,6 +37,17 @@ from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
 DAILY_LIMIT = 75  # exit code (EX_TEMPFAIL); jobs.py treats it as "stop the lane until tomorrow"
 LONG_WAIT_S = 120
 MAX_429_IN_A_ROW = 8  # backoff 5 + 10 + ... + 160 + 300 s ≈ 10 min of refusals
+
+
+def resume_at(retry_after: float | None) -> str:
+    """When the allowance should be back, in local time. Groq says how long to wait; OpenRouter's
+    free models usually do not, and their daily request count resets at 00:00 UTC."""
+    now = datetime.now(timezone.utc)
+    if retry_after:
+        at = now + timedelta(seconds=retry_after)
+    else:
+        at = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return at.astimezone().isoformat(timespec="minutes")
 
 
 def load_done(path: Path) -> set[int]:
@@ -171,6 +182,7 @@ def main() -> None:
                             f"{refused} refusals in a row); stopping, re-run tomorrow to resume",
                             flush=True,
                         )
+                        print(f"resume_at: {resume_at(e.retry_after)}", flush=True)
                         sys.exit(DAILY_LIMIT)
                     backoff = min(backoff * 2, 300)
                     print(f"  429 — sleeping {wait:.0f}s", flush=True)
