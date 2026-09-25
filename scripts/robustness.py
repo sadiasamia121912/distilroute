@@ -42,6 +42,9 @@ MODELS = [
     "tinybert_ft_teacher",
     "minilm_ft_teacher",
     "minilm_frozen_teacher",
+    "tfidf_lr_aug_teacher",  # trained with typo1,typo3 copies: the fix (skipped if absent)
+    "minilm_frozen_aug_teacher",
+    "minilm_ft_aug_teacher",
     "distilbert_ft_teacher",
     "minilm_ft_gold",
     "tfidf_lr_gold",

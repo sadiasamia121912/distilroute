@@ -33,6 +33,7 @@ from distilroute.data import (  # noqa: E402
     rel,
     teacher_train_labels,
 )
+from distilroute.perturb import augment  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
 
@@ -70,9 +71,17 @@ def build() -> Pipeline:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--labels", choices=["gold", "teacher"], default="gold")
+    ap.add_argument(
+        "--augment",
+        default="",
+        help="add noisy copies of the training rows, e.g. typo1,typo3 (roadmap 6.6)",
+    )
     args = ap.parse_args()
+    kinds = [k for k in args.augment.split(",") if k]
 
     train, calib = split_calib(load_train(args.labels))
+    if kinds:
+        train = augment(train, kinds)
     test = pd.read_csv(RAW / "test.csv")
 
     model = build()
@@ -97,7 +106,7 @@ def main() -> None:
     print(f"  test macro-F1 vs gold  {f1:.4f}")
     print(f"  latency per query      p50 {p50:.2f} ms  p95 {p95:.2f} ms")
 
-    name = f"tfidf_lr_{args.labels}"
+    name = "tfidf_lr" + ("_aug" if kinds else "") + f"_{args.labels}"
     metrics = save_run(
         name,
         {
@@ -110,6 +119,7 @@ def main() -> None:
             "p50_ms": p50,
             "p95_ms": p95,
             "fit_seconds": fit_s,
+            "augment": kinds or None,
         },
         classes,
         proba,

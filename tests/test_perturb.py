@@ -38,3 +38,17 @@ def test_chat_slang_wrap():
 
 def test_short_words_untouched_by_typos():
     assert perturb("to be or", "typo3") == "to be or"
+
+
+def test_augment_adds_changed_copies_with_the_same_label():
+    import pandas as pd
+
+    from distilroute.perturb import augment
+
+    train = pd.DataFrame({"text": ["I still have not received my new card", "hi"], "y": ["a", "b"]})
+    out = augment(train, ["typo1", "typo3"])
+    copies = out.iloc[len(train) :]
+    assert len(copies) == 2  # "hi" has no 3-letter word, so the noise leaves it alone
+    assert (copies.y == "a").all() and (copies.text != train.text[0]).all()
+    # training copies never share a draw with the test copies (seed 0)
+    assert perturb(train.text[0], "typo1", 0) not in set(copies.text)

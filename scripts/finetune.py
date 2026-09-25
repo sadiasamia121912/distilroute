@@ -44,6 +44,7 @@ from distilroute.data import (  # noqa: E402
     rel,
     teacher_train_labels,
 )
+from distilroute.perturb import augment  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run  # noqa: E402
 
 # name -> (hub id, params, learning rate). Small encoders need a higher LR: at 5e-5 MiniLM and
@@ -168,7 +169,13 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=None, help="subsample the training pool")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--export-onnx", action="store_true")
+    ap.add_argument(
+        "--augment",
+        default="",
+        help="add noisy copies of the training rows, e.g. typo1,typo3 (roadmap 6.6)",
+    )
     args = ap.parse_args()
+    kinds = [k for k in args.augment.split(",") if k]
     if args.soft and args.labels == "gold":
         sys.exit("--soft needs teacher labels (gold has no ranking)")
 
@@ -187,6 +194,8 @@ def main() -> None:
     # Held out from training: per-epoch validation and, at the end, the calibration set.
     val = train.groupby("y", group_keys=False).sample(frac=0.1, random_state=args.seed)
     train = train.drop(val.index)
+    if kinds:
+        train = augment(train, kinds)
     test = load_split("test")
     print(
         f"{args.model} ({hf_name}) on {device}: {len(train):,} train / {len(val):,} val rows, "
@@ -249,6 +258,7 @@ def main() -> None:
         f"{args.model}_ft"
         + ("_soft" if args.soft else "")
         + (f"_{args.limit}" if args.limit else "")
+        + ("_aug" if kinds else "")
     )
     name = f"{tag}_{args.labels}"
     metrics = {
@@ -264,6 +274,7 @@ def main() -> None:
         "epochs": args.epochs,
         "lr": args.lr,
         "soft_alpha": args.soft_alpha if args.soft else None,
+        "augment": kinds or None,
         "latency_host": platform.node(),
     }
 

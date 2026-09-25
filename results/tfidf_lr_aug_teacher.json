@@ -1,0 +1,17 @@
+{
+  "model": "tfidf+lr",
+  "params": 0,
+  "trained_on": "teacher",
+  "n_train": 8071,
+  "accuracy": 0.8090909090909091,
+  "macro_f1": 0.8053602804485401,
+  "p50_ms": 1.572699984535575,
+  "p95_ms": 2.051905018743127,
+  "fit_seconds": 24.169461250305176,
+  "augment": [
+    "typo1",
+    "typo3"
+  ],
+  "temperature": 0.7810741559109999,
+  "n_calib": 303
+}

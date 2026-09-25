@@ -98,3 +98,22 @@ def perturb(text: str, kind: str, seed: int = 0) -> str:
     if kind == "wrap":
         return f"{rng.choice(GREETINGS)} {text} {rng.choice(SIGN_OFFS)}"
     raise ValueError(f"unknown perturbation {kind!r}; choose from {KINDS}")
+
+
+AUGMENT_SEED = 1  # the test copies use seed 0; training copies never share a draw with them
+
+
+def augment(train, kinds: list[str], seed: int = AUGMENT_SEED):
+    """`train` plus one noisy copy per row and kind, same label (roadmap 6.6, the fix).
+
+    Only copies the noise actually changed are added. Call it after the calibration/validation
+    split, so the rows a model is calibrated or early-stopped on stay clean.
+    """
+    import pandas as pd
+
+    copies = []
+    for kind in kinds:
+        c = train.copy()
+        c["text"] = [perturb(t, kind, seed) for t in train.text]
+        copies.append(c[c.text.values != train.text.values])
+    return pd.concat([train, *copies])

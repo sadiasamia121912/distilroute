@@ -31,6 +31,7 @@ from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import MODELS, RESULTS, load_split, rel, teacher_train_labels  # noqa: E402
+from distilroute.perturb import augment  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
 ENCODER = "sentence-transformers/all-MiniLM-L6-v2"
@@ -59,7 +60,13 @@ def main() -> None:
     ap.add_argument("--per-class", type=int, default=None, help="subsample N per intent")
     ap.add_argument("--max-steps", type=int, default=400, help="setfit: contrastive steps")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument(
+        "--augment",
+        default="",
+        help="add noisy copies of the training rows, e.g. typo1,typo3 (roadmap 6.6)",
+    )
     args = ap.parse_args()
+    kinds = [k for k in args.augment.split(",") if k]
     if args.mode == "setfit" and args.per_class is None:
         args.per_class = 16
 
@@ -68,6 +75,8 @@ def main() -> None:
     train, per_class = load_train(args.labels, args.per_class, args.seed)
     args.per_class = per_class
     train, calib = split_calib(train, seed=args.seed)
+    if kinds:
+        train = augment(train, kinds)
     test = load_split("test")
     print(
         f"{args.mode}: {len(train):,} training rows, {len(calib)} held out for calibration, "
@@ -111,7 +120,11 @@ def main() -> None:
 
     p50, p95 = latency_ms(predict_one, test.text.tolist(), n=200)
 
-    tag = f"minilm_{args.mode}" + (f"_{args.per_class}pc" if args.per_class else "")
+    tag = (
+        f"minilm_{args.mode}"
+        + (f"_{args.per_class}pc" if args.per_class else "")
+        + ("_aug" if kinds else "")
+    )
     name = f"{tag}_{args.labels}"
     print(f"  fit {fit_s:.0f}s   acc {acc:.4f}   macro-F1 {f1:.4f}")
     print(f"  latency p50 {p50:.1f} ms  p95 {p95:.1f} ms")
@@ -130,6 +143,7 @@ def main() -> None:
             "fit_seconds": fit_s,
             "encoder": ENCODER,
             "max_steps": args.max_steps if args.mode == "setfit" else None,
+            "augment": kinds or None,
         },
         classes,
         proba,
