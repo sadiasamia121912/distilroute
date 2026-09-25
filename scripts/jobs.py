@@ -11,10 +11,11 @@ own. Every step checks whether its output already exists and skips itself; `labe
 from its checkpoint file and repairs a line cut off mid-write. A lock file stops two copies from
 running at once and labelling the same rows twice.
 
-Two lanes run side by side because their limits are separate: `groq` (the teacher,
-gpt-oss-120b) and `openrouter` (candidate second teachers, roadmap 1b.6). Within a lane steps
-run in order, and a failed step stops its lane: its output is not there, so the steps after it
-would be built on nothing. Results are only written, never committed: review, then commit.
+Steps run in lanes, one per provider, side by side because their limits are separate. Only
+`groq` (the teacher, gpt-oss-120b) is left: the `openrouter` lane of second-teacher gates (1b.6)
+was cut on 2026-09-25. Within a lane steps run in order, and a failed step stops its lane: its
+output is not there, so the steps after it would be built on nothing. Results are only
+written, never committed: review, then commit.
 """
 
 from __future__ import annotations
@@ -36,7 +37,6 @@ LOGS = ROOT / "logs"
 LOCK = LOGS / "queue.lock"
 DAILY_LIMIT = 75  # label.py exit code: the free tier's allowance for today is used up
 NOISE = ["typo1", "typo3", "chat", "slang", "wrap"]
-GATES = ["google/gemma-4-31b-it:free", "qwen/qwen3.8-27b:free", "z-ai/glm-5.2:free"]
 
 
 def rows(path: Path) -> int:
@@ -68,10 +68,6 @@ class Step:
     env: dict = field(default_factory=dict)
     stop_lane: bool = True  # a failure stops the lane (False: move on, e.g. a model that refuses)
     needs: Path | None = None  # skip (and move on) where this is missing, e.g. models/ in the cloud
-
-
-def gate_tag(model: str) -> str:
-    return model.split("/")[1].split(":")[0].replace(".", "").replace("-", "")
 
 
 def json_has(path: Path, check) -> bool:
@@ -168,34 +164,7 @@ STEPS = [
         ),
         needs=ROOT / "models",  # the trained students live only on the laptop
     ),
-    # --- openrouter: second-teacher candidates (1b.6) ---------------------------------------
-    *[
-        label_step(
-            f"second teacher gate: {m}",
-            "openrouter",
-            LABELS / f"test.gate2_{gate_tag(m)}.jsonl",
-            200,
-            [
-                "--split",
-                "test",
-                "--provider",
-                "openrouter",
-                "--model",
-                m,
-                "--run",
-                f"gate2_{gate_tag(m)}",
-                "--limit",
-                "200",
-                "--seed",
-                "1",
-                "--descriptions",
-                "--top-k",
-                "3",
-            ],
-            stop_lane=False,
-        )
-        for m in GATES
-    ],
+    # openrouter lane (1b.6 second-teacher gates) cut 2026-09-25: ~20 rows/day on the free tier
 ]
 
 
@@ -274,7 +243,7 @@ def main() -> None:
         print(f"{stamp}  {msg}", flush=True)
 
     status()
-    lanes = [threading.Thread(target=run_lane, args=(ln, log)) for ln in ("groq", "openrouter")]
+    lanes = [threading.Thread(target=run_lane, args=(ln, log)) for ln in ("groq",)]
     for t in lanes:
         t.start()
     for t in lanes:
