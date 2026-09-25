@@ -1,0 +1,170 @@
+{
+  "pool": 3000,
+  "teacher_error_rate": 0.15233333333333332,
+  "teacher_errors_in_fit": 412,
+  "teacher": 0.8672077922077922,
+  "base": 0.8422077922077922,
+  "seeds": 3,
+  "runs": [
+    {
+      "budget": 100,
+      "strategy": "random",
+      "acc": 0.845021645021645,
+      "acc_pm": 0.0011363636363636576,
+      "hit_rate": 0.13,
+      "errors_fixed": 13.0
+    },
+    {
+      "budget": 100,
+      "strategy": "disagreement",
+      "acc": 0.8503246753246754,
+      "acc_pm": 0.0,
+      "hit_rate": 0.78,
+      "errors_fixed": 78.0
+    },
+    {
+      "budget": 100,
+      "strategy": "unsure",
+      "acc": 0.8428571428571429,
+      "acc_pm": 0.0,
+      "hit_rate": 0.51,
+      "errors_fixed": 51.0
+    },
+    {
+      "budget": 100,
+      "strategy": "add_new",
+      "acc": 0.8453463203463203,
+      "acc_pm": 0.0014610389610389407,
+      "hit_rate": null,
+      "errors_fixed": null
+    },
+    {
+      "budget": 200,
+      "strategy": "random",
+      "acc": 0.8474025974025974,
+      "acc_pm": 0.001948051948051921,
+      "hit_rate": 0.12,
+      "errors_fixed": 24.0
+    },
+    {
+      "budget": 200,
+      "strategy": "disagreement",
+      "acc": 0.8584415584415584,
+      "acc_pm": 0.0,
+      "hit_rate": 0.615,
+      "errors_fixed": 123.0
+    },
+    {
+      "budget": 200,
+      "strategy": "unsure",
+      "acc": 0.8506493506493507,
+      "acc_pm": 0.0,
+      "hit_rate": 0.425,
+      "errors_fixed": 85.0
+    },
+    {
+      "budget": 200,
+      "strategy": "add_new",
+      "acc": 0.8463203463203463,
+      "acc_pm": 0.002110389610389618,
+      "hit_rate": null,
+      "errors_fixed": null
+    },
+    {
+      "budget": 300,
+      "strategy": "random",
+      "acc": 0.8491341991341992,
+      "acc_pm": 0.0017857142857142794,
+      "hit_rate": 0.15333333333333335,
+      "errors_fixed": 46.0
+    },
+    {
+      "budget": 300,
+      "strategy": "disagreement",
+      "acc": 0.8642857142857143,
+      "acc_pm": 0.0,
+      "hit_rate": 0.5566666666666666,
+      "errors_fixed": 167.0
+    },
+    {
+      "budget": 300,
+      "strategy": "unsure",
+      "acc": 0.8571428571428571,
+      "acc_pm": 0.0,
+      "hit_rate": 0.4033333333333333,
+      "errors_fixed": 121.0
+    },
+    {
+      "budget": 300,
+      "strategy": "add_new",
+      "acc": 0.8514069264069263,
+      "acc_pm": 0.0040584415584415945,
+      "hit_rate": null,
+      "errors_fixed": null
+    },
+    {
+      "budget": 500,
+      "strategy": "random",
+      "acc": 0.8536796536796537,
+      "acc_pm": 0.0008116883116883189,
+      "hit_rate": 0.152,
+      "errors_fixed": 76.0
+    },
+    {
+      "budget": 500,
+      "strategy": "disagreement",
+      "acc": 0.875974025974026,
+      "acc_pm": 0.0,
+      "hit_rate": 0.466,
+      "errors_fixed": 233.0
+    },
+    {
+      "budget": 500,
+      "strategy": "unsure",
+      "acc": 0.8672077922077922,
+      "acc_pm": 0.0,
+      "hit_rate": 0.386,
+      "errors_fixed": 193.0
+    },
+    {
+      "budget": 500,
+      "strategy": "add_new",
+      "acc": 0.8568181818181818,
+      "acc_pm": 0.003733766233766256,
+      "hit_rate": null,
+      "errors_fixed": null
+    },
+    {
+      "budget": 1000,
+      "strategy": "random",
+      "acc": 0.8679653679653679,
+      "acc_pm": 0.004383116883116878,
+      "hit_rate": 0.1506666666666667,
+      "errors_fixed": 150.66666666666666
+    },
+    {
+      "budget": 1000,
+      "strategy": "disagreement",
+      "acc": 0.8896103896103896,
+      "acc_pm": 0.0,
+      "hit_rate": 0.328,
+      "errors_fixed": 328.0
+    },
+    {
+      "budget": 1000,
+      "strategy": "unsure",
+      "acc": 0.8873376623376623,
+      "acc_pm": 0.0,
+      "hit_rate": 0.305,
+      "errors_fixed": 305.0
+    },
+    {
+      "budget": 1000,
+      "strategy": "add_new",
+      "acc": 0.867099567099567,
+      "acc_pm": 0.0017857142857142794,
+      "hit_rate": null,
+      "errors_fixed": null
+    }
+  ]
+}

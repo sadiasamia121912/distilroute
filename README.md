@@ -76,13 +76,22 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    MiniLM −10. Lowercase without punctuation, texting slang ("u", "pls", "acct") and greetings
    cost 0–4 pt. The cascade absorbs part of it, because the students also get less sure: with
    three typos MiniLM escalates 58 % of messages instead of 16 % and stays 0.847 accurate on
-   the rest, so noise shows up as LLM cost rather than silent misroutes. Whether the teacher
-   degrades less is still to be measured. [docs/robustness.md](docs/robustness.md)
-5. **The student does not beat its teacher, yet.** Soft top-3 targets, a confident-learning
-   noise filter and self-training on the 7,003 unlabelled queries are together worth +0.7 pt
-   (0.849), still 1.8 pt below the teacher at this label budget. The soft target *hurts* on 77
-   near-synonym intents, on both the frozen and the fine-tuned student. The data curve says the
-   gap closes with more labels, not with tricks.
+   the rest, so noise shows up as LLM cost rather than silent misroutes. **The fix is free:**
+   train on typo'd copies of the same teacher-labelled rows (`--augment typo1,typo3`, different
+   random draws from the test copies, no extra LLM calls). It costs nothing on clean text (frozen
+   MiniLM 0.848 → 0.851) and cuts the three-typo loss from 29 to 16 pt (one typo: 9 → 5; TF-IDF
+   12 → 9). It does not carry over to the other kinds of noise, which barely hurt anyway.
+   Whether the teacher degrades less is still to be measured. [docs/robustness.md](docs/robustness.md)
+5. **With no human labels the student does not beat its teacher; with 500 it does.** Soft
+   top-3 targets, a confident-learning noise filter and self-training on the 7,003 unlabelled
+   queries are together worth +0.7 pt (0.849), still 1.8 pt below the teacher. The soft target
+   *hurts* on 77 near-synonym intents. What works is a small human budget spent in the right
+   place: rank the teacher's labels by how little the student believes them (out-of-fold, the
+   same confident-learning score) and have a human check the top of the list. 78 % of the first
+   100 checked are real teacher errors, 5× the base rate. **500 checks lift the frozen student
+   from 0.842 to 0.876, above the teacher's 0.867; 1,000 reach 0.890.** The same 500 human labels
+   spent on random rows give 0.854, and on 500 *new* rows 0.857: fixing the LLM's labels is
+   worth far more than adding to them. [docs/correction.md](docs/correction.md)
 6. **Which tickets to pay the LLM for matters only at the start.** Picking the 500 most
    *typical* queries (k-means over the embeddings, no model needed) scores **0.785**, against
    0.708 for 500 random ones: about what random reaches with ~900 labels, so the cold start costs
