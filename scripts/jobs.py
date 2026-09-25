@@ -5,10 +5,11 @@
 
 The free tiers cap tokens *per day*, so the remaining labelling needs about a week of calendar
 time but only ~an hour of running per day: start this, let it use the day's allowance, stop it
-(Ctrl-C, or just shut the laptop), run it again tomorrow. Every step checks whether its output
-already exists and skips itself; `label.py` resumes from its checkpoint file and repairs a line
-cut off mid-write. A lock file stops two copies from running at once and labelling the same rows
-twice.
+(Ctrl-C, or just shut the laptop), run it again tomorrow. When a lane's allowance runs out,
+`label.py` exits with DAILY_LIMIT and the lane pauses itself, so an unattended run ends on its
+own. Every step checks whether its output already exists and skips itself; `label.py` resumes
+from its checkpoint file and repairs a line cut off mid-write. A lock file stops two copies from
+running at once and labelling the same rows twice.
 
 Two lanes run side by side because their limits are separate: `groq` (the teacher,
 gpt-oss-120b) and `openrouter` (candidate second teachers, roadmap 1b.6). Within a lane steps
@@ -33,6 +34,7 @@ PY = sys.executable
 LABELS = ROOT / "data" / "labels"
 LOGS = ROOT / "logs"
 LOCK = LOGS / "queue.lock"
+DAILY_LIMIT = 75  # label.py exit code: the free tier's allowance for today is used up
 NOISE = ["typo1", "typo3", "chat", "slang", "wrap"]
 GATES = ["google/gemma-4-31b-it:free", "qwen/qwen3.8-27b:free", "z-ai/glm-5.2:free"]
 
@@ -216,6 +218,9 @@ def run_lane(lane: str, log) -> None:
                     break
         if ok and s.done():
             log(f"{lane}: done   {s.name}")
+        elif r.returncode == DAILY_LIMIT:
+            log(f"{lane}: daily limit reached in {s.name}; lane paused, run again tomorrow")
+            return
         else:
             log(f"{lane}: FAILED {s.name} (exit {r.returncode}, see logs/queue_{slug}.log)")
             if s.stop_lane:

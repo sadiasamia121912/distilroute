@@ -30,6 +30,14 @@ from distilroute.data import DESCRIPTIONS, LABELS, RAW, ROOT  # noqa: E402
 from distilroute.perturb import KINDS, perturb  # noqa: E402
 from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
 
+# Free tiers cap tokens (Groq) or requests (OpenRouter) per day. Per-minute limits clear in
+# seconds; when the provider asks for a longer wait, or keeps refusing after the backoff has
+# topped out, the day's allowance is gone: exit with DAILY_LIMIT instead of sleeping for hours,
+# and the next run resumes from the file.
+DAILY_LIMIT = 75  # exit code (EX_TEMPFAIL); jobs.py treats it as "stop the lane until tomorrow"
+LONG_WAIT_S = 120
+MAX_429_IN_A_ROW = 8  # backoff 5 + 10 + ... + 160 + 300 s ≈ 10 min of refusals
+
 
 def load_done(path: Path) -> set[int]:
     """Row ids already labelled. A run stopped mid-write (Ctrl-C, a closed laptop) can leave a
@@ -138,6 +146,7 @@ def main() -> None:
     t0 = time.time()
     failed = 0
     backoff = 5.0
+    refused = 0
     with out.open("a", encoding="utf-8") as f:
         for start in range(0, len(todo), args.batch_size):
             if args.max_calls and teacher.calls >= args.max_calls:
@@ -149,11 +158,20 @@ def main() -> None:
                 try:
                     results = teacher.label_batch(queries)
                     backoff = 5.0
+                    refused = 0
                     break
                 except TeacherError as e:
                     sys.exit(f"\n{e}\nNot retrying — fix the model/key and re-run to resume.")
                 except RateLimited as e:
+                    refused += 1
                     wait = e.retry_after or backoff
+                    if (e.retry_after or 0) > LONG_WAIT_S or refused >= MAX_429_IN_A_ROW:
+                        print(
+                            f"  429 — daily limit reached (asked to wait {wait:.0f}s, "
+                            f"{refused} refusals in a row); stopping, re-run tomorrow to resume",
+                            flush=True,
+                        )
+                        sys.exit(DAILY_LIMIT)
                     backoff = min(backoff * 2, 300)
                     print(f"  429 — sleeping {wait:.0f}s", flush=True)
                     time.sleep(wait)
