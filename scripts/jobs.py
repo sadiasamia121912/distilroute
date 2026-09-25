@@ -109,6 +109,15 @@ STEPS = [
         [[PY, "-u", "scripts/bench_latency.py", "--models", "", "--teacher", "30"]],
         done=lambda: json_has(ROOT / "results" / "latency.json", lambda d: "teacher" in d),
     ),
+    # first since 2026-09-25: 1.6 retraining waits on these; check it at 5k/7.5k with
+    # scripts/retrain_check.py while the rest is labelled
+    label_step(
+        "remaining banking77 train labels (1.6)",
+        "groq",
+        LABELS / "train.jsonl",
+        10003,
+        ["--split", "train", "--seed", "0", "--descriptions", "--top-k", "3"],
+    ),
     label_step(
         "self-agreement labels (1.7)",
         "groq",
@@ -158,13 +167,6 @@ STEPS = [
             ROOT / "results" / "robustness.json", lambda d: len(d["teacher"]) == len(NOISE)
         ),
         needs=ROOT / "models",  # the trained students live only on the laptop
-    ),
-    label_step(
-        "remaining banking77 train labels (1.6)",
-        "groq",
-        LABELS / "train.jsonl",
-        10003,
-        ["--split", "train", "--seed", "0", "--descriptions", "--top-k", "3"],
     ),
     # --- openrouter: second-teacher candidates (1b.6) ---------------------------------------
     *[

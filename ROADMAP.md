@@ -102,6 +102,10 @@ and a 70B one does not fit. See `docs/teacher.md` once written.
      number; the data curve gains its 5k/10k teacher points. Adopting 10k as the default (bumping
      `DEFAULT_TEACHER_ROWS`) is a separate, explicit decision, because it changes every published
      teacher-label number at once.
+  *Checkpoints (2026-09-25):* the 7,003 labels now run first in the groq lane, and
+  `scripts/retrain_check.py --rows N` does steps 1-2 in one command (~3 min; writes
+  `results/teacher<N>/checkpoint.json` with the 3,000-vs-N table). Run it at 5,000 and 7,500 while
+  labelling continues: a flat curve at 5k answers the question before the week is out.
   *Cost, for the write-up:* 7,003 more labels at the paid, batched price ($26.62 per 1M) is about
   **$0.19**, the cheapest lever in the project if it works.
 - [~] **1.7** `scripts/teacher_report.py` → `docs/teacher.md` (accuracy, macro-F1, parse-failure rate, top-k coverage, weakest intents, confusions; every gate run in one table). _(generated on the full test split 2026-09-19)_ Still to do: self-agreement run (300 test queries relabelled).
