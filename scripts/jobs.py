@@ -67,6 +67,7 @@ class Step:
     progress: callable = lambda: ""
     env: dict = field(default_factory=dict)
     stop_lane: bool = True  # a failure stops the lane (False: move on, e.g. a model that refuses)
+    needs: Path | None = None  # skip (and move on) where this is missing, e.g. models/ in the cloud
 
 
 def gate_tag(model: str) -> str:
@@ -156,6 +157,7 @@ STEPS = [
         done=lambda: json_has(
             ROOT / "results" / "robustness.json", lambda d: len(d["teacher"]) == len(NOISE)
         ),
+        needs=ROOT / "models",  # the trained students live only on the laptop
     ),
     label_step(
         "remaining banking77 train labels (1.6)",
@@ -204,6 +206,9 @@ def status() -> None:
 def run_lane(lane: str, log) -> None:
     for s in [s for s in STEPS if s.lane == lane]:
         if s.done():
+            continue
+        if s.needs and not s.needs.exists():
+            log(f"{lane}: skip   {s.name} (needs {s.needs.name}/, run it on the laptop)")
             continue
         log(f"{lane}: start  {s.name}")
         slug = "".join(c if c.isalnum() else "_" for c in s.name).strip("_")[:60]
