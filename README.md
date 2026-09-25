@@ -45,6 +45,12 @@ accuracy is against the human labels on the untouched 3,080-query test split.
   TF-IDF 0.910. The ~8-point gap to the distilled rows is the teacher's own error rate, passed
   on to the student.
 
+- **How sure:** 3,080 test queries put a ±1.3 pt 95 % interval on every accuracy above (paired
+  bootstrap, 10,000 resamples). Differences between two systems scored on the same queries are
+  tighter: the served student is 2.5 pt below the teacher (1.4 to 3.6), every student is
+  reliably below it, and every claim below of "beats" or "ties" is checked the same way.
+  [docs/bootstrap.md](docs/bootstrap.md)
+
 Full tables (calibration, cascade thresholds, data curves, every variant tried):
 [docs/results.md](docs/results.md).
 
@@ -52,12 +58,15 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
 
 1. **Distillation keeps 97 % of the teacher's accuracy** (0.842 vs 0.867, served int8) at 2.8 ms and
    $0.02 per 1M requests. MiniLM-L6 at 22M parameters matches DistilBERT at 67M on human labels
-   (0.927 vs 0.928) and beats it on teacher labels, so it is the model to ship. int8
+   (0.927 vs 0.928) and is at least as good on teacher labels (+0.8 pt, interval −0.0 to +1.6),
+   so it is the model to ship. int8
    quantisation costs 0.1–0.7 pt (0.847 → 0.842 for the served MiniLM) for a 4× smaller graph.
-2. **The cascade beats the teacher using 15 % of its calls.** Calibrate the student
+2. **The cascade matches or beats the teacher using 15 % of its calls.** Calibrate the student
    (temperature scaling, fitted on a held-out slice of its training labels), answer when it is
-   ≥ 0.8 confident, and send the rest to the LLM: 0.874 overall, above the LLM alone, at about
-   a seventh of its cost. Calibration is what makes "0.8" mean something. With thresholds chosen
+   ≥ 0.8 confident, and send the rest to the LLM: 0.874 overall, +2.7 pt over the student alone
+   (+1.9 to +3.5) and +0.6 pt over the LLM alone, at about a seventh of its cost. That last gap
+   is within test noise (−0.1 to +1.4; ahead in 96 % of resamples), so the honest claim is
+   *at least as good as the LLM*. Calibration is what makes "0.8" mean something. With thresholds chosen
    on held-out data, the cheapest system that **matches the LLM costs $13.76 per 1M requests, 16×
    less**: TF-IDF answers 58 % of queries, MiniLM most of the rest, and 6.4 % reach the LLM.
    The TF-IDF tier beats MiniLM → LLM alone ($19.19) in 10 of 10 paired test halves, but only
@@ -89,9 +98,11 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    place: rank the teacher's labels by how little the student believes them (out-of-fold, the
    same confident-learning score) and have a human check the top of the list. 78 % of the first
    100 checked are real teacher errors, 5× the base rate. **500 checks lift the frozen student
-   from 0.842 to 0.876, above the teacher's 0.867; 1,000 reach 0.890.** The same 500 human labels
+   from 0.842 to 0.876, above the teacher's 0.867 (+0.9 pt, −0.3 to +2.0: ahead in 93 % of
+   resamples); 1,000 reach 0.890, clearly above it (+2.2 pt, +1.1 to +3.4).** The same 500 human labels
    spent on random rows give 0.854, and on 500 *new* rows 0.857: fixing the LLM's labels is
-   worth far more than adding to them. [docs/correction.md](docs/correction.md)
+   worth far more than adding to them (both gaps about +2 pt, intervals +1.3 to +3.0).
+   [docs/correction.md](docs/correction.md)
 6. **Which tickets to pay the LLM for matters only at the start.** Picking the 500 most
    *typical* queries (k-means over the embeddings, no model needed) scores **0.785**, against
    0.708 for 500 random ones: about what random reaches with ~900 labels, so the cold start costs

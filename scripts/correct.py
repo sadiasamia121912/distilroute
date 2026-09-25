@@ -21,7 +21,8 @@ good when it points the human at teacher errors. Reported per budget: test accur
 as everywhere), the share of checked rows that were really wrong, and the teacher errors fixed.
 Same frozen MiniLM embeddings and logistic head as `denoise.py`, so budget 0 is its `base` run.
 
-Writes results/correction.json and docs/correction.md.
+Writes results/correction.json (+ correction_test_preds.npz, seed 0 of every run, for
+`scripts/bootstrap.py`) and docs/correction.md.
 """
 
 from __future__ import annotations
@@ -88,11 +89,16 @@ def main() -> None:
     cal = rng.choice(len(idx), max(77, int(CALIB_FRAC * len(idx))), replace=False)
     fit = np.setdiff1d(np.arange(len(idx)), cal)
 
-    def score(rows: np.ndarray, y: np.ndarray) -> float:
-        head = fit_head(x_all[rows], np.eye(len(classes), dtype="float32")[y])
-        return float(accuracy_score(gold_test, np.array(classes)[proba(head, x_test).argmax(1)]))
+    preds = {}  # test predictions (class index) per run, seed 0: scripts/bootstrap.py pairs them
 
-    base = score(idx[fit], teacher_y[fit])
+    def score(rows: np.ndarray, y: np.ndarray, key: str | None = None) -> float:
+        head = fit_head(x_all[rows], np.eye(len(classes), dtype="float32")[y])
+        pred = proba(head, x_test).argmax(1)
+        if key and key not in preds:
+            preds[key] = pred.astype("int16")
+        return float(accuracy_score(gold_test, np.array(classes)[pred]))
+
+    base = score(idx[fit], teacher_y[fit], "base")
     print(f"budget 0: {base:.4f} (teacher {teacher_acc:.4f})")
 
     # Rankings over the fit rows, from out-of-fold predictions: no row is scored by a head
@@ -107,11 +113,11 @@ def main() -> None:
         "unsure": np.argsort(oof.max(1), kind="stable"),
     }
 
-    def corrected(checked: np.ndarray) -> float:
+    def corrected(checked: np.ndarray, key: str) -> float:
         """Accuracy after a human checks `checked` (positions in `fit`) and fixes what's wrong."""
         y = teacher_y[fit].copy()
         y[checked] = gold_y[idx[fit][checked]]
-        return score(idx[fit], y)
+        return score(idx[fit], y, key)
 
     runs = []
     for b in budgets:
@@ -122,7 +128,9 @@ def main() -> None:
                 if strat == "add_new":
                     new = r.choice(unlabelled, b, replace=False)
                     rows = np.concatenate([idx[fit], new])
-                    accs.append(score(rows, np.concatenate([teacher_y[fit], gold_y[new]])))
+                    accs.append(
+                        score(rows, np.concatenate([teacher_y[fit], gold_y[new]]), f"{strat}_{b}")
+                    )
                     continue
                 checked = (
                     r.choice(len(fit), b, replace=False)
@@ -130,7 +138,7 @@ def main() -> None:
                     else ranking[strat][:b]
                 )
                 w = wrong[fit][checked]
-                accs.append(corrected(checked))
+                accs.append(corrected(checked, f"{strat}_{b}"))
                 hit_rates.append(float(w.mean()))
                 fixed.append(int(w.sum()))
             run = {
@@ -156,6 +164,7 @@ def main() -> None:
     }
     RESULTS.mkdir(parents=True, exist_ok=True)
     (RESULTS / "correction.json").write_text(json.dumps(out, indent=2) + "\n")
+    np.savez_compressed(RESULTS / "correction_test_preds.npz", classes=np.array(classes), **preds)
     write_doc(out)
     print(f"-> {rel(RESULTS)}/correction.json, {rel(DOCS)}/correction.md")
 

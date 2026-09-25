@@ -1,0 +1,355 @@
+{
+  "n_test": 3080,
+  "resamples": 10000,
+  "rows": [
+    {
+      "system": "teacher",
+      "label": "LLM teacher (gpt-oss-120b)",
+      "acc": 0.8672077922077922,
+      "ci": [
+        0.8551866883116883,
+        0.8792207792207792
+      ],
+      "vs_teacher": 0.0,
+      "vs_teacher_ci": [
+        0.0,
+        0.0
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "minilm_ft_teacher",
+      "label": "MiniLM-L6 fine-tuned (fp32)",
+      "acc": 0.8467532467532467,
+      "ci": [
+        0.8337662337662337,
+        0.8597402597402597
+      ],
+      "vs_teacher": -0.020454545454545503,
+      "vs_teacher_ci": [
+        -0.03116883116883118,
+        -0.009415584415584433
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "minilm_frozen_teacher",
+      "label": "MiniLM-L6 frozen + LR",
+      "acc": 0.8483766233766233,
+      "ci": [
+        0.8353896103896103,
+        0.8607142857142858
+      ],
+      "vs_teacher": -0.018831168831168865,
+      "vs_teacher_ci": [
+        -0.02954545454545454,
+        -0.008116883116883078
+      ],
+      "p_beats_teacher": 0.0004
+    },
+    {
+      "system": "distilbert_ft_teacher",
+      "label": "DistilBERT fine-tuned",
+      "acc": 0.8389610389610389,
+      "ci": [
+        0.8256493506493506,
+        0.8519480519480519
+      ],
+      "vs_teacher": -0.028246753246753298,
+      "vs_teacher_ci": [
+        -0.03961038961038954,
+        -0.016883116883116944
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "tinybert_ft_teacher",
+      "label": "TinyBERT fine-tuned",
+      "acc": 0.7964285714285714,
+      "ci": [
+        0.7821428571428571,
+        0.8107142857142857
+      ],
+      "vs_teacher": -0.07077922077922083,
+      "vs_teacher_ci": [
+        -0.08376623376623371,
+        -0.05811688311688312
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "tfidf_lr_teacher",
+      "label": "TF-IDF + LR",
+      "acc": 0.812012987012987,
+      "ci": [
+        0.798051948051948,
+        0.8256493506493506
+      ],
+      "vs_teacher": -0.05519480519480524,
+      "vs_teacher_ci": [
+        -0.06785714285714284,
+        -0.04253246753246753
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "minilm_frozen_aug_teacher",
+      "label": "MiniLM-L6 frozen, typo-augmented",
+      "acc": 0.8506493506493507,
+      "ci": [
+        0.837987012987013,
+        0.8633116883116884
+      ],
+      "vs_teacher": -0.01655844155844155,
+      "vs_teacher_ci": [
+        -0.027272727272727337,
+        -0.005844155844155763
+      ],
+      "p_beats_teacher": 0.0013
+    },
+    {
+      "system": "tfidf_lr_aug_teacher",
+      "label": "TF-IDF + LR, typo-augmented",
+      "acc": 0.8090909090909091,
+      "ci": [
+        0.7954545454545454,
+        0.8227272727272728
+      ],
+      "vs_teacher": -0.05811688311688312,
+      "vs_teacher_ci": [
+        -0.07012987012987015,
+        -0.045454545454545525
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "minilm_ft_gold",
+      "label": "MiniLM-L6 fine-tuned, human labels",
+      "acc": 0.9266233766233766,
+      "ci": [
+        0.9175324675324675,
+        0.936038961038961
+      ],
+      "vs_teacher": 0.059415584415584366,
+      "vs_teacher_ci": [
+        0.04772727272727273,
+        0.07142857142857151
+      ],
+      "p_beats_teacher": 1.0
+    },
+    {
+      "system": "tfidf_lr_gold",
+      "label": "TF-IDF + LR, human labels",
+      "acc": 0.910064935064935,
+      "ci": [
+        0.8996753246753246,
+        0.9201298701298701
+      ],
+      "vs_teacher": 0.042857142857142816,
+      "vs_teacher_ci": [
+        0.03019480519480522,
+        0.05552759740259729
+      ],
+      "p_beats_teacher": 1.0
+    },
+    {
+      "system": "minilm_ft_teacher_int8",
+      "label": "MiniLM-L6 fine-tuned, int8 as served",
+      "acc": 0.8422077922077922,
+      "ci": [
+        0.8292207792207792,
+        0.8551948051948052
+      ],
+      "vs_teacher": -0.025000000000000022,
+      "vs_teacher_ci": [
+        -0.0357142857142857,
+        -0.014285714285714235
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "cascade",
+      "label": "Cascade: MiniLM, escalate below 0.8",
+      "acc": 0.8737012987012988,
+      "ci": [
+        0.8616883116883117,
+        0.8853896103896104
+      ],
+      "vs_teacher": 0.006493506493506551,
+      "vs_teacher_ci": [
+        -0.0006493506493506773,
+        0.013961038961038952
+      ],
+      "p_beats_teacher": 0.9563
+    },
+    {
+      "system": "correction_base",
+      "label": "frozen MiniLM, 0 human labels",
+      "acc": 0.8422077922077922,
+      "ci": [
+        0.8292207792207792,
+        0.8548701298701299
+      ],
+      "vs_teacher": -0.025000000000000022,
+      "vs_teacher_ci": [
+        -0.036363636363636376,
+        -0.013961038961038952
+      ],
+      "p_beats_teacher": 0.0
+    },
+    {
+      "system": "correction_random_500",
+      "label": "+ 500 human checks, random rows",
+      "acc": 0.8542207792207792,
+      "ci": [
+        0.8415584415584415,
+        0.8665584415584415
+      ],
+      "vs_teacher": -0.012987012987012991,
+      "vs_teacher_ci": [
+        -0.024350649350649345,
+        -0.0016233766233766378
+      ],
+      "p_beats_teacher": 0.0111
+    },
+    {
+      "system": "correction_add_new_500",
+      "label": "+ 500 new human-labelled rows",
+      "acc": 0.8545454545454545,
+      "ci": [
+        0.8418831168831169,
+        0.8668831168831169
+      ],
+      "vs_teacher": -0.012662337662337708,
+      "vs_teacher_ci": [
+        -0.0230519480519481,
+        -0.002272727272727204
+      ],
+      "p_beats_teacher": 0.008
+    },
+    {
+      "system": "correction_disagreement_300",
+      "label": "+ 300 human checks, by disagreement",
+      "acc": 0.8642857142857143,
+      "ci": [
+        0.8522727272727273,
+        0.875974025974026
+      ],
+      "vs_teacher": -0.0029220779220778814,
+      "vs_teacher_ci": [
+        -0.013961038961038952,
+        0.008116883116883078
+      ],
+      "p_beats_teacher": 0.2938
+    },
+    {
+      "system": "correction_disagreement_500",
+      "label": "+ 500 human checks, by disagreement",
+      "acc": 0.875974025974026,
+      "ci": [
+        0.8642857142857143,
+        0.8873376623376623
+      ],
+      "vs_teacher": 0.008766233766233755,
+      "vs_teacher_ci": [
+        -0.00259740259740249,
+        0.02012987012987011
+      ],
+      "p_beats_teacher": 0.9326
+    },
+    {
+      "system": "correction_disagreement_1000",
+      "label": "+ 1,000 human checks, by disagreement",
+      "acc": 0.8896103896103896,
+      "ci": [
+        0.8782467532467533,
+        0.9003246753246753
+      ],
+      "vs_teacher": 0.022402597402597424,
+      "vs_teacher_ci": [
+        0.010714285714285676,
+        0.03409090909090906
+      ],
+      "p_beats_teacher": 0.9999
+    }
+  ],
+  "pairs": [
+    {
+      "a": "minilm_ft_teacher",
+      "b": "distilbert_ft_teacher",
+      "claim": "MiniLM (22M) is at least as good as DistilBERT (67M)",
+      "diff": 0.007792207792207795,
+      "ci": [
+        -0.00032467532467528315,
+        0.015909090909090984
+      ],
+      "p_a_better": 0.9677
+    },
+    {
+      "a": "minilm_ft_teacher",
+      "b": "minilm_frozen_teacher",
+      "claim": "fine-tuned and frozen MiniLM are a tie",
+      "diff": -0.0016233766233766378,
+      "ci": [
+        -0.01103896103896107,
+        0.007792207792207795
+      ],
+      "p_a_better": 0.3633
+    },
+    {
+      "a": "minilm_ft_teacher_int8",
+      "b": "minilm_ft_teacher",
+      "claim": "int8 costs about half a point",
+      "diff": -0.004545454545454519,
+      "ci": [
+        -0.00909090909090915,
+        0.0
+      ],
+      "p_a_better": 0.0206
+    },
+    {
+      "a": "minilm_frozen_aug_teacher",
+      "b": "minilm_frozen_teacher",
+      "claim": "typo augmentation is free on clean text",
+      "diff": 0.002272727272727315,
+      "ci": [
+        -0.0035714285714285587,
+        0.008441558441558361
+      ],
+      "p_a_better": 0.7606
+    },
+    {
+      "a": "cascade",
+      "b": "minilm_ft_teacher",
+      "claim": "the cascade is better than its student alone",
+      "diff": 0.026948051948052054,
+      "ci": [
+        0.019155844155844256,
+        0.03474025974025974
+      ],
+      "p_a_better": 1.0
+    },
+    {
+      "a": "correction_disagreement_500",
+      "b": "correction_random_500",
+      "claim": "targeted checks beat random ones",
+      "diff": 0.021753246753246747,
+      "ci": [
+        0.012987012987012991,
+        0.03019480519480522
+      ],
+      "p_a_better": 1.0
+    },
+    {
+      "a": "correction_disagreement_500",
+      "b": "correction_add_new_500",
+      "claim": "fixing labels beats adding rows",
+      "diff": 0.021428571428571463,
+      "ci": [
+        0.012987012987012991,
+        0.029870129870129936
+      ],
+      "p_a_better": 1.0
+    }
+  ]
+}
