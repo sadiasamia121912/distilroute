@@ -275,6 +275,37 @@ honest baselines.
 three results people will quote: student beats teacher (6.1), cascade beats teacher at a fifth
 of the LLM cost (1b.2), and it knows when a message is not its job (6.2)".
 
+## Phase 7 — Close the limitations  (decided 2026-09-27)
+
+The README's Limitations section lists what is weak. Of the 16 weaknesses reviewed on
+2026-09-27, 8 are fully fixable at $0, 7 partly, 1 not (the method is not novel — that is the
+framing, not a flaw). In order of payoff per effort; 7.1 and 7.2 need no Groq budget, so they
+run while `jobs.py` labels.
+
+- [ ] **7.1 Real human checks** (fixes "the human in finding 5 is simulated"). A small review
+  script: take the ~200 rows `correct.py` ranks as least believed, show the user the text, the
+  teacher's label and the 77 intents — **never the gold label** — and record their answer and
+  seconds per item. Report: the user's agreement with gold, the time cost, and the frozen
+  student retrained on the user's corrections vs the simulated 0.876 curve. The user does the
+  checking (~2–3 h); gold is read only to score it afterwards.
+- [ ] **7.2 Leave-intents-out** (near out-of-scope, new-intent behaviour; free, CPU, ~30 min).
+  Train students without ~10 of the 77 intents; score how many held-out queries are flagged
+  (entropy, as in 6.2) against 10 % in-scope escalation. Then add the intents back with
+  25 / 50 / 100 labels each: how many labels does a new intent need?
+- [ ] **7.3 One Colab session after 1.6 finishes**: fine-tuned MiniLM at N = 10,003 (1.6 step 3),
+  `minilm_ft_aug_teacher` (6.6), and 3 seeds of the served config (seed noise, 6.10 caveat).
+- [ ] **7.4 Measured cost and latency**: concurrent load test of `/route` (in GitHub Actions on
+  Linux, avoiding Windows loopback); cost per 1M from measured throughput, not CPU-seconds.
+  Plus a live endpoint as a free Hugging Face Space (`build_hf_release.py`).
+- [ ] **7.5 After the labelling queue (Groq free again):** second teacher through Google AI
+  Studio (Gemini, `teacher.py` already speaks it) on the 200-query gate; the v1-vs-v2
+  descriptions comparison re-run on 200 *train* queries, to show the test-based choice did not
+  matter.
+- [ ] **7.6 Stress text (free):** two queries joined into one message (is the pair in the
+  top 2?) and queries padded to ticket length.
+- [ ] **7.7 Publish** (4.2) once 7.1–7.4 land, so the posts carry the stronger numbers; trim the
+  ROADMAP or add a one-page "start here".
+
 ---
 
 ## Rules of thumb
@@ -298,7 +329,14 @@ every few minutes is not worth it. Left: ~5,100 train rows, 80 self-agreement, 1
 queries → about 4 more daily runs (≈ 30 Sep – 1 Oct). Also: case study rebuilt with the
 typo-augmented students (not yet republished — wait for the teacher-on-noise results), and the
 partial Gemma gate file of the cut 1b.6 lane deleted.
-**Next:** run `jobs.py`; once past 5,000 rows, `scripts/retrain_check.py --rows 5000` (then 7,500).
+Later the same day: README gained a **Limitations** section (`c1c032a`); the 16 weaknesses were
+triaged into **Phase 7** (8 fully fixable at $0, 7 partly, 1 not). `.venv` deleted to free
+1.35 GB — rebuild it first (commands in the 2026-09-23 handoff below; `requirements-dev.txt`
+too, for pytest).
+**Next session, in order:** (1) rebuild `.venv`; (2) run `jobs.py` once (it runs ~25 min, then
+pauses on Groq's rolling limit); (3) once past 5,000 rows, `scripts/retrain_check.py --rows 5000`;
+(4) meanwhile start **7.1** (review script for real human checks) and **7.2** (leave-intents-out),
+neither of which uses Groq.
 
 **2026-09-25 (HANDOFF — where to start next session)**
 
