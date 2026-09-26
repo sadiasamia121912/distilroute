@@ -166,7 +166,7 @@ free tier costs a day.
   scale the thresholds (or the leaf size) with the number of classes, and trust its *rate*
   estimate more than its row list. Also found: tabaudit's `encode_features` inserted columns one
   by one — one pandas fragmentation warning per column on wide data; fixed in the tabaudit repo.)_
-- [-] **1b.6 (cut 2026-09-25)** _(OpenRouter's free models gave ~20 rows/day, so three 200-row gates would take weeks for a side question; the lane is gone from `jobs.py`. 40 Gemma rows stay on disk, uncommitted.)_ Second teacher (Gemini Flash) on the test split: agreement as a noise
+- [-] **1b.6 (cut 2026-09-25)** _(OpenRouter's free models gave ~20 rows/day, so three 200-row gates would take weeks for a side question; the lane is gone from `jobs.py`. The 40 Gemma rows it had produced were never committed and were deleted 2026-09-27.)_ Second teacher (Gemini Flash) on the test split: agreement as a noise
   signal, and "which free teacher is best".
 
 ## Phase 2 — Students  (2 days)
