@@ -338,6 +338,25 @@ pauses on Groq's rolling limit); (3) once past 5,000 rows, `scripts/retrain_chec
 (4) meanwhile start **7.1** (review script for real human checks) and **7.2** (leave-intents-out),
 neither of which uses Groq.
 
+```powershell
+cd C:\Users\User\dev\distilroute
+
+# 1. Recreate the venv (~1.3 GB download, 5-10 min)
+python -m venv .venv
+.\.venv\Scripts\pip install -r requirements.txt
+.\.venv\Scripts\pip install --index-url https://download.pytorch.org/whl/cpu torch
+.\.venv\Scripts\pip install -r requirements-train.txt -r requirements-dev.txt
+
+# 2. Label: runs ~25 min until Groq's rolling limit, then pauses itself. Once a day.
+.\.venv\Scripts\python.exe scripts\jobs.py
+.\.venv\Scripts\python.exe scripts\jobs.py --status        # progress, any time
+
+# 3. When train labels pass 5,000 (the first line of --status), the first "do more labels
+#    help?" check (~3 min; writes results/teacher5000/checkpoint.json, never over published runs)
+(Get-Content data\labels\train.jsonl | Measure-Object -Line).Lines
+.\.venv\Scripts\python.exe scripts\retrain_check.py --rows 5000
+```
+
 **2026-09-25 (HANDOFF — where to start next session)**
 
 **Resume:** open the repo and run `.venv\Scripts\python scripts\jobs.py` (or ask Claude to
