@@ -120,7 +120,8 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
 - **Human labels are for evaluation only.** Students train on teacher labels. The
   gold-trained rows exist only as the supervised reference.
 - **Zero-shot teacher**: the prompt carries the 77 intent names and a one-line description
-  each, no example queries (examples would leak gold labels into the "LLM-labelled" data).
+  each, no example queries (examples would leak gold labels into the "LLM-labelled" data;
+  how the descriptions were written is under [Limitations](#limitations)).
   It returns its top 3, parsed strictly: an answer outside the 77 names is a failure, never a
   guess (0 of 3,080 failed).
 - **Resumable labelling** under free-tier rate limits: every batch is checkpointed to JSONL,
@@ -169,6 +170,37 @@ docker run --rm -p 8000:8000 distilroute
 
 Labelling more data needs a free key (no card): copy `.env.example` to `.env`, set
 `GROQ_API_KEY` (https://console.groq.com/keys), then `python scripts/label.py --split train`.
+
+## Limitations
+
+- **Human labels still win, by about 8 pt.** A MiniLM trained on 10,003 human labels scores
+  0.927, above every system in the table, the LLM included. Distillation is the answer when those
+  labels do not exist yet or cannot be made fast enough; it is not a replacement for them. 500
+  targeted human checks (finding 5) close only part of the gap.
+- **The human in finding 5 is simulated.** The gold label stands in for the reviewer's answer, so
+  every check is correct and free. Real reviewers disagree, make mistakes and cost time, so
+  0.876 at 500 checks is an upper bound, and even that is within test noise of the teacher.
+- **The teacher saw a little human-labelled information.** The prompt carries no example
+  queries, but 33 of the 77 descriptions were rewritten after reading three training queries per
+  intent, because some names mislead (`get_physical_card` is about PINs). On the 200-query gate
+  that took the teacher from 0.885 to 0.905. The prompt settings (descriptions, reasoning effort,
+  batch size, top-3) were also chosen on those 200 *test* queries. Both are disclosed choices, not
+  a strict zero-shot protocol.
+- **Benchmark text, not tickets.** Banking77 queries are short (median 47 characters), English,
+  one intent each and one snapshot in time. Real tickets are longer, mix several requests, carry
+  personal data and drift as products change; none of that is measured here, and adding an
+  intent means relabelling and retraining.
+- **Cost and latency are modelled, not load-tested.** Teacher cost is a list price; student cost
+  is CPU time priced on a t3.small; latency is one query at a time, in-process, on one laptop. No
+  concurrency, network or batching was measured.
+- **One teacher, mostly one training seed.** Every result uses gpt-oss-120b with one prompt; the
+  only second teacher tried (nemotron-550b) was weaker (0.835 vs 0.905 on the gate), so how the
+  findings transfer to other LLMs is untested. The bootstrap intervals cover test sampling, not
+  training randomness (about ±0.3 pt between fine-tuning runs); only finding 6 is averaged over
+  three seeds. Read differences under ~1 pt as ties.
+- **Still running.** The published students use 3,000 of the 10,003 training queries; whether the
+  rest close the gap to the teacher is being measured (ROADMAP 1.6). So is the teacher on noisy
+  text (finding 4), and the typo-augmented version of the served model is not trained yet.
 
 ## Scope
 
