@@ -25,10 +25,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from distilroute import students
+from distilroute.monitor import IntentMonitor
 
 app = FastAPI(title="distilroute", version="0.0.1")
 _loaded: dict[str, students.Router] = {}
 _slots: dict[str, threading.BoundedSemaphore] = {}
+_monitors: dict[str, IntentMonitor] = {}
 _load_lock = threading.Lock()
 
 
@@ -66,7 +68,14 @@ def get_router(name: str) -> students.Router:
         with _load_lock:  # concurrent first requests load the model once
             if name not in _loaded:
                 _slots[name] = threading.BoundedSemaphore(concurrency())
-                _loaded[name] = students.load(name)
+                router = students.load(name)
+                if getattr(router, "classes", None):  # the teacher has no fixed class list
+                    _monitors[name] = IntentMonitor(
+                        router.classes,
+                        reference=int(os.environ.get("DISTILROUTE_MONITOR_REFERENCE") or 5000),
+                        window=int(os.environ.get("DISTILROUTE_MONITOR_WINDOW") or 2000),
+                    )
+                _loaded[name] = router
     return _loaded[name]
 
 
@@ -83,6 +92,8 @@ def route(req: RouteRequest) -> RouteResponse:
         t0 = time.perf_counter()
         r = router.route(req.text)
         ms = (time.perf_counter() - t0) * 1000
+    if name in _monitors:
+        _monitors[name].add(r.intent)
     return RouteResponse(
         intent=r.intent,
         confidence=r.confidence,
@@ -91,6 +102,16 @@ def route(req: RouteRequest) -> RouteResponse:
         calibrated=router.temperature is not None,
         latency_ms=round(ms, 2),
     )
+
+
+@app.get("/monitor")
+def monitor(model: str | None = None) -> dict:
+    """Has the mix of routed intents shifted? A new intent shows up as one neighbour's share
+    jumping (distilroute/monitor.py, docs/new_intents.md)."""
+    name = model or default_model()
+    if name not in _monitors:
+        raise HTTPException(404, f"no traffic monitored for {name!r} yet; route something first")
+    return {"model": name, **_monitors[name].report()}
 
 
 @app.get("/health")

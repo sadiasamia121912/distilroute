@@ -116,14 +116,19 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    intent, so every batch of 20 queries shared one intent and the LLM used the batch as a hint.
    Relabelled in shuffled order: **0.867**. The labeller now always shuffles.
    [docs/teacher.md](docs/teacher.md)
-8. **A new banking intent is much harder to notice than off-topic chatter, and needs ~50
-   labels to add.** Retrained without 10 of the 77 intents (3 random draws), the student catches
-   only **53 %** of their queries at the same 10 % escalation budget that catches 96 % of
-   CLINC150's out-of-scope traffic (AUROC 0.83 vs 0.98). The unknown intent is absorbed by a
-   neighbour (`failed_transfer` → `declined_transfer`, 88 %), so in production the signal is a
-   *volume shift* into one intent, not per-message confidence. Adding the intent back with 5
-   labelled examples routes 39 % of it correctly; **50 match the student that had it from the
-   start**. [docs/new_intents.md](docs/new_intents.md)
+8. **A new banking intent slips past per-message checks, so the service watches the traffic
+   mix instead.** Retrained without 10 of the 77 intents (3 random draws), the student catches
+   only **53 %** of their queries at the same 10 % escalation budget that catches 95 % of
+   CLINC150's off-topic traffic. Distance scores on the embeddings, near-perfect on off-topic
+   messages (AUROC 0.997), are *worse* here (0.72): a new banking intent sits among the known
+   ones, and no per-message score tried beats entropy by more than noise. What gives it away is
+   that one neighbour absorbs it (`failed_transfer` → `declined_transfer`, 88 %). So the service
+   now has a **traffic monitor** (`GET /monitor`): it compares the mix of routed intents with a
+   reference and names any intent whose share jumps. In simulation it flags a new intent at 5 %
+   of traffic within a 2,000-message window 94 % of the time, at 10 % within 500 messages 97 %
+   of the time, with 1.6 % false alarms. Adding the intent back with 5 labelled examples routes
+   39 % of it correctly; **50 match the student that had it from the start**.
+   [docs/new_intents.md](docs/new_intents.md)
 9. **Long tickets used to break the served model; now it reads them.** It was cut at the
    64 tokens it was trained on, so a question at the end of a 120-word ticket scored **0.013**
    (the cascade escalated 90 % of those, so they cost LLM calls rather than misroutes). Reading

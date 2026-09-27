@@ -25,6 +25,7 @@ def client(monkeypatch):
     monkeypatch.delenv("DISTILROUTE_MODEL", raising=False)
     serve._loaded.clear()
     serve._slots.clear()
+    serve._monitors.clear()
     return TestClient(serve.app)
 
 
@@ -124,3 +125,14 @@ def test_concurrent_inferences_are_capped_per_model(client, monkeypatch):
     for t in threads:
         t.join()
     assert peak[0] == 1
+
+
+def test_monitor_endpoint_reports_its_phase(client, monkeypatch):
+    monkeypatch.setenv("DISTILROUTE_MONITOR_REFERENCE", "4")
+    monkeypatch.setenv("DISTILROUTE_MONITOR_WINDOW", "2")
+    assert client.get("/monitor").status_code == 404  # nothing routed yet
+    for text in ["card", "top up", "card", "top up", "card"]:
+        client.post("/route", json={"text": text})
+    body = client.get("/monitor").json()
+    assert body["model"] == "fake_gold" and body["reference"] == 4 and body["window"] == 1
+    assert body["state"].startswith("filling the window")
