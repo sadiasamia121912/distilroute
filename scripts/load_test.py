@@ -274,8 +274,11 @@ def report(paths: list[str], slo_ms: float) -> None:
             for r in runs
         )
         + (
-            " The table above shows what pinning the threads to the CPU quota changed; any tail "
-            "left is the runner's (shared host, the load generator on the same machine)."
+            " The table above shows what pinning the threads to the CPU quota changed. With "
+            "more clients the tail returns and throughput stops rising: likely because uvicorn "
+            "runs the requests' inferences side by side in its thread pool, where they share "
+            "the same quota. Queueing them through one inference at a time is the next thing "
+            "to try."
             if (RESULTS / BASELINE).exists()
             else " A tail that jumps like that with no queueing is typical of CPU-quota "
             "throttling: onnxruntime sizes its thread pool to the host's cores, not to the "
