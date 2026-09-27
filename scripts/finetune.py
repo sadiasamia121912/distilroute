@@ -260,12 +260,14 @@ def main() -> None:
         + (f"_{args.limit}" if args.limit else "")
         + ("_aug" if kinds else "")
     )
+    tag += f"_s{args.seed}" if args.seed else ""  # seed 0 keeps the published names
     name = f"{tag}_{args.labels}"
     metrics = {
         "model": f"{args.model} fine-tuned" + (" (soft top-3)" if args.soft else ""),
         "hf_model": hf_name,
         "params": n_params,
         "trained_on": args.labels,
+        "seed": args.seed,
         "n_train": int(len(train)),
         "accuracy": acc,
         "macro_f1": f1,
