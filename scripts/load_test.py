@@ -108,13 +108,27 @@ def level(url: str, texts: list[str], clients: int, seconds: float) -> dict:
     }
 
 
+def cpu_model() -> str | None:
+    try:
+        for line in Path("/proc/cpuinfo").read_text().splitlines():
+            if line.startswith("model name"):
+                return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or None
+
+
 def run(args: argparse.Namespace) -> None:
     texts = queries()
     base = args.url.rstrip("/")
-    health = json.loads(urllib.request.urlopen(base + "/health", timeout=10).read())
     model = json.loads(urllib.request.urlopen(base + "/models", timeout=10).read())["default"]
-    print(f"{len(texts):,} queries; server ok={health['ok']}, model {model}, {args.cpus:g} CPUs")
     level(args.url, texts[:50], 1, 3)  # warm-up: model load, first-call allocations
+    health = json.loads(urllib.request.urlopen(base + "/health", timeout=10).read())
+    print(
+        f"{len(texts):,} queries; model {model}, {args.cpus:g} CPUs, mode {args.mode}; "
+        f"server sees {health.get('cpus')} CPUs, runs {health.get('concurrency')} inferences "
+        f"at once on {health.get('threads_per_inference')} thread(s) each"
+    )
 
     levels, clients = [], 1
     while clients <= args.max_concurrency:
@@ -131,10 +145,12 @@ def run(args: argparse.Namespace) -> None:
         "model": model,
         "cpus": args.cpus,
         "mode": args.mode,
+        "health": health,
+        "run_id": os.environ.get("GITHUB_RUN_ID"),
         "host": {
             "platform": platform.platform(),
             "cpu_count": os.cpu_count(),
-            "processor": platform.processor() or None,
+            "cpu_model": cpu_model(),
             "runner": os.environ.get("RUNNER_NAME"),
         },
         "seconds_per_level": args.seconds,
@@ -150,103 +166,148 @@ def sustained(run: dict, slo_ms: float) -> dict | None:
     return max(ok, key=lambda lv: lv["rps"]) if ok else None
 
 
-# Earlier runs kept for comparison: file, what the service did then.
+# Earlier runs, one service change each, kept for the record: file, what the service did then.
+# Each landed on a different runner CPU, so they are not a fair comparison of the changes.
 STAGES = [
     ("load_test_unpinned.json", "threads = host cores"),
     ("load_test_pinned.json", "threads = CPU quota"),
     ("load_test_serial.json", "+ one inference at a time"),
+    ("load_test_parallel.json", "one single-thread inference per CPU"),
 ]
-MODES = {  # the current run, by the --mode the workflow ran it with
-    "serial": "+ one inference at a time",
-    "parallel": "+ one single-thread inference per CPU",
+MODES = {  # the setups the workflow runs side by side on one runner
+    "default": "one single-thread inference per CPU (the service default)",
+    "serial": "one inference at a time, threads = CPUs",
 }
+SUMMARY_HEAD = [
+    "| CPUs | service | model ms, 1 client | 1 client p50 / p95 ms | 8 clients p50 / p95 ms "
+    "| sustained req/s | usd per 1M |",
+    "|---:|---|---:|---:|---:|---:|---:|",
+]
 
 
-def one_client_gap(a: dict, b: dict) -> float:
-    """Largest relative 1-client throughput gap between two runs, over their shared CPU counts."""
-    return max(
-        abs(a[c]["levels"][0]["rps"] / b[c]["levels"][0]["rps"] - 1) for c in a.keys() & b.keys()
+def cpus_label(c: float) -> str:
+    return f"{c:g} CPU{'s' if c != 1 else ''}"
+
+
+def price(r: dict, vm: dict, slo_ms: float) -> None:
+    """Adds `sustained` and `usd_per_1m`: the VM's price, scaled by the CPUs used (a t3.small
+    has 2), over the sustained rate."""
+    best = r["sustained"] = sustained(r, slo_ms)
+    r["usd_per_1m"] = (
+        round(vm["usd_per_hour"] * r["cpus"] / 2 / (best["rps"] * 3600) * 1e6, 3) if best else None
     )
 
 
-def before_after(runs: list[dict], slo_ms: float) -> list[str]:
-    """Doc lines comparing these runs with the earlier stages that are kept."""
-    sys.path.insert(0, str(ROOT))
-    from distilroute.data import RESULTS
+def summary_row(label: str, x: dict) -> str:
+    by = {lv["clients"]: lv for lv in x["levels"]}
+    one, eight, best, usd = by[1], by.get(8), x.get("sustained"), x.get("usd_per_1m")
+    return (
+        f"| {cpus_label(x['cpus'])} | {label} | {one['server_mean_ms']:.2f} | "
+        f"{one['p50_ms']:.1f} / {one['p95_ms']:.1f} | "
+        + (f"{eight['p50_ms']:.1f} / {eight['p95_ms']:.1f}" if eight else "—")
+        + (f" | {best['rps']:.0f} | ${usd:.3f} |" if best and usd else " | — | — |")
+    )
 
-    kept = {
-        f: {r["cpus"]: r for r in json.loads((RESULTS / f).read_text())["runs"]}
-        for f, _ in STAGES
-        if (RESULTS / f).exists()
-    }
+
+def same_runner(by_mode: dict[str, dict[float, dict]], cpus: list[float]) -> list[str]:
+    """The fair comparison: every setup of one workflow run, side by side."""
+    lines = [
+        "## Two setups, same runner",
+        "",
+        "Both setups back to back in one job, on one machine — the only fair comparison.",
+        "",
+        *SUMMARY_HEAD,
+    ]
+    for c in cpus:
+        for mode, rs in by_mode.items():
+            if c in rs:
+                lines.append(summary_row(MODES.get(mode, mode), rs[c]))
+    for c in cpus:
+        d, s = by_mode.get("default", {}).get(c), by_mode.get("serial", {}).get(c)
+        if not (d and s and d["sustained"] and s["sustained"]) or c == 1:
+            continue
+        ed = {lv["clients"]: lv for lv in d["levels"]}.get(8)
+        es = {lv["clients"]: lv for lv in s["levels"]}.get(8)
+        lines += [
+            "",
+            f"At {cpus_label(c)} the default sustains "
+            f"{d['sustained']['rps'] / s['sustained']['rps']:.1f}× the throughput of one "
+            "inference at a time"
+            + (
+                f", with p95 at 8 clients {ed['p95_ms']:.0f} ms against {es['p95_ms']:.0f} ms"
+                if ed and es
+                else ""
+            )
+            + ".",
+        ]
+    d1, s1 = by_mode.get("default", {}).get(1), by_mode.get("serial", {}).get(1)
+    if d1 and s1:
+        setup = [
+            (
+                x.get("health", {}).get("concurrency"),
+                x.get("health", {}).get("threads_per_inference"),
+            )
+            for x in (d1, s1)
+        ]
+        gap = abs(d1["levels"][0]["rps"] / s1["levels"][0]["rps"] - 1)
+        lines += [
+            "",
+            f"On 1 CPU, `/health` reported {setup[0][0]} inference(s) at once on {setup[0][1]} "
+            f"thread(s) for the default and {setup[1][0]} on {setup[1][1]} for the serial setup"
+            + (
+                f": the same configuration, so their {gap:.0%} gap at one client is run-to-run "
+                "noise within one runner."
+                if setup[0] == setup[1]
+                else f": not the same configuration, so their {gap:.0%} gap at one client is "
+                "not just noise."
+            ),
+        ]
+    return [*lines, ""]
+
+
+def history(results: Path, cpus: list[float]) -> list[str]:
+    """The earlier runs, one per service change, with the CPU each landed on."""
+    kept = [
+        (json.loads((results / f).read_text())["runs"], label, f)
+        for f, label in STAGES
+        if (results / f).exists()
+    ]
     if not kept:
         return []
-    mode = runs[0].get("mode", "serial")
     lines = [
-        "## What each fix changed",
+        "## How the service got here (earlier runs, different runners)",
         "",
-        "The same load test after each change to the service: onnxruntime's thread pool sized "
-        "to the host's cores (the first run), then to the container's CPU quota "
-        "(`students.cpu_limit`), then inference serialised per model (`serve.py`, "
-        "`DISTILROUTE_CONCURRENCY`), then — as an alternative to that — one single-thread "
-        "inference per CPU (`DISTILROUTE_CONCURRENCY=<CPUs>`, `DISTILROUTE_THREADS=1`). Earlier "
-        "runs: " + ", ".join(f"`results/{f}`" for f in kept) + ".",
+        "One run after each change: onnxruntime's pool sized to the host's cores, then to the "
+        "container's quota, then one inference at a time, then one single-thread inference per "
+        "CPU. **Each run landed on a different runner CPU**, and the int8 model's own time "
+        "(third column) moves with the hardware, so these rows mix the service change with the "
+        "machine; only the same-runner table above compares setups fairly. Files: "
+        + ", ".join(f"`results/{f}`" for _, _, f in kept)
+        + ".",
         "",
-        "| CPUs | service | 1 client p50 / p95 ms | 8 clients p50 / p95 ms | sustained req/s "
-        "| usd per 1M |",
-        "|---:|---|---:|---:|---:|---:|",
+        *SUMMARY_HEAD,
     ]
-    for r in runs:
-        rows = [(kept[f].get(r["cpus"]), label) for f, label in STAGES if f in kept]
-        if not (mode == "serial" and "load_test_serial.json" in kept):
-            rows.append((r, MODES.get(mode, mode)))
-        for x, label in rows:
-            if not x:
-                continue
-            by = {lv["clients"]: lv for lv in x["levels"]}
-            one, eight, best = by[1], by.get(8), sustained(x, slo_ms)
-            usd = x.get("usd_per_1m")
-            lines.append(
-                f"| {r['cpus']:g} | {label} | {one['p50_ms']:.1f} / {one['p95_ms']:.1f} | "
-                + (f"{eight['p50_ms']:.1f} / {eight['p95_ms']:.1f}" if eight else "—")
-                + (f" | {best['rps']:.0f} | ${usd:.3f} |" if best and usd else " | — | — |")
-            )
-    notes = []
-    if {"load_test_pinned.json", "load_test_serial.json"} <= kept.keys():
-        gap = one_client_gap(kept["load_test_pinned.json"], kept["load_test_serial.json"])
-        notes.append(
-            "With one client nothing is ever queued, so the pinned and serialised services run "
-            f"the same code there; their 1-client throughput still differs by up to {gap:.0%}. "
-            "That is the run-to-run noise of a shared runner, and smaller gaps are within it. "
-            "Serialising shows under load: the model's own time stays flat as clients are added, "
-            "and p95 falls while p50 rises, because requests now wait their turn."
-        )
-    if mode == "parallel" and "load_test_serial.json" in kept:
-        serial = kept["load_test_serial.json"]
-        if 1 in serial and any(r["cpus"] == 1 for r in runs):
-            gap = one_client_gap(serial, {r["cpus"]: r for r in runs if r["cpus"] == 1})
-            noise = (
-                one_client_gap(kept["load_test_pinned.json"], serial)
-                if "load_test_pinned.json" in kept
-                else None
-            )
-            if noise is not None and gap > 2 * noise:
-                notes.append(
-                    "On 1 CPU the serial and parallel setups *should* be identical (one slot, "
-                    f"and one thread if the quota is detected), yet they are {gap:.0%} apart at "
-                    f"one client, far beyond the {noise:.0%} noise. So they were not the same: "
-                    "most likely the serial service did not detect the 1-CPU quota inside the "
-                    "container and still ran onnxruntime with several threads, and the gain "
-                    "credited to pinning came from its other settings. Unverified."
-                )
-            else:
-                notes.append(
-                    "On 1 CPU the parallel setup *is* the serial one (one slot, one thread), so "
-                    f"its 1-CPU rows measure noise again: {gap:.0%} apart at one client. The "
-                    "comparison that matters is 2 CPUs."
-                )
-    if notes:
-        lines += ["", " ".join(notes)]
+    for c in cpus:
+        for rs, label, _ in kept:
+            x = next((r for r in rs if r["cpus"] == c), None)
+            if x:
+                cpu = (x["host"].get("cpu_model") or "?").replace(" Processor", "")
+                lines.append(summary_row(f"{label} — {cpu}", x))
+    if len(kept) > 1:
+        first = {r["cpus"]: r for r in kept[0][0]}
+        second = {r["cpus"]: r for r in kept[1][0]}
+        tails = [
+            f"{first[c]['levels'][0]['p95_ms']:.0f} → {second[c]['levels'][0]['p95_ms']:.0f} ms "
+            f"at {cpus_label(c)}"
+            for c in sorted(first.keys() & second.keys())
+        ]
+        lines += [
+            "",
+            "One change survives the hardware caveat: sizing the pool to the quota removed a "
+            "tail at one client (p95 " + ", ".join(tails) + "). With one client nothing "
+            "queues, so a tail of tens of ms on a model that takes a few is CPU-quota "
+            "throttling, not a slower machine.",
+        ]
     return [*lines, ""]
 
 
@@ -258,41 +319,51 @@ def report(paths: list[str], slo_ms: float) -> None:
     from distilroute.data import DOCS, RESULTS, rel
 
     results = RESULTS / "load_test.json"
-    runs = [json.loads(Path(p).read_text()) for p in paths] if paths else None
-    if runs is None:
-        runs = json.loads(results.read_text())["runs"]
-    runs.sort(key=lambda r: r["cpus"])
+    runs = (
+        [json.loads(Path(p).read_text()) for p in paths]
+        if paths
+        else json.loads(results.read_text())["runs"]
+    )
+    runs.sort(key=lambda r: (r.get("mode", "default") != "default", r["cpus"]))
     vm = PRICES["vm"]
+    by_mode: dict[str, dict[float, dict]] = {}
     for r in runs:
-        best = sustained(r, slo_ms)
-        r["sustained"] = best
-        # The VM's price scales with its vCPUs; a t3.small is 2, so price a run by its share.
-        r["usd_per_1m"] = (
-            round(vm["usd_per_hour"] * r["cpus"] / 2 / (best["rps"] * 3600) * 1e6, 3)
-            if best
-            else None
-        )
+        price(r, vm, slo_ms)
+        by_mode.setdefault(r.get("mode", "default"), {})[r["cpus"]] = r
+    main = by_mode.get("default") or next(iter(by_mode.values()))
+    cpus = sorted(main)
     estimate = json.loads((RESULTS / "cost.json").read_text())["rows"]
     est = estimate.get(runs[0]["model"])
     teacher = estimate["teacher_single"]["usd_per_1m"]
     RESULTS.mkdir(parents=True, exist_ok=True)
     results.write_text(json.dumps({"slo_ms": slo_ms, "vm": vm, "runs": runs}, indent=2) + "\n")
 
-    host = runs[0]["host"]
+    first = main[cpus[0]]
+    host, h = first["host"], first.get("health", {})
+    setup = ", ".join(
+        f"{cpus_label(c)}: {main[c].get('health', {}).get('concurrency', '?')} at once"
+        for c in cpus
+    )
     lines = [
         "# Load test: measured throughput, latency and cost",
         "",
-        f"_Generated by `scripts/load_test.py --report` from runs of "
-        "`.github/workflows/load-test.yml`: the Docker image as shipped "
-        f"(`{runs[0]['model']}`, int8 ONNX, one uvicorn process) on a GitHub-hosted Linux runner "
-        f"({host['cpu_count']} vCPUs, {host['platform']}), pinned with `docker run --cpus`. Real "
-        f"Banking77 test queries, {runs[0]['seconds_per_level']:.0f} s per concurrency level, "
-        "timed end to end by clients on the same runner._",
+        "_Generated by `scripts/load_test.py --report` from GitHub Actions run "
+        f"{first.get('run_id') or '?'} of `.github/workflows/load-test.yml`: the Docker image "
+        f"as shipped (`{first['model']}`, int8 ONNX, one uvicorn process) on a GitHub-hosted "
+        f"Linux runner ({host.get('cpu_model')}, {host['cpu_count']} vCPUs), pinned with "
+        "`docker run --cpus`. Real Banking77 test queries, "
+        f"{first['seconds_per_level']:.0f} s per concurrency level, timed end to end by clients "
+        "on the same runner._",
+        "",
+        "The service runs one single-thread inference per CPU it may use and queues the rest; "
+        f"`/health` in the container reported {h.get('threads_per_inference')} thread per "
+        f"inference ({setup}).",
         "",
     ]
-    for r in runs:
+    for c in cpus:
+        r = main[c]
         lines += [
-            f"## {r['cpus']:g} CPU{'s' if r['cpus'] != 1 else ''}",
+            f"## {cpus_label(c)}",
             "",
             "| clients | req/s | p50 ms | p95 ms | p99 ms | model ms (server) | errors |",
             "|---:|---:|---:|---:|---:|---:|---:|",
@@ -307,7 +378,8 @@ def report(paths: list[str], slo_ms: float) -> None:
         lines.append("")
     lines += [
         f"**Bold** = the sustained rate: the highest throughput with p99 under {slo_ms:.0f} ms "
-        "and no errors.",
+        "and no errors. Model ms is the inference alone, as the server times it; the rest of "
+        "the latency is HTTP, JSON and waiting for a free inference slot.",
         "",
         "## Cost per 1M requests",
         "",
@@ -317,39 +389,26 @@ def report(paths: list[str], slo_ms: float) -> None:
         "| | usd per 1M requests |",
         "|---|---:|",
     ]
-    for r in runs:
-        if r["usd_per_1m"] is not None:
+    for c in cpus:
+        if main[c]["usd_per_1m"] is not None:
             lines.append(
-                f"| measured, {r['cpus']:g} CPU{'s' if r['cpus'] != 1 else ''} at "
-                f"{r['sustained']['rps']:.0f} req/s | **${r['usd_per_1m']:.3f}** |"
+                f"| measured, {cpus_label(c)} at {main[c]['sustained']['rps']:.0f} req/s | "
+                f"**${main[c]['usd_per_1m']:.3f}** |"
             )
     if est:
         lines.append(
             f"| estimated before (CPU-seconds, one at a time) | ${est['usd_per_1m']:.3f} |"
         )
+    lines += [f"| the teacher LLM, one query per call (paid list price) | ${teacher:,.2f} |", ""]
+    if len(by_mode) > 1:
+        lines += same_runner(by_mode, cpus)
+    lines += history(RESULTS, cpus)
     lines += [
-        f"| the teacher LLM, one query per call (paid list price) | ${teacher:,.2f} |",
-        "",
-        *before_after(runs, slo_ms),
-        "**Tail latency.** "
-        + " ".join(
-            f"At {r['cpus']:g} CPU{'s' if r['cpus'] != 1 else ''} and one client, the median "
-            f"request takes {r['levels'][0]['p50_ms']:.1f} ms but p95 is "
-            f"{r['levels'][0]['p95_ms']:.0f} ms."
-            for r in runs
-        )
-        + (
-            " The table above shows what each fix to the service changed."
-            if any((RESULTS / f).exists() for f, _ in STAGES)
-            else " A tail that jumps like that with no queueing is typical of CPU-quota "
-            "throttling: onnxruntime sizes its thread pool to the host's cores, not to the "
-            "`--cpus` limit, spends the quota early in each scheduling period and then waits."
-        ),
-        "",
         "**Caveats.** A GitHub runner is not a t3.small: different CPU, and a t3 is burstable — "
         'run flat out it needs "unlimited" CPU credits, which cost extra. The load generator '
         "shares the runner with the server (outside its CPU limit, but on the same host). "
-        "One run per configuration; runner speed varies from day to day.",
+        "Runners differ in CPU generation from run to run, so absolute numbers move between "
+        "runs; compare setups only within one run.",
     ]
     DOCS.mkdir(parents=True, exist_ok=True)
     (DOCS / "load_test.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -360,7 +419,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--url", default="http://127.0.0.1:8000")
     ap.add_argument("--cpus", type=float, default=2, help="the server's CPU limit, recorded")
-    ap.add_argument("--mode", default="serial", help="the service's concurrency setup, recorded")
+    ap.add_argument("--mode", default="default", help="the service setup, recorded")
     ap.add_argument("--seconds", type=float, default=20)
     ap.add_argument("--max-concurrency", type=int, default=32)
     ap.add_argument("--out", default="load_test.json")

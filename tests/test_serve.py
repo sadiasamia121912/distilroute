@@ -51,7 +51,8 @@ def test_model_switch_and_listing(client):
 def test_models_load_once_and_stay_resident(client):
     client.post("/route", json={"text": "a"})
     client.post("/route", json={"text": "b"})
-    assert client.get("/health").json() == {"ok": True, "loaded": ["fake_gold"]}
+    health = client.get("/health").json()
+    assert health["ok"] is True and health["loaded"] == ["fake_gold"]
 
 
 def test_confidence_is_calibrated_when_the_model_has_a_temperature(client, monkeypatch):
@@ -76,17 +77,27 @@ def test_no_models_is_a_clear_503(client, monkeypatch):
 
 
 def test_cpu_limit_follows_the_container_quota(monkeypatch):
-    monkeypatch.delenv("DISTILROUTE_THREADS", raising=False)
     host = students.cpu_limit("max 100000")  # no quota: every CPU the process may run on
     assert host >= 1
     assert students.cpu_limit("100000 100000") == 1  # docker run --cpus=1
     assert students.cpu_limit("150000 100000") == min(host, 2)  # --cpus=1.5 rounds up
     assert students.cpu_limit("") == host  # no cgroup file (Windows, macOS)
-    monkeypatch.setenv("DISTILROUTE_THREADS", "3")
-    assert students.cpu_limit("100000 100000") == 3
 
 
-def test_inference_is_serialised_per_model(client, monkeypatch):
+def test_health_reports_the_concurrency_setup(client, monkeypatch):
+    monkeypatch.delenv("DISTILROUTE_THREADS", raising=False)
+    monkeypatch.delenv("DISTILROUTE_CONCURRENCY", raising=False)
+    h = client.get("/health").json()
+    assert h["threads_per_inference"] == 1
+    assert h["concurrency"] == h["cpus"] == students.cpu_limit()
+    monkeypatch.setenv("DISTILROUTE_THREADS", "2")
+    monkeypatch.setenv("DISTILROUTE_CONCURRENCY", "1")
+    h = client.get("/health").json()
+    assert (h["threads_per_inference"], h["concurrency"]) == (2, 1)
+
+
+def test_concurrent_inferences_are_capped_per_model(client, monkeypatch):
+    monkeypatch.setenv("DISTILROUTE_CONCURRENCY", "1")
     import threading
     import time
 

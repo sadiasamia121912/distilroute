@@ -13,7 +13,9 @@
         "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
         "cpu_count": 4,
         "processor": "x86_64",
-        "runner": "GitHub Actions 1000000297"
+        "runner": "GitHub Actions 1000000297",
+        "cpu_model": "AMD EPYC 7763 64-Core Processor",
+        "cpu_model_source": "lscpu in the runner log of GitHub Actions run 36327797809"
       },
       "seconds_per_level": 20,
       "levels": [
@@ -102,7 +104,8 @@
         "p99_ms": 9.546002000007547,
         "server_mean_ms": 2.95
       },
-      "usd_per_1m": 0.012
+      "usd_per_1m": 0.012,
+      "run_id": 36327797809
     },
     {
       "model": "minilm_ft_teacher",
@@ -111,7 +114,9 @@
         "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
         "cpu_count": 4,
         "processor": "x86_64",
-        "runner": "GitHub Actions 1000000297"
+        "runner": "GitHub Actions 1000000297",
+        "cpu_model": "AMD EPYC 7763 64-Core Processor",
+        "cpu_model_source": "lscpu in the runner log of GitHub Actions run 36327797809"
       },
       "seconds_per_level": 20,
       "levels": [
@@ -200,7 +205,8 @@
         "p99_ms": 6.84510199999977,
         "server_mean_ms": 2.17
       },
-      "usd_per_1m": 0.02
+      "usd_per_1m": 0.02,
+      "run_id": 36327797809
     }
   ]
 }

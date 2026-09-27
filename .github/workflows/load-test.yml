@@ -1,19 +1,17 @@
 name: Load test
 
 # Measured throughput, latency and cost of the served router (roadmap 7.4). Manual only: a run
-# takes ~6 minutes. The image is built exactly as docker.yml builds it, then loaded at 1..32
-# concurrent clients with the server pinned to 1 and then 2 CPUs. Results are an artifact;
-# locally: gh run download <id> -n load-test -D load-test/
-#          python scripts/load_test.py --report load-test/*.json
+# takes ~10 minutes. The image is built exactly as docker.yml builds it, then loaded at 1..32
+# concurrent clients with the server pinned to 1 and then 2 CPUs, in two setups back to back on
+# the same runner (runner CPUs differ between runs, so setups are only comparable within one):
+#   default  the service as shipped: one single-thread inference per CPU
+#   serial   one inference at a time, on as many threads as CPUs
+# Results are an artifact; locally:
+#   gh run download <id> -n load-test -D load-test/
+#   python scripts/load_test.py --report load-test/*.json
 
 on:
   workflow_dispatch:
-    inputs:
-      mode:
-        description: "serial: one inference at a time, threads = CPUs (the service default). parallel: one single-thread inference per CPU."
-        type: choice
-        options: [serial, parallel]
-        default: serial
 
 env:
   MODEL: minilm_ft_teacher
@@ -39,29 +37,30 @@ jobs:
         run: |
           nproc; lscpu | grep -E 'Model name|^CPU\(s\)'
 
-      - name: Load, 1 and 2 CPUs
-        env:
-          MODE: ${{ inputs.mode }}
+      - name: Load, both setups, 1 and 2 CPUs
         run: |
-          for cpus in 1 2; do
-            docker rm -f router 2>/dev/null || true
-            envs=()
-            if [ "$MODE" = parallel ]; then
-              envs=(-e DISTILROUTE_CONCURRENCY="$cpus" -e DISTILROUTE_THREADS=1)
-            fi
-            docker run -d --name router --cpus="$cpus" "${envs[@]}" -p 8000:8000 distilroute
-            for i in $(seq 1 30); do curl -fs 127.0.0.1:8000/health >/dev/null && break; sleep 2; done
-            python3 scripts/load_test.py --url http://127.0.0.1:8000 --cpus "$cpus" \
-              --mode "$MODE" --out "load_test_cpus$cpus.json"
+          for mode in default serial; do
+            for cpus in 1 2; do
+              docker rm -f router 2>/dev/null || true
+              envs=()
+              if [ "$mode" = serial ]; then
+                envs=(-e DISTILROUTE_CONCURRENCY=1 -e DISTILROUTE_THREADS="$cpus")
+              fi
+              docker run -d --name router --cpus="$cpus" "${envs[@]}" -p 8000:8000 distilroute
+              for i in $(seq 1 30); do curl -fs 127.0.0.1:8000/health >/dev/null && break; sleep 2; done
+              curl -fs 127.0.0.1:8000/health; echo
+              python3 scripts/load_test.py --url http://127.0.0.1:8000 --cpus "$cpus" \
+                --mode "$mode" --out "load_test_${mode}_cpus$cpus.json"
+            done
           done
 
       - name: Summary
         run: |
           python3 - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
           import json, glob
-          for p in sorted(glob.glob("load_test_cpus*.json")):
+          for p in sorted(glob.glob("load_test_*.json")):
               r = json.load(open(p))
-              print(f"### {r['cpus']:g} CPU(s), {r['model']}\n")
+              print(f"### {r['mode']}, {r['cpus']:g} CPU(s), {r['model']} — {r['host']['cpu_model']}\n")
               print("| clients | req/s | p50 ms | p95 ms | p99 ms | errors |\n|---:|---:|---:|---:|---:|---:|")
               for lv in r["levels"]:
                   print(f"| {lv['clients']} | {lv['rps']:.0f} | {lv['p50_ms']:.1f} | {lv['p95_ms']:.1f} | {lv['p99_ms']:.1f} | {lv['errors']} |")
@@ -71,7 +70,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: load-test
-          path: load_test_cpus*.json
+          path: load_test_*.json
 
       - name: Container logs
         if: always()

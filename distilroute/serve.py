@@ -9,10 +9,10 @@
 default model is `DISTILROUTE_MODEL` or the first student found, so the Docker image (student
 only, no torch) works with no flags.
 
-Inference is serialised per model (`DISTILROUTE_CONCURRENCY`, default 1): uvicorn runs sync
-endpoints in a thread pool, and concurrent inferences would share the container's CPU quota and
-each finish later than if they had queued (docs/load_test.md). One at a time, each inference
-gets every thread `students.cpu_limit` allows.
+Each model runs at most `DISTILROUTE_CONCURRENCY` inferences at once (default: the CPUs the
+container may use, `students.cpu_limit`), each on `students.inference_threads` threads (default
+1); further requests queue. One single-thread inference per CPU beat one multi-thread inference
+at a time in the load test (docs/load_test.md). `GET /health` reports all three numbers.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ _load_lock = threading.Lock()
 
 
 def concurrency() -> int:
-    return max(1, int(os.environ.get("DISTILROUTE_CONCURRENCY") or 1))
+    return max(1, int(os.environ.get("DISTILROUTE_CONCURRENCY") or students.cpu_limit()))
 
 
 class RouteRequest(BaseModel):
@@ -79,7 +79,7 @@ def models() -> dict:
 def route(req: RouteRequest) -> RouteResponse:
     name = req.model or default_model()
     router = get_router(name)
-    with _slots[name]:  # queue here rather than share the CPUs with another inference
+    with _slots[name]:  # at most one inference per CPU; the rest queue here
         t0 = time.perf_counter()
         r = router.route(req.text)
         ms = (time.perf_counter() - t0) * 1000
@@ -95,4 +95,10 @@ def route(req: RouteRequest) -> RouteResponse:
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "loaded": list(_loaded)}
+    return {
+        "ok": True,
+        "loaded": list(_loaded),
+        "cpus": students.cpu_limit(),
+        "concurrency": concurrency(),
+        "threads_per_inference": students.inference_threads(),
+    }
