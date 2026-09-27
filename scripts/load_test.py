@@ -195,6 +195,21 @@ def before_after(runs: list[dict], slo_ms: float) -> list[str]:
                 + (f"{eight['p50_ms']:.1f} / {eight['p95_ms']:.1f}" if eight else "—")
                 + (f" | {best['rps']:.0f} | ${x['usd_per_1m']:.3f} |" if best else " | — | — |")
             )
+    pinned = next((old for (old, label) in stages if label == STAGES[-1][1]), None)
+    if pinned:
+        gaps = [
+            abs(r["levels"][0]["rps"] / pinned[r["cpus"]]["levels"][0]["rps"] - 1)
+            for r in runs
+            if r["cpus"] in pinned
+        ]
+        lines += [
+            "",
+            "With one client nothing is ever queued, so the last two stages run the same code "
+            f"there; their 1-client throughput still differs by up to {max(gaps):.0%}. That is "
+            "the run-to-run noise of a shared runner, and smaller gaps between stages are within "
+            "it. Serialising shows under load: the model's own time stays flat as clients are "
+            "added, and p95 falls while p50 rises, because requests now wait their turn.",
+        ]
     return [*lines, ""]
 
 
