@@ -8,6 +8,12 @@ name: Load test
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "serial: one inference at a time, threads = CPUs (the service default). parallel: one single-thread inference per CPU."
+        type: choice
+        options: [serial, parallel]
+        default: serial
 
 env:
   MODEL: minilm_ft_teacher
@@ -34,13 +40,19 @@ jobs:
           nproc; lscpu | grep -E 'Model name|^CPU\(s\)'
 
       - name: Load, 1 and 2 CPUs
+        env:
+          MODE: ${{ inputs.mode }}
         run: |
           for cpus in 1 2; do
             docker rm -f router 2>/dev/null || true
-            docker run -d --name router --cpus="$cpus" -p 8000:8000 distilroute
+            envs=()
+            if [ "$MODE" = parallel ]; then
+              envs=(-e DISTILROUTE_CONCURRENCY="$cpus" -e DISTILROUTE_THREADS=1)
+            fi
+            docker run -d --name router --cpus="$cpus" "${envs[@]}" -p 8000:8000 distilroute
             for i in $(seq 1 30); do curl -fs 127.0.0.1:8000/health >/dev/null && break; sleep 2; done
             python3 scripts/load_test.py --url http://127.0.0.1:8000 --cpus "$cpus" \
-              --out "load_test_cpus$cpus.json"
+              --mode "$MODE" --out "load_test_cpus$cpus.json"
           done
 
       - name: Summary

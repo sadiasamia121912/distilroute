@@ -130,6 +130,7 @@ def run(args: argparse.Namespace) -> None:
     out = {
         "model": model,
         "cpus": args.cpus,
+        "mode": args.mode,
         "host": {
             "platform": platform.platform(),
             "cpu_count": os.cpu_count(),
@@ -153,8 +154,19 @@ def sustained(run: dict, slo_ms: float) -> dict | None:
 STAGES = [
     ("load_test_unpinned.json", "threads = host cores"),
     ("load_test_pinned.json", "threads = CPU quota"),
+    ("load_test_serial.json", "+ one inference at a time"),
 ]
-CURRENT = "+ one inference at a time"
+MODES = {  # the current run, by the --mode the workflow ran it with
+    "serial": "+ one inference at a time",
+    "parallel": "+ one single-thread inference per CPU",
+}
+
+
+def one_client_gap(a: dict, b: dict) -> float:
+    """Largest relative 1-client throughput gap between two runs, over their shared CPU counts."""
+    return max(
+        abs(a[c]["levels"][0]["rps"] / b[c]["levels"][0]["rps"] - 1) for c in a.keys() & b.keys()
+    )
 
 
 def before_after(runs: list[dict], slo_ms: float) -> list[str]:
@@ -162,54 +174,64 @@ def before_after(runs: list[dict], slo_ms: float) -> list[str]:
     sys.path.insert(0, str(ROOT))
     from distilroute.data import RESULTS
 
-    stages = [
-        ({r["cpus"]: r for r in json.loads((RESULTS / f).read_text())["runs"]}, label)
-        for f, label in STAGES
+    kept = {
+        f: {r["cpus"]: r for r in json.loads((RESULTS / f).read_text())["runs"]}
+        for f, _ in STAGES
         if (RESULTS / f).exists()
-    ]
-    if not stages:
+    }
+    if not kept:
         return []
+    mode = runs[0].get("mode", "serial")
     lines = [
         "## What each fix changed",
         "",
         "The same load test after each change to the service: onnxruntime's thread pool sized "
         "to the host's cores (the first run), then to the container's CPU quota "
         "(`students.cpu_limit`), then inference serialised per model (`serve.py`, "
-        "`DISTILROUTE_CONCURRENCY`). Earlier runs: "
-        + ", ".join(f"`results/{f}`" for f, _ in STAGES)
-        + ".",
+        "`DISTILROUTE_CONCURRENCY`), then — as an alternative to that — one single-thread "
+        "inference per CPU (`DISTILROUTE_CONCURRENCY=<CPUs>`, `DISTILROUTE_THREADS=1`). Earlier "
+        "runs: " + ", ".join(f"`results/{f}`" for f in kept) + ".",
         "",
         "| CPUs | service | 1 client p50 / p95 ms | 8 clients p50 / p95 ms | sustained req/s "
         "| usd per 1M |",
         "|---:|---|---:|---:|---:|---:|",
     ]
     for r in runs:
-        rows = [(old.get(r["cpus"]), label) for old, label in stages] + [(r, CURRENT)]
+        rows = [(kept[f].get(r["cpus"]), label) for f, label in STAGES if f in kept]
+        if not (mode == "serial" and "load_test_serial.json" in kept):
+            rows.append((r, MODES.get(mode, mode)))
         for x, label in rows:
             if not x:
                 continue
             by = {lv["clients"]: lv for lv in x["levels"]}
             one, eight, best = by[1], by.get(8), sustained(x, slo_ms)
+            usd = x.get("usd_per_1m")
             lines.append(
                 f"| {r['cpus']:g} | {label} | {one['p50_ms']:.1f} / {one['p95_ms']:.1f} | "
                 + (f"{eight['p50_ms']:.1f} / {eight['p95_ms']:.1f}" if eight else "—")
-                + (f" | {best['rps']:.0f} | ${x['usd_per_1m']:.3f} |" if best else " | — | — |")
+                + (f" | {best['rps']:.0f} | ${usd:.3f} |" if best and usd else " | — | — |")
             )
-    pinned = next((old for (old, label) in stages if label == STAGES[-1][1]), None)
-    if pinned:
-        gaps = [
-            abs(r["levels"][0]["rps"] / pinned[r["cpus"]]["levels"][0]["rps"] - 1)
-            for r in runs
-            if r["cpus"] in pinned
-        ]
-        lines += [
-            "",
-            "With one client nothing is ever queued, so the last two stages run the same code "
-            f"there; their 1-client throughput still differs by up to {max(gaps):.0%}. That is "
-            "the run-to-run noise of a shared runner, and smaller gaps between stages are within "
-            "it. Serialising shows under load: the model's own time stays flat as clients are "
-            "added, and p95 falls while p50 rises, because requests now wait their turn.",
-        ]
+    notes = []
+    if {"load_test_pinned.json", "load_test_serial.json"} <= kept.keys():
+        gap = one_client_gap(kept["load_test_pinned.json"], kept["load_test_serial.json"])
+        notes.append(
+            "With one client nothing is ever queued, so the pinned and serialised services run "
+            f"the same code there; their 1-client throughput still differs by up to {gap:.0%}. "
+            "That is the run-to-run noise of a shared runner, and smaller gaps are within it. "
+            "Serialising shows under load: the model's own time stays flat as clients are added, "
+            "and p95 falls while p50 rises, because requests now wait their turn."
+        )
+    if mode == "parallel" and "load_test_serial.json" in kept:
+        serial = kept["load_test_serial.json"]
+        if 1 in serial and any(r["cpus"] == 1 for r in runs):
+            gap = one_client_gap(serial, {r["cpus"]: r for r in runs if r["cpus"] == 1})
+            notes.append(
+                "On 1 CPU the parallel setup *is* the serial one (one slot, one thread), so its "
+                f"1-CPU rows measure noise again: {gap:.0%} apart at one client. The comparison "
+                "that matters is 2 CPUs."
+            )
+    if notes:
+        lines += ["", " ".join(notes)]
     return [*lines, ""]
 
 
@@ -323,6 +345,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--url", default="http://127.0.0.1:8000")
     ap.add_argument("--cpus", type=float, default=2, help="the server's CPU limit, recorded")
+    ap.add_argument("--mode", default="serial", help="the service's concurrency setup, recorded")
     ap.add_argument("--seconds", type=float, default=20)
     ap.add_argument("--max-concurrency", type=int, default=32)
     ap.add_argument("--out", default="load_test.json")
