@@ -288,7 +288,7 @@ run while `jobs.py` labels.
   seconds per item. Report: the user's agreement with gold, the time cost, and the frozen
   student retrained on the user's corrections vs the simulated 0.876 curve. The user does the
   checking (~2–3 h); gold is read only to score it afterwards.
-- [ ] **7.2 Leave-intents-out** (near out-of-scope, new-intent behaviour; free, CPU, ~30 min).
+- [x] **7.2 Leave-intents-out** _(`scripts/new_intents.py` → `docs/new_intents.md`, 2026-09-27: new banking intents AUROC 0.83 vs 0.98 far OOS, 53 % caught at a 10 % budget vs 96 %; entropy no better than max-prob here; ~50 labels per new intent to match the all-77 student)_ (near out-of-scope, new-intent behaviour; free, CPU, ~30 min).
   Train students without ~10 of the 77 intents; score how many held-out queries are flagged
   (entropy, as in 6.2) against 10 % in-scope escalation. Then add the intents back with
   25 / 50 / 100 labels each: how many labels does a new intent need?
@@ -317,6 +317,12 @@ run while `jobs.py` labels.
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-09-27 evening** — `.venv` rebuilt (38 tests pass). `jobs.py`: train labels 4,900 →
+**5,860 / 10,003** (0 unparsed), paused on Groq's rolling limit at 21:14. **5,000-row check**
+(`results/teacher5000/`): frozen MiniLM 0.848 → 0.853, TF-IDF 0.812 → 0.833, gap to teacher
+1.4 pt. **7.2 done** (`docs/new_intents.md`). Commits `61305cc`, `e4790bf`, `b4368ae` not pushed yet.
+**Next:** run `jobs.py` once a day; `retrain_check.py --rows 7500` past 7,500; start 7.1.
 
 **2026-09-27 (labelling resumed)** — Ran `jobs.py`: Banking77 train labels **3,000 → 4,900 /
 10,003** (1,860 rows in 25 min, then 40 more), 0 unparsed, committed and pushed (`93d4f4e`).
