@@ -1,0 +1,13 @@
+{
+  "model": "MiniLM-L6 frozen + base",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "n_train": 4500,
+  "accuracy": 0.8568181818181818,
+  "macro_f1": 0.8535263925157401,
+  "variant": "base",
+  "note": "teacher top-1",
+  "soft_alpha": null,
+  "temperature": 0.6909645427893725,
+  "n_calib": 500
+}
