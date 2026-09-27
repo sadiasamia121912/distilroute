@@ -149,38 +149,51 @@ def sustained(run: dict, slo_ms: float) -> dict | None:
     return max(ok, key=lambda lv: lv["rps"]) if ok else None
 
 
-BASELINE = "load_test_unpinned.json"  # the first run, before threads followed the CPU quota
+# Earlier runs kept for comparison: file, what the service did then.
+STAGES = [
+    ("load_test_unpinned.json", "threads = host cores"),
+    ("load_test_pinned.json", "threads = CPU quota"),
+]
+CURRENT = "+ one inference at a time"
 
 
 def before_after(runs: list[dict], slo_ms: float) -> list[str]:
-    """Doc lines comparing these runs with the unpinned first run, if it is kept."""
+    """Doc lines comparing these runs with the earlier stages that are kept."""
     sys.path.insert(0, str(ROOT))
     from distilroute.data import RESULTS
 
-    path = RESULTS / BASELINE
-    if not path.exists():
+    stages = [
+        ({r["cpus"]: r for r in json.loads((RESULTS / f).read_text())["runs"]}, label)
+        for f, label in STAGES
+        if (RESULTS / f).exists()
+    ]
+    if not stages:
         return []
-    old = {r["cpus"]: r for r in json.loads(path.read_text())["runs"]}
     lines = [
-        "## Before and after pinning onnxruntime's threads",
+        "## What each fix changed",
         "",
-        f"The first run (`results/{BASELINE}`) let onnxruntime size its thread pool to the "
-        "runner's cores; since then `students.cpu_limit` sizes it to the container's CPU quota.",
+        "The same load test after each change to the service: onnxruntime's thread pool sized "
+        "to the host's cores (the first run), then to the container's CPU quota "
+        "(`students.cpu_limit`), then inference serialised per model (`serve.py`, "
+        "`DISTILROUTE_CONCURRENCY`). Earlier runs: "
+        + ", ".join(f"`results/{f}`" for f, _ in STAGES)
+        + ".",
         "",
-        "| CPUs | | 1 client p50 / p95 / p99 ms | sustained req/s | usd per 1M |",
-        "|---:|---|---:|---:|---:|",
+        "| CPUs | service | 1 client p50 / p95 ms | 8 clients p50 / p95 ms | sustained req/s "
+        "| usd per 1M |",
+        "|---:|---|---:|---:|---:|---:|",
     ]
     for r in runs:
-        o = old.get(r["cpus"])
-        for label, x in [("before", o), ("after", r)]:
+        rows = [(old.get(r["cpus"]), label) for old, label in stages] + [(r, CURRENT)]
+        for x, label in rows:
             if not x:
                 continue
-            one, best = x["levels"][0], sustained(x, slo_ms)
+            by = {lv["clients"]: lv for lv in x["levels"]}
+            one, eight, best = by[1], by.get(8), sustained(x, slo_ms)
             lines.append(
-                f"| {r['cpus']:g} | {label} | {one['p50_ms']:.1f} / {one['p95_ms']:.1f} / "
-                f"{one['p99_ms']:.1f} | {best['rps']:.0f} | ${x['usd_per_1m']:.3f} |"
-                if best
-                else f"| {r['cpus']:g} | {label} | — | — | — |"
+                f"| {r['cpus']:g} | {label} | {one['p50_ms']:.1f} / {one['p95_ms']:.1f} | "
+                + (f"{eight['p50_ms']:.1f} / {eight['p95_ms']:.1f}" if eight else "—")
+                + (f" | {best['rps']:.0f} | ${x['usd_per_1m']:.3f} |" if best else " | — | — |")
             )
     return [*lines, ""]
 
@@ -274,12 +287,8 @@ def report(paths: list[str], slo_ms: float) -> None:
             for r in runs
         )
         + (
-            " The table above shows what pinning the threads to the CPU quota changed. With "
-            "more clients the tail returns and throughput stops rising: likely because uvicorn "
-            "runs the requests' inferences side by side in its thread pool, where they share "
-            "the same quota. Queueing them through one inference at a time is the next thing "
-            "to try."
-            if (RESULTS / BASELINE).exists()
+            " The table above shows what each fix to the service changed."
+            if any((RESULTS / f).exists() for f, _ in STAGES)
             else " A tail that jumps like that with no queueing is typical of CPU-quota "
             "throttling: onnxruntime sizes its thread pool to the host's cores, not to the "
             "`--cpus` limit, spends the quota early in each scheduling period and then waits."

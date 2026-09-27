@@ -8,11 +8,17 @@
 `teacher` when a key is configured). Models load lazily on first use and stay resident. The
 default model is `DISTILROUTE_MODEL` or the first student found, so the Docker image (student
 only, no torch) works with no flags.
+
+Inference is serialised per model (`DISTILROUTE_CONCURRENCY`, default 1): uvicorn runs sync
+endpoints in a thread pool, and concurrent inferences would share the container's CPU quota and
+each finish later than if they had queued (docs/load_test.md). One at a time, each inference
+gets every thread `students.cpu_limit` allows.
 """
 
 from __future__ import annotations
 
 import os
+import threading
 import time
 
 from fastapi import FastAPI, HTTPException
@@ -22,6 +28,12 @@ from distilroute import students
 
 app = FastAPI(title="distilroute", version="0.0.1")
 _loaded: dict[str, students.Router] = {}
+_slots: dict[str, threading.BoundedSemaphore] = {}
+_load_lock = threading.Lock()
+
+
+def concurrency() -> int:
+    return max(1, int(os.environ.get("DISTILROUTE_CONCURRENCY") or 1))
 
 
 class RouteRequest(BaseModel):
@@ -51,7 +63,10 @@ def get_router(name: str) -> students.Router:
     if name not in _loaded:
         if name not in students.available():
             raise HTTPException(404, f"unknown model {name!r}; see GET /models")
-        _loaded[name] = students.load(name)
+        with _load_lock:  # concurrent first requests load the model once
+            if name not in _loaded:
+                _slots[name] = threading.BoundedSemaphore(concurrency())
+                _loaded[name] = students.load(name)
     return _loaded[name]
 
 
@@ -64,15 +79,17 @@ def models() -> dict:
 def route(req: RouteRequest) -> RouteResponse:
     name = req.model or default_model()
     router = get_router(name)
-    t0 = time.perf_counter()
-    r = router.route(req.text)
+    with _slots[name]:  # queue here rather than share the CPUs with another inference
+        t0 = time.perf_counter()
+        r = router.route(req.text)
+        ms = (time.perf_counter() - t0) * 1000
     return RouteResponse(
         intent=r.intent,
         confidence=r.confidence,
         ranked=r.ranked,
         model=name,
         calibrated=router.temperature is not None,
-        latency_ms=round((time.perf_counter() - t0) * 1000, 2),
+        latency_ms=round(ms, 2),
     )
 
 

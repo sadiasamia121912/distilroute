@@ -24,6 +24,7 @@ def client(monkeypatch):
     monkeypatch.setattr(students, "load", lambda name: FakeRouter())
     monkeypatch.delenv("DISTILROUTE_MODEL", raising=False)
     serve._loaded.clear()
+    serve._slots.clear()
     return TestClient(serve.app)
 
 
@@ -83,3 +84,32 @@ def test_cpu_limit_follows_the_container_quota(monkeypatch):
     assert students.cpu_limit("") == host  # no cgroup file (Windows, macOS)
     monkeypatch.setenv("DISTILROUTE_THREADS", "3")
     assert students.cpu_limit("100000 100000") == 3
+
+
+def test_inference_is_serialised_per_model(client, monkeypatch):
+    import threading
+    import time
+
+    running, peak = [0], [0]
+    lock = threading.Lock()
+
+    class Slow(FakeRouter):
+        def proba(self, text):
+            with lock:
+                running[0] += 1
+                peak[0] = max(peak[0], running[0])
+            time.sleep(0.02)
+            with lock:
+                running[0] -= 1
+            return super().proba(text)
+
+    monkeypatch.setattr(students, "load", lambda name: Slow())
+    threads = [
+        threading.Thread(target=client.post, args=("/route",), kwargs={"json": {"text": "card"}})
+        for _ in range(6)
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert peak[0] == 1
