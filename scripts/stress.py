@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import json
 import random
-import re
 import sys
 import time
 from pathlib import Path
@@ -35,12 +34,15 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute import students  # noqa: E402
 from distilroute.data import DOCS, RESULTS, load_split, rel  # noqa: E402
+from distilroute.multi import ALSO_THRESHOLD, also_intents, sentences  # noqa: E402
 
 MODELS = [
     "tfidf_lr_teacher",
     "minilm_frozen_teacher",
+    "minilm_frozen_oe_teacher",  # + outlier exposure: unsure on small talk (skipped if absent)
     "minilm_ft_teacher",  # the served model
     "minilm_ft_teacher@64",  # ... with the 64-token limit it was served with until 2026-09-28
+    "minilm_ft_oe_teacher",  # the served config + outlier exposure (Colab; skipped if absent)
     "tinybert_ft_teacher",
     "distilbert_ft_teacher",
 ]
@@ -48,7 +50,7 @@ THRESHOLD = 0.8  # the cascade threshold of 1b.2 / 6.5
 JOINS = {"space": "{a} {b}", "also": "{a} Also, {b}"}
 LENGTHS = [50, 120]  # words, filler included
 WHERE = ["start", "middle", "end"]  # where the question sits in the padded ticket
-SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+ALSO_GRID = [0.8, 0.9, 0.95, 0.98, 0.99]  # thresholds tried for the service's `also` field
 FOUND = 0.5  # a sentence's answer counts as a detected intent at this calibrated confidence
 
 # Sentences a customer might wrap around any question. None names a product, a payment or an
@@ -106,10 +108,6 @@ def route(router: students.Router, texts: list[str]) -> tuple[np.ndarray, list, 
     )
 
 
-def sentences(text: str) -> list[str]:
-    return [x for x in SENTENCE_END.split(text.strip()) if x]
-
-
 def entropy(p: np.ndarray) -> float:
     return float(-(p * np.log(p + 1e-12)).sum())
 
@@ -131,6 +129,9 @@ class SplitRouter:
         if text not in self.cache:
             self.cache[text] = (self.router.route(text), entropy(self.router.proba(text)[1]))
         return self.cache[text]
+
+    def routed(self, text: str) -> students.Routed:
+        return self.one(text)[0]
 
     def route(self, texts: list[str]) -> tuple[np.ndarray, list[set], np.ndarray]:
         top1, found, conf = [], [], []
@@ -224,6 +225,19 @@ def main() -> None:
                 "both_in_top2_when_singles_right": float(both2[a_ok & b_ok].mean()),
                 "escalated": float((conf < THRESHOLD).mean()),
             }
+            main = top1
+            # The service's `also` field: is the other question found, per threshold?
+            row["pairs"][how]["also"] = {
+                t: float(
+                    np.mean(
+                        [
+                            {ga[k], gb[k]} <= {main[k], *also_intents(naive.routed, m, main[k], t)}
+                            for k, m in enumerate(xs)
+                        ]
+                    )
+                )
+                for t in ALSO_GRID
+            }
             for key, split in splits.items():
                 top1, found, conf = split.route(xs)
                 row["pairs"][how][key] = {
@@ -249,6 +263,21 @@ def main() -> None:
                 s1, _, sconf = split.route(xs)
                 cell[f"{key}_acc"] = float((s1 == gold[pad_idx]).mean())
                 cell[f"{key}_escalated"] = float((sconf < THRESHOLD).mean())
+            # One question per ticket here: an `also` other than its true intent is invented
+            # (from the filler); the true intent itself, when the whole-message answer missed
+            # it, is a rescue, not an error.
+            truth = gold[pad_idx]
+            cell["false_also"] = {
+                t: float(
+                    np.mean(
+                        [
+                            any(a != truth[k] for a in also_intents(naive.routed, m, top1[k], t))
+                            for k, m in enumerate(xs)
+                        ]
+                    )
+                )
+                for t in ALSO_GRID
+            }
         rows.append(row)
         p, q = row["pairs"]["space"], row["padded"]
         print(
@@ -327,6 +356,44 @@ def takeaways(rows: list[dict]) -> str:
         "against the whole-message top-2 above."
     )
     return " ".join(out)
+
+
+def also_doc(rows: list[dict]) -> list[str]:
+    """The `also` field of POST /route: second question found vs one invented, per threshold."""
+    lines = [
+        "## The `also` field",
+        "",
+        "`POST /route` returns the whole-message intent and, for messages of several sentences, "
+        "`also`: other intents a single sentence is confident about (`distilroute/multi.py`). "
+        'Per confidence threshold: **found** = both questions of an "Also," pair are among '
+        "`intent` + `also`; **invented** = share of the single-question padded tickets (all "
+        "lengths and positions) whose `also` holds an intent that is not the ticket's, i.e. "
+        f"made up from small talk. The service uses {ALSO_THRESHOLD}.",
+        "",
+        "| model | " + " | ".join(f"≥ {t}: found / invented" for t in ALSO_GRID) + " |",
+        "|---|" + "---:|" * len(ALSO_GRID),
+    ]
+    for r in rows:
+        cells = []
+        for t in ALSO_GRID:
+            found = r["pairs"]["also"]["also"][t]
+            invented = np.mean([v["false_also"][t] for k, v in r["padded"].items() if k != "clean"])
+            cells.append(f"{found:.0%} / {invented:.0%}")
+        lines.append(f"| {r['model']} | " + " | ".join(cells) + " |")
+    served = next((r for r in rows if r["model"] == "minilm_ft_teacher"), None)
+    if served:
+        found = served["pairs"]["also"]["also"][ALSO_THRESHOLD]
+        invented = np.mean(
+            [v["false_also"][ALSO_THRESHOLD] for k, v in served["padded"].items() if k != "clean"]
+        )
+        top2 = served["pairs"]["also"]["both_in_top2"]
+        lines += [
+            "",
+            f"For the served model at {ALSO_THRESHOLD}: both questions come back in {found:.0%} "
+            f"of two-question messages (the whole-message top-2 has both in {top2:.0%}), and "
+            f"{invented:.0%} of single-question long tickets get an invented `also`.",
+        ]
+    return [*lines, ""]
 
 
 def write_doc(o: dict) -> None:
@@ -420,6 +487,7 @@ def write_doc(o: dict) -> None:
         "",
         f"**What it shows.** {takeaways(rows)}",
         "",
+        *also_doc(rows),
         'Pairs columns use the "Also," join, where the two questions are separate sentences '
         "(the plain join often has no sentence break to split on).",
         "",

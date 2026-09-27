@@ -136,3 +136,17 @@ def test_monitor_endpoint_reports_its_phase(client, monkeypatch):
     body = client.get("/monitor").json()
     assert body["model"] == "fake_gold" and body["reference"] == 4 and body["window"] == 1
     assert body["state"].startswith("filling the window")
+
+
+def test_also_returns_a_second_request_from_another_sentence(client, monkeypatch):
+    monkeypatch.setenv("DISTILROUTE_ALSO_THRESHOLD", "0.75")
+    body = client.post("/route", json={"text": "My card never came. I need to top up."}).json()
+    assert body["intent"] == "card_arrival"  # the whole message mentions a card
+    assert body["also"] == ["top_up_failed"]  # the second sentence alone: 0.8 >= 0.75
+
+
+def test_also_is_empty_below_the_threshold_and_for_one_sentence(client, monkeypatch):
+    monkeypatch.setenv("DISTILROUTE_ALSO_THRESHOLD", "0.95")
+    assert client.post("/route", json={"text": "My card never came. Top up?"}).json()["also"] == []
+    monkeypatch.setenv("DISTILROUTE_ALSO_THRESHOLD", "0.5")
+    assert client.post("/route", json={"text": "my card never came"}).json()["also"] == []

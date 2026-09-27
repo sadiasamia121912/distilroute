@@ -8,13 +8,22 @@ Yes — the signal is already there, for free, in every student. **AUROC** of ea
 
 | model | max prob | max prob, calibrated | **entropy** | OOS caught at 5 % budget | OOS caught at 10 % budget | OOS caught at 20 % budget |
 |---|---:|---:|---:|---:|---:|---:|
-| distilbert_ft_gold | 0.975 | 0.969 | **0.983** | **94%** | **96%** | **98%** |
+| distilbert_ft_gold | 0.977 | 0.981 | **0.984** | **92%** | **96%** | **99%** |
+| distilbert_ft_soft_teacher | 0.963 | 0.954 | **0.981** | **92%** | **96%** | **98%** |
+| distilbert_ft_teacher | 0.963 | 0.973 | **0.975** | **90%** | **93%** | **97%** |
+| minilm_frozen_aug_teacher | 0.956 | 0.951 | **0.975** | **89%** | **94%** | **97%** |
 | minilm_frozen_gold | 0.971 | 0.958 | **0.984** | **93%** | **96%** | **98%** |
+| minilm_frozen_oe_teacher | 0.986 | 0.975 | **0.992** | **97%** | **98%** | **99%** |
 | minilm_frozen_teacher | 0.968 | 0.953 | **0.982** | **93%** | **96%** | **98%** |
+| minilm_ft_gold | 0.956 | 0.954 | **0.965** | **88%** | **91%** | **95%** |
+| minilm_ft_teacher | 0.944 | 0.948 | **0.956** | **83%** | **89%** | **95%** |
 | minilm_setfit_16pc_gold | 0.973 | 0.973 | **0.987** | **96%** | **97%** | **98%** |
 | minilm_setfit_7pc_teacher | 0.972 | 0.941 | **0.987** | **95%** | **97%** | **98%** |
+| tfidf_lr_aug_teacher | 0.960 | 0.951 | **0.972** | **88%** | **93%** | **96%** |
 | tfidf_lr_gold | 0.973 | 0.961 | **0.981** | **92%** | **95%** | **97%** |
 | tfidf_lr_teacher | 0.961 | 0.948 | **0.973** | **89%** | **94%** | **96%** |
+| tinybert_ft_gold | 0.908 | 0.907 | **0.925** | **66%** | **80%** | **90%** |
+| tinybert_ft_teacher | 0.883 | 0.891 | **0.896** | **44%** | **67%** | **85%** |
 
 **Budget** = the share of *in-scope* queries the service is willing to escalate; the threshold is that quantile of in-scope uncertainty, and the cell says how much out-of-scope traffic it catches (scored by entropy). Escalating 10 % of real tickets is a policy an operator would accept; whatever share of out-of-scope messages that catches comes free with it.
 
@@ -26,12 +35,21 @@ Out-of-scope queries that stay below the 10 %-budget threshold, by the intent th
 
 | model | most common landing intents |
 |---|---|
-| distilbert_ft_gold | `age_limit` (10), `lost_or_stolen_phone` (9), `country_support` (8) |
+| distilbert_ft_gold | `lost_or_stolen_phone` (7), `country_support` (6), `age_limit` (6) |
+| distilbert_ft_soft_teacher | `automatic_top_up` (6), `age_limit` (6), `country_support` (5) |
+| distilbert_ft_teacher | `lost_or_stolen_phone` (12), `age_limit` (11), `automatic_top_up` (9) |
+| minilm_frozen_aug_teacher | `lost_or_stolen_phone` (13), `exchange_rate` (9), `country_support` (9) |
 | minilm_frozen_gold | `country_support` (10), `lost_or_stolen_phone` (9), `age_limit` (7) |
+| minilm_frozen_oe_teacher | `Refund_not_showing_up` (3), `age_limit` (2), `lost_or_stolen_phone` (2) |
 | minilm_frozen_teacher | `lost_or_stolen_phone` (8), `age_limit` (7), `exchange_rate` (5) |
+| minilm_ft_gold | `lost_or_stolen_phone` (32), `age_limit` (19), `country_support` (9) |
+| minilm_ft_teacher | `lost_or_stolen_phone` (25), `age_limit` (18), `top_up_limits` (9) |
 | minilm_setfit_16pc_gold | `age_limit` (6), `edit_personal_details` (5), `country_support` (4) |
 | minilm_setfit_7pc_teacher | `age_limit` (5), `edit_personal_details` (4), `country_support` (4) |
+| tfidf_lr_aug_teacher | `lost_or_stolen_phone` (25), `edit_personal_details` (6), `country_support` (5) |
 | tfidf_lr_gold | `lost_or_stolen_phone` (21), `verify_source_of_funds` (5), `edit_personal_details` (4) |
 | tfidf_lr_teacher | `lost_or_stolen_phone` (25), `edit_personal_details` (5), `card_delivery_estimate` (5) |
+| tinybert_ft_gold | `country_support` (22), `edit_personal_details` (21), `lost_or_stolen_phone` (17) |
+| tinybert_ft_teacher | `country_support` (25), `supported_cards_and_currencies` (24), `age_limit` (20) |
 
 **Caveat.** CLINC's out-of-scope queries are *far* out of scope — cooking, sport, trivia. A message about a mortgage or an insurance claim is much closer to banking and would be harder; no such near-out-of-scope set exists for Banking77, so these numbers are an upper bound on how easy the problem is.

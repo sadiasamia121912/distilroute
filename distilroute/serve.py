@@ -24,7 +24,7 @@ import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from distilroute import students
+from distilroute import multi, students
 from distilroute.monitor import IntentMonitor
 
 app = FastAPI(title="distilroute", version="0.0.1")
@@ -32,6 +32,10 @@ _loaded: dict[str, students.Router] = {}
 _slots: dict[str, threading.BoundedSemaphore] = {}
 _monitors: dict[str, IntentMonitor] = {}
 _load_lock = threading.Lock()
+
+
+def also_threshold() -> float:
+    return float(os.environ.get("DISTILROUTE_ALSO_THRESHOLD") or multi.ALSO_THRESHOLD)
 
 
 def concurrency() -> int:
@@ -47,6 +51,7 @@ class RouteResponse(BaseModel):
     intent: str | None
     confidence: float | None
     ranked: list[str]
+    also: list[str] = []  # other requests in the same message, one per sentence (multi.py)
     model: str
     calibrated: bool  # confidence went through the model's fitted temperature
     latency_ms: float
@@ -92,12 +97,18 @@ def route(req: RouteRequest) -> RouteResponse:
         t0 = time.perf_counter()
         r = router.route(req.text)
         ms = (time.perf_counter() - t0) * 1000
+        also = (
+            []
+            if router.kind == students.TEACHER  # one paid LLM call per sentence: no
+            else multi.also_intents(router.route, req.text, r.intent, also_threshold())
+        )
     if name in _monitors:
         _monitors[name].add(r.intent)
     return RouteResponse(
         intent=r.intent,
         confidence=r.confidence,
         ranked=r.ranked,
+        also=also,
         model=name,
         calibrated=router.temperature is not None,
         latency_ms=round(ms, 2),

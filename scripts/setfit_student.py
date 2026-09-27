@@ -30,7 +30,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import MODELS, RESULTS, load_split, rel, teacher_train_labels  # noqa: E402
+from distilroute.data import (  # noqa: E402
+    MODELS,
+    RESULTS,
+    load_split,
+    outlier_queries,
+    rel,
+    teacher_train_labels,
+)
 from distilroute.perturb import augment  # noqa: E402
 from distilroute.runs import latency_ms, model_dir, save_run, split_calib  # noqa: E402
 
@@ -65,7 +72,17 @@ def main() -> None:
         default="",
         help="add noisy copies of the training rows, e.g. typo1,typo3 (roadmap 6.6)",
     )
+    ap.add_argument(
+        "--outlier-exposure",
+        type=int,
+        default=0,
+        metavar="N",
+        help="frozen: add N non-banking messages with a uniform target, so the head learns to "
+        "be unsure outside its job (CLINC150 train, non-banking intents)",
+    )
     args = ap.parse_args()
+    if args.outlier_exposure and args.mode != "frozen":
+        sys.exit("--outlier-exposure is implemented for --mode frozen only")
     kinds = [k for k in args.augment.split(",") if k]
     if args.mode == "setfit" and args.per_class is None:
         args.per_class = 16
@@ -103,7 +120,24 @@ def main() -> None:
         encoder = model.model_body
 
     x_train = encoder.encode(train.text.tolist(), batch_size=64, show_progress_bar=False)
-    head = LogisticRegression(C=10, max_iter=3000).fit(x_train, train.y)
+    if args.outlier_exposure:
+        # Each outlier becomes one copy per intent at weight 1/C: a uniform target, the same
+        # total weight as one training row (soft cross-entropy through sample weights).
+        intents = sorted(train.y.unique())
+        x_out = encoder.encode(
+            outlier_queries(args.outlier_exposure, args.seed),
+            batch_size=64,
+            show_progress_bar=False,
+        )
+        head = LogisticRegression(C=10, max_iter=3000).fit(
+            np.vstack([x_train, np.repeat(x_out, len(intents), axis=0)]),
+            np.r_[train.y.values, np.tile(intents, len(x_out))],
+            sample_weight=np.r_[
+                np.ones(len(x_train)), np.full(len(x_out) * len(intents), 1 / len(intents))
+            ],
+        )
+    else:
+        head = LogisticRegression(C=10, max_iter=3000).fit(x_train, train.y)
     fit_s = time.time() - t0
 
     x_test = encoder.encode(test.text.tolist(), batch_size=64, show_progress_bar=False)
@@ -124,6 +158,7 @@ def main() -> None:
         f"minilm_{args.mode}"
         + (f"_{args.per_class}pc" if args.per_class else "")
         + ("_aug" if kinds else "")
+        + ("_oe" if args.outlier_exposure else "")
     )
     name = f"{tag}_{args.labels}"
     print(f"  fit {fit_s:.0f}s   acc {acc:.4f}   macro-F1 {f1:.4f}")
@@ -144,6 +179,7 @@ def main() -> None:
             "encoder": ENCODER,
             "max_steps": args.max_steps if args.mode == "setfit" else None,
             "augment": kinds or None,
+            "outlier_exposure": args.outlier_exposure or None,
         },
         classes,
         proba,

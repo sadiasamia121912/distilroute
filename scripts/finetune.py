@@ -41,6 +41,7 @@ from distilroute.data import (  # noqa: E402
     ROOT,
     categories,
     load_split,
+    outlier_queries,
     rel,
     teacher_train_labels,
 )
@@ -174,8 +175,17 @@ def main() -> None:
         default="",
         help="add noisy copies of the training rows, e.g. typo1,typo3 (roadmap 6.6)",
     )
+    ap.add_argument(
+        "--outlier-exposure",
+        type=int,
+        default=0,
+        metavar="N",
+        help="add N non-banking messages with a uniform target (CLINC150 train, non-banking "
+        "intents), so the student learns to be unsure outside its job",
+    )
     args = ap.parse_args()
     kinds = [k for k in args.augment.split(",") if k]
+    outliers = outlier_queries(args.outlier_exposure, args.seed) if args.outlier_exposure else []
     if args.soft and args.labels == "gold":
         sys.exit("--soft needs teacher labels (gold has no ranking)")
 
@@ -206,8 +216,16 @@ def main() -> None:
     model = AutoModelForSequenceClassification.from_pretrained(hf_name, num_labels=len(classes)).to(
         device
     )
-    ids, mask = encode(tokenizer, train.text.tolist())
-    y = torch.tensor(targets(train, classes, args.soft, args.soft_alpha))
+    ids, mask = encode(tokenizer, train.text.tolist() + outliers)
+    # Outlier exposure: non-banking messages with a uniform target over the intents.
+    y = torch.tensor(
+        np.vstack(
+            [
+                targets(train, classes, args.soft, args.soft_alpha),
+                np.full((len(outliers), len(classes)), 1 / len(classes), dtype="float32"),
+            ]
+        )
+    )
     loader = DataLoader(TensorDataset(ids, mask, y), batch_size=args.batch_size, shuffle=True)
     if args.epochs is None:
         args.epochs = max(4, -(-MIN_STEPS // len(loader)))  # ceil
@@ -259,6 +277,7 @@ def main() -> None:
         + ("_soft" if args.soft else "")
         + (f"_{args.limit}" if args.limit else "")
         + ("_aug" if kinds else "")
+        + ("_oe" if outliers else "")
     )
     tag += f"_s{args.seed}" if args.seed else ""  # seed 0 keeps the published names
     name = f"{tag}_{args.labels}"
@@ -277,6 +296,7 @@ def main() -> None:
         "lr": args.lr,
         "soft_alpha": args.soft_alpha if args.soft else None,
         "augment": kinds or None,
+        "outlier_exposure": len(outliers) or None,
         "latency_host": platform.node(),
     }
 

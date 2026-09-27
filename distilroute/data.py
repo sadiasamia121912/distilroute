@@ -103,3 +103,30 @@ def teacher_train_labels(name: str = "train", rows: int | None = None) -> pd.Dat
     lab = load_labels(name).loc[sorted(first[:rows])]
     df = load_split("train").join(lab[["teacher", "ranked"]], how="inner")
     return df.dropna(subset=["teacher"]).rename(columns={"teacher": "y"}).drop(columns="category")
+
+
+# CLINC150 intents that touch money, cards, accounts, bills, phones or cancelling something:
+# a banking router must not learn that those are "not its job", so outlier exposure skips them.
+CLINC_BANKING_LIKE = {
+    "account_blocked", "application_status", "apr", "balance", "bill_balance", "bill_due",
+    "cancel", "card_declined", "change_user_name", "credit_limit", "credit_limit_change",
+    "credit_score", "damaged_card", "direct_deposit", "exchange_rate", "expiration_date",
+    "find_phone", "freeze_account", "improve_credit_score", "income", "insurance",
+    "insurance_change", "interest_rate", "international_fees", "min_payment", "new_card",
+    "order", "order_checks", "order_status", "pay_bill", "payday", "pin_change",
+    "redeem_rewards", "replacement_card_duration", "report_fraud", "report_lost_card",
+    "rewards_balance", "rollover_401k", "routing", "spending_history", "taxes",
+    "transactions", "transfer", "travel_notification", "user_name", "w2",
+}  # fmt: skip
+
+
+def outlier_queries(n: int, seed: int = 0) -> list[str]:
+    """`n` messages that are not banking requests, for outlier exposure (training the router to
+    be unsure outside its job): CLINC150 *training* queries from its non-banking intents (small
+    talk, travel, cooking, cars, ...). Never CLINC's out-of-scope set, which 6.2 tests on, and
+    never the filler sentences scripts/stress.py pads tickets with."""
+    import pandas as pd
+
+    clinc = pd.read_csv(ROOT / "data" / "raw" / "clinc150" / "train.csv")
+    pool = clinc[~clinc.category.isin(CLINC_BANKING_LIKE)]
+    return pool.text.sample(n=min(n, len(pool)), random_state=seed).tolist()
