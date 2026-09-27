@@ -11,11 +11,12 @@ own. Every step checks whether its output already exists and skips itself; `labe
 from its checkpoint file and repairs a line cut off mid-write. A lock file stops two copies from
 running at once and labelling the same rows twice.
 
-Steps run in lanes, one per provider, side by side because their limits are separate. Only
-`groq` (the teacher, gpt-oss-120b) is left: the `openrouter` lane of second-teacher gates (1b.6)
-was cut on 2026-09-25. Within a lane steps run in order, and a failed step stops its lane: its
-output is not there, so the steps after it would be built on nothing. Results are only
-written, never committed: review, then commit.
+Steps run in lanes, one per provider, side by side because their limits are separate: `groq`
+(the teacher, gpt-oss-120b) and `gemini` (a second teacher on 200 test queries, 7.5; skipped
+while GEMINI_API_KEY is empty, model from GEMINI_MODEL or teacher.py's default). The
+`openrouter` lane of second-teacher gates (1b.6) was cut on 2026-09-25. Within a lane steps run
+in order, and a failed step stops its lane: its output is not there, so the steps after it
+would be built on nothing. Results are only written, never committed: review, then commit.
 """
 
 from __future__ import annotations
@@ -30,7 +31,10 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(ROOT / ".env")  # the lanes' keys (a lane whose key is empty skips its steps)
 PY = sys.executable
 LABELS = ROOT / "data" / "labels"
 LOGS = ROOT / "logs"
@@ -46,7 +50,7 @@ def rows(path: Path) -> int:
         return sum(1 for line in f if line.strip())
 
 
-def label_step(name, lane, file, target, args, env=None, stop_lane=True):
+def label_step(name, lane, file, target, args, env=None, stop_lane=True, needs_env=None):
     return Step(
         name,
         lane,
@@ -55,6 +59,7 @@ def label_step(name, lane, file, target, args, env=None, stop_lane=True):
         progress=lambda: f"{rows(file):,} / {target:,}",
         env=env or {},
         stop_lane=stop_lane,
+        needs_env=needs_env,
     )
 
 
@@ -68,6 +73,7 @@ class Step:
     env: dict = field(default_factory=dict)
     stop_lane: bool = True  # a failure stops the lane (False: move on, e.g. a model that refuses)
     needs: Path | None = None  # skip (and move on) where this is missing, e.g. models/ in the cloud
+    needs_env: str | None = None  # skip (and move on) while this variable is empty, e.g. a key
 
 
 def json_has(path: Path, check) -> bool:
@@ -165,6 +171,37 @@ STEPS = [
         needs=ROOT / "models",  # the trained students live only on the laptop
     ),
     # openrouter lane (1b.6 second-teacher gates) cut 2026-09-25: ~20 rows/day on the free tier
+    # --- gemini: a second teacher (7.5) on the queries of test.gate_v2_top3, same prompt --------
+    label_step(
+        "second teacher gate: gemini (7.5)",
+        "gemini",
+        LABELS / "test.gate_gemini.jsonl",
+        200,
+        [
+            "--provider",
+            "gemini",
+            *(["--model", os.environ["GEMINI_MODEL"]] if os.environ.get("GEMINI_MODEL") else []),
+            "--split",
+            "test",
+            "--run",
+            "gate_gemini",
+            "--limit",
+            "200",
+            "--seed",
+            "1",
+            "--descriptions",
+            "--top-k",
+            "3",
+        ],
+        needs_env="GEMINI_API_KEY",
+    ),
+    Step(
+        "second teacher comparison (7.5)",
+        "gemini",
+        [[PY, "-u", "scripts/second_teacher.py"]],
+        done=lambda: (ROOT / "results" / "second_teacher.json").exists(),
+        needs_env="GEMINI_API_KEY",
+    ),
 ]
 
 
@@ -180,6 +217,9 @@ def run_lane(lane: str, log) -> None:
             continue
         if s.needs and not s.needs.exists():
             log(f"{lane}: skip   {s.name} (needs {s.needs.name}/, run it on the laptop)")
+            continue
+        if s.needs_env and not os.environ.get(s.needs_env):
+            log(f"{lane}: skip   {s.name} ({s.needs_env} is empty; set it in .env)")
             continue
         log(f"{lane}: start  {s.name}")
         slug = "".join(c if c.isalnum() else "_" for c in s.name).strip("_")[:60]
@@ -243,7 +283,7 @@ def main() -> None:
         print(f"{stamp}  {msg}", flush=True)
 
     status()
-    lanes = [threading.Thread(target=run_lane, args=(ln, log)) for ln in ("groq",)]
+    lanes = [threading.Thread(target=run_lane, args=(ln, log)) for ln in ("groq", "gemini")]
     for t in lanes:
         t.start()
     for t in lanes:
