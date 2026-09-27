@@ -55,6 +55,38 @@ BUDGETS = [100, 200, 300, 500, 1000]
 STRATEGIES = ["random", "disagreement", "unsure", "add_new"]
 
 
+def check_order(
+    train, x_all: np.ndarray, classes: list[str]
+) -> tuple[np.ndarray, dict[str, np.ndarray], np.ndarray]:
+    """(fit, rankings, oof): the pool positions the head is fitted on and, per strategy, the order a
+    human should check them in (positions into `fit`, check first = first), and the out-of-fold
+    probabilities over `classes` those rankings come from. No gold is read, so
+    `scripts/review.py` can show these rows to a real reviewer.
+
+    The calibration hold-out is the one denoise.py's runs use, so budget 0 reproduces `base`.
+    Rankings come from out-of-fold predictions: no row is scored by a head that saw it.
+    """
+    pos = {c: i for i, c in enumerate(classes)}
+    idx = train.index.values
+    teacher_y = np.array([pos[y] for y in train.y])
+    rng = np.random.default_rng(0)
+    cal = rng.choice(len(idx), max(77, int(CALIB_FRAC * len(idx))), replace=False)
+    fit = np.setdiff1d(np.arange(len(idx)), cal)
+    oof = oof_proba(
+        x_all[idx[fit]],
+        soft_targets(train.ranked.iloc[fit], train.y.iloc[fit], classes, 0.0),
+        teacher_y[fit],
+    )
+    return (
+        fit,
+        {
+            "disagreement": np.argsort(oof[np.arange(len(fit)), teacher_y[fit]], kind="stable"),
+            "unsure": np.argsort(oof.max(1), kind="stable"),
+        },
+        oof,
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--budgets", default=",".join(map(str, BUDGETS)))
@@ -84,10 +116,7 @@ def main() -> None:
         f"{len(unlabelled):,} unlabelled for add_new"
     )
 
-    # The same calibration hold-out as denoise.py's runs, so budget 0 reproduces `base`.
-    rng = np.random.default_rng(0)
-    cal = rng.choice(len(idx), max(77, int(CALIB_FRAC * len(idx))), replace=False)
-    fit = np.setdiff1d(np.arange(len(idx)), cal)
+    fit, ranking, _ = check_order(train, x_all, classes)
 
     preds = {}  # test predictions (class index) per run, seed 0: scripts/bootstrap.py pairs them
 
@@ -100,18 +129,6 @@ def main() -> None:
 
     base = score(idx[fit], teacher_y[fit], "base")
     print(f"budget 0: {base:.4f} (teacher {teacher_acc:.4f})")
-
-    # Rankings over the fit rows, from out-of-fold predictions: no row is scored by a head
-    # that saw it. Lower = check first.
-    oof = oof_proba(
-        x_all[idx[fit]],
-        soft_targets(train.ranked.iloc[fit], train.y.iloc[fit], classes, 0.0),
-        teacher_y[fit],
-    )
-    ranking = {
-        "disagreement": np.argsort(oof[np.arange(len(fit)), teacher_y[fit]], kind="stable"),
-        "unsure": np.argsort(oof.max(1), kind="stable"),
-    }
 
     def corrected(checked: np.ndarray, key: str) -> float:
         """Accuracy after a human checks `checked` (positions in `fit`) and fixes what's wrong."""

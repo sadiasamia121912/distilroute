@@ -1,4 +1,4 @@
-"""What happens when customers start asking about something the router was never taught? (roadmap 7.2)
+"""Customers start asking about something the router was never taught (roadmap 7.2)
 
     python scripts/new_intents.py               # 3 draws of 10 held-out intents
     python scripts/new_intents.py --draws 5 --hold 15
@@ -40,7 +40,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import DOCS, RESULTS, categories, load_split, teacher_train_labels  # noqa: E402
+from distilroute.data import (  # noqa: E402
+    DOCS,
+    RESULTS,
+    categories,
+    load_split,
+    teacher_train_labels,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from data_curve import minilm_embeddings  # noqa: E402
@@ -72,7 +78,7 @@ def detect(head: LogisticRegression, x_test: np.ndarray, is_new: np.ndarray) -> 
 
 
 def landings(head: LogisticRegression, x: np.ndarray, gold: np.ndarray, held: list[str]) -> dict:
-    """For each held-out intent: the kept intent its test queries are filed under most, and how often."""
+    """Per held-out intent: the kept intent absorbing most of its test queries, and its share."""
     pred = head.predict(x)
     out = {}
     for intent in held:
@@ -132,7 +138,8 @@ def main() -> None:
         print(
             f"  draw {d}: held {held}\n"
             f"    {len(kept):,} rows kept; entropy AUROC {row['auroc_entropy']:.3f}, catches "
-            f"{row['caught_entropy_at_10pct']:.0%} of {is_new.sum()} new-intent queries at a 10 % budget"
+            f"{row['caught_entropy_at_10pct']:.0%} of {is_new.sum()} new-intent queries "
+            "at a 10 % budget"
         )
 
         # Add each held-out intent back with k human-labelled examples (gold rows outside the pool).
@@ -154,7 +161,11 @@ def main() -> None:
         draws.append(row)
 
     far = next(
-        (r for r in json.loads((RESULTS / "oos.json").read_text()) if r["model"] == "minilm_frozen_teacher"),
+        (
+            r
+            for r in json.loads((RESULTS / "oos.json").read_text())
+            if r["model"] == "minilm_frozen_teacher"
+        ),
         None,
     )
     RESULTS.mkdir(exist_ok=True)
@@ -211,7 +222,8 @@ def write_doc(draws: list[dict], args: argparse.Namespace, far: dict | None) -> 
         "**Budget** = the share of in-scope (kept-intent) test queries escalated; the cell is the "
         "share of new-intent queries that threshold catches.",
         "",
-        "Where the new intents' queries end up (draw 0) — the kept intent that absorbs most of each:",
+        "Where the new intents' queries end up (draw 0) — the kept intent that absorbs most "
+        "of each:",
         "",
         "| held-out intent | filed under | share |",
         "|---|---|---:|",
@@ -224,15 +236,20 @@ def write_doc(draws: list[dict], args: argparse.Namespace, far: dict | None) -> 
     auroc = np.mean([d["auroc_entropy"] for d in draws])
     caught = np.mean([d["caught_entropy_at_10pct"] for d in draws])
     absorbed = np.mean([v["share"] for d in draws for v in d["landings"].values()])
-    new_by_k = {k: np.mean([d["add_back"][i]["acc_new"] for d in draws]) for i, k in enumerate([0, *KS])}
+    new_by_k = {
+        k: np.mean([d["add_back"][i]["acc_new"] for d in draws]) for i, k in enumerate([0, *KS])
+    }
     parity = next((k for k, a in new_by_k.items() if a >= np.mean(ref_new)), f"> {KS[-1]}")
-    kept_drop = np.mean([d["add_back"][-1]["acc_kept"] - d["add_back"][0]["acc_kept"] for d in draws])
+    kept_drop = np.mean(
+        [d["add_back"][-1]["acc_kept"] - d["add_back"][0]["acc_kept"] for d in draws]
+    )
     lines += [
         "",
         f"**Much harder than far out-of-scope.** Entropy AUROC drops from "
         f"{far['auroc_entropy'] if far else float('nan'):.3f} to {auroc:.3f}, and a 10 % budget "
         f"catches {caught:.0%} of the new-intent traffic instead of "
-        f"{far['caught_entropy_at_10pct'] if far else float('nan'):.0%}. Entropy also stops beating "
+        f"{far['caught_entropy_at_10pct'] if far else float('nan'):.0%}. "
+        "Entropy also stops beating "
         "max probability: the 6.2 argument (unknown input spreads its mass thinly) does not hold "
         "when the unknown intent has two or three close neighbours, exactly like a hard in-scope "
         f"query. The neighbours absorb it — on average {absorbed:.0%} of a new intent's queries "
@@ -243,7 +260,8 @@ def write_doc(draws: list[dict], args: argparse.Namespace, far: dict | None) -> 
         "",
         "## How many labels does a new intent need?",
         "",
-        "Each held-out intent added back with k examples (gold train rows, standing in for a person "
+        "Each held-out intent added back with k examples (gold train rows, standing in for a "
+        "person "
         "labelling k messages of the new intent); the rest of the pool is unchanged.",
         "",
         "| k per new intent | new intents' accuracy | kept intents' accuracy | overall accuracy |",
@@ -253,7 +271,8 @@ def write_doc(draws: list[dict], args: argparse.Namespace, far: dict | None) -> 
         steps = [d["add_back"][i] for d in draws]
         lines.append(
             f"| {k} | {mean_sd([s['acc_new'] for s in steps])} | "
-            f"{mean_sd([s['acc_kept'] for s in steps])} | {mean_sd([s['acc_all'] for s in steps])} |"
+            f"{mean_sd([s['acc_kept'] for s in steps])} | "
+            f"{mean_sd([s['acc_all'] for s in steps])} |"
         )
     lines += [
         f"| all 77 from the start (~39 teacher labels each) | {mean_sd(ref_new)} | — | "

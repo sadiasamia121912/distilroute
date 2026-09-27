@@ -282,7 +282,7 @@ The README's Limitations section lists what is weak. Of the 16 weaknesses review
 framing, not a flaw). In order of payoff per effort; 7.1 and 7.2 need no Groq budget, so they
 run while `jobs.py` labels.
 
-- [ ] **7.1 Real human checks** (fixes "the human in finding 5 is simulated"). A small review
+- [ ] **7.1 Real human checks** (fixes "the human in finding 5 is simulated"). _(2026-09-27: `scripts/review.py` ready — same ranking as `correct.py`, gold never loaded while reviewing, resumable; `--report` scores and retrains. Waiting on the user's review.)_ A small review
   script: take the ~200 rows `correct.py` ranks as least believed, show the user the text, the
   teacher's label and the 77 intents — **never the gold label** — and record their answer and
   seconds per item. Report: the user's agreement with gold, the time cost, and the frozen
