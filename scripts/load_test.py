@@ -149,6 +149,42 @@ def sustained(run: dict, slo_ms: float) -> dict | None:
     return max(ok, key=lambda lv: lv["rps"]) if ok else None
 
 
+BASELINE = "load_test_unpinned.json"  # the first run, before threads followed the CPU quota
+
+
+def before_after(runs: list[dict], slo_ms: float) -> list[str]:
+    """Doc lines comparing these runs with the unpinned first run, if it is kept."""
+    sys.path.insert(0, str(ROOT))
+    from distilroute.data import RESULTS
+
+    path = RESULTS / BASELINE
+    if not path.exists():
+        return []
+    old = {r["cpus"]: r for r in json.loads(path.read_text())["runs"]}
+    lines = [
+        "## Before and after pinning onnxruntime's threads",
+        "",
+        f"The first run (`results/{BASELINE}`) let onnxruntime size its thread pool to the "
+        "runner's cores; since then `students.cpu_limit` sizes it to the container's CPU quota.",
+        "",
+        "| CPUs | | 1 client p50 / p95 / p99 ms | sustained req/s | usd per 1M |",
+        "|---:|---|---:|---:|---:|",
+    ]
+    for r in runs:
+        o = old.get(r["cpus"])
+        for label, x in [("before", o), ("after", r)]:
+            if not x:
+                continue
+            one, best = x["levels"][0], sustained(x, slo_ms)
+            lines.append(
+                f"| {r['cpus']:g} | {label} | {one['p50_ms']:.1f} / {one['p95_ms']:.1f} / "
+                f"{one['p99_ms']:.1f} | {best['rps']:.0f} | ${x['usd_per_1m']:.3f} |"
+                if best
+                else f"| {r['cpus']:g} | {label} | — | — | — |"
+            )
+    return [*lines, ""]
+
+
 def report(paths: list[str], slo_ms: float) -> None:
     sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ROOT / "scripts"))
@@ -229,6 +265,7 @@ def report(paths: list[str], slo_ms: float) -> None:
     lines += [
         f"| the teacher LLM, one query per call (paid list price) | ${teacher:,.2f} |",
         "",
+        *before_after(runs, slo_ms),
         "**Tail latency.** "
         + " ".join(
             f"At {r['cpus']:g} CPU{'s' if r['cpus'] != 1 else ''} and one client, the median "
@@ -236,10 +273,14 @@ def report(paths: list[str], slo_ms: float) -> None:
             f"{r['levels'][0]['p95_ms']:.0f} ms."
             for r in runs
         )
-        + " A tail that jumps like that with no queueing is typical of CPU-quota throttling: "
-        "onnxruntime sizes its thread pool to the host's cores, not to the `--cpus` limit, "
-        "spends the quota early in each scheduling period and then waits. Likely fix, not yet "
-        "measured: pin the session's intra-op threads to the CPUs the container gets.",
+        + (
+            " The table above shows what pinning the threads to the CPU quota changed; any tail "
+            "left is the runner's (shared host, the load generator on the same machine)."
+            if (RESULTS / BASELINE).exists()
+            else " A tail that jumps like that with no queueing is typical of CPU-quota "
+            "throttling: onnxruntime sizes its thread pool to the host's cores, not to the "
+            "`--cpus` limit, spends the quota early in each scheduling period and then waits."
+        ),
         "",
         "**Caveats.** A GitHub runner is not a t3.small: different CPU, and a t3 is burstable — "
         'run flat out it needs "unlimited" CPU credits, which cost extra. The load generator '

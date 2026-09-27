@@ -15,6 +15,7 @@ only pays for the models it is asked for.
 from __future__ import annotations
 
 import json
+import math
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -84,6 +85,28 @@ class MiniLMRouter(Router):
         return self.classes, self.head.predict_proba(x)[0]
 
 
+def cpu_limit(cpu_max: str | None = None) -> int:
+    """How many CPUs this process may use: the cgroup quota (`docker run --cpus`) if there is
+    one, else the CPUs it is allowed to run on. `DISTILROUTE_THREADS` overrides both.
+
+    onnxruntime sizes its thread pool to the host's cores. Under a quota smaller than that, the
+    threads spend the quota early in each scheduling period and the request then waits for the
+    next one: a load test saw p95 at 53-79 ms against a 2.5-4 ms median (docs/load_test.md).
+    """
+    if os.environ.get("DISTILROUTE_THREADS"):
+        return max(1, int(os.environ["DISTILROUTE_THREADS"]))
+    cpus = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count()
+    if cpu_max is None:
+        try:  # cgroup v2: "<quota> <period>" or "max <period>"
+            cpu_max = Path("/sys/fs/cgroup/cpu.max").read_text()
+        except OSError:
+            cpu_max = ""
+    quota, _, period = cpu_max.strip().partition(" ")
+    if quota.isdigit() and period.isdigit() and int(period):
+        cpus = min(cpus or 1, math.ceil(int(quota) / int(period)))
+    return max(1, cpus or 1)
+
+
 class OnnxRouter(Router):
     kind = "onnx"
 
@@ -93,8 +116,11 @@ class OnnxRouter(Router):
 
         self.name, self.temperature = meta["name"], meta.get("temperature")
         self.tokenizer = AutoTokenizer.from_pretrained(path)
+        opts = ort.SessionOptions()
+        opts.intra_op_num_threads = cpu_limit()
+        opts.inter_op_num_threads = 1
         self.session = ort.InferenceSession(
-            str(path / "model.int8.onnx"), providers=["CPUExecutionProvider"]
+            str(path / "model.int8.onnx"), opts, providers=["CPUExecutionProvider"]
         )
         self.classes = json.loads((path / "classes.json").read_text())
 

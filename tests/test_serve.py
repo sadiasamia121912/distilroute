@@ -72,3 +72,14 @@ def test_no_models_is_a_clear_503(client, monkeypatch):
     monkeypatch.setattr(students, "available", lambda: {})
     r = client.post("/route", json={"text": "hello"})
     assert r.status_code == 503
+
+
+def test_cpu_limit_follows_the_container_quota(monkeypatch):
+    monkeypatch.delenv("DISTILROUTE_THREADS", raising=False)
+    host = students.cpu_limit("max 100000")  # no quota: every CPU the process may run on
+    assert host >= 1
+    assert students.cpu_limit("100000 100000") == 1  # docker run --cpus=1
+    assert students.cpu_limit("150000 100000") == min(host, 2)  # --cpus=1.5 rounds up
+    assert students.cpu_limit("") == host  # no cgroup file (Windows, macOS)
+    monkeypatch.setenv("DISTILROUTE_THREADS", "3")
+    assert students.cpu_limit("100000 100000") == 3
