@@ -1,0 +1,446 @@
+{
+  "slo_ms": 500,
+  "vm": {
+    "name": "AWS t3.small (2 vCPU, us-east-1, on-demand)",
+    "usd_per_hour": 0.0208,
+    "source": "https://instances.vantage.sh/aws/ec2/t3.small"
+  },
+  "runs": [
+    {
+      "model": "minilm_ft_teacher",
+      "cpus": 1.0,
+      "mode": "default",
+      "health": {
+        "ok": true,
+        "loaded": [
+          "minilm_ft_teacher"
+        ],
+        "cpus": 1,
+        "concurrency": 1,
+        "threads_per_inference": 1
+      },
+      "run_id": "36330067782",
+      "host": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "cpu_count": 4,
+        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "runner": "GitHub Actions 1000000302"
+      },
+      "seconds_per_level": 20,
+      "levels": [
+        {
+          "clients": 1,
+          "seconds": 20.0,
+          "ok": 5399,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 269.9,
+          "p50_ms": 3.4938259999961474,
+          "p95_ms": 5.506140000008486,
+          "p99_ms": 7.161224000000743,
+          "server_mean_ms": 2.52
+        },
+        {
+          "clients": 2,
+          "seconds": 20.01,
+          "ok": 4482,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 224.0,
+          "p50_ms": 6.33850400001279,
+          "p95_ms": 32.10440899999867,
+          "p99_ms": 35.28485399999681,
+          "server_mean_ms": 4.33
+        },
+        {
+          "clients": 4,
+          "seconds": 20.01,
+          "ok": 4743,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 237.0,
+          "p50_ms": 12.336978999996973,
+          "p95_ms": 40.25593000000072,
+          "p99_ms": 44.525032999999326,
+          "server_mean_ms": 4.07
+        },
+        {
+          "clients": 8,
+          "seconds": 20.03,
+          "ok": 4960,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 247.7,
+          "p50_ms": 25.808362999981682,
+          "p95_ms": 55.150292999996964,
+          "p99_ms": 58.95818299998723,
+          "server_mean_ms": 3.86
+        },
+        {
+          "clients": 16,
+          "seconds": 20.09,
+          "ok": 4423,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 220.2,
+          "p50_ms": 75.89249400001563,
+          "p95_ms": 91.30499500000155,
+          "p99_ms": 127.19566000001237,
+          "server_mean_ms": 4.39
+        },
+        {
+          "clients": 32,
+          "seconds": 20.16,
+          "ok": 4859,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 241.0,
+          "p50_ms": 123.95894799999496,
+          "p95_ms": 179.86913999999388,
+          "p99_ms": 247.8599370000154,
+          "server_mean_ms": 3.96
+        }
+      ],
+      "sustained": {
+        "clients": 1,
+        "seconds": 20.0,
+        "ok": 5399,
+        "errors": 0,
+        "error_examples": [],
+        "rps": 269.9,
+        "p50_ms": 3.4938259999961474,
+        "p95_ms": 5.506140000008486,
+        "p99_ms": 7.161224000000743,
+        "server_mean_ms": 2.52
+      },
+      "usd_per_1m": 0.011
+    },
+    {
+      "model": "minilm_ft_teacher",
+      "cpus": 2.0,
+      "mode": "default",
+      "health": {
+        "ok": true,
+        "loaded": [
+          "minilm_ft_teacher"
+        ],
+        "cpus": 2,
+        "concurrency": 2,
+        "threads_per_inference": 1
+      },
+      "run_id": "36330067782",
+      "host": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "cpu_count": 4,
+        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "runner": "GitHub Actions 1000000302"
+      },
+      "seconds_per_level": 20,
+      "levels": [
+        {
+          "clients": 1,
+          "seconds": 20.0,
+          "ok": 5699,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 284.9,
+          "p50_ms": 3.284830000012562,
+          "p95_ms": 5.074934999981906,
+          "p99_ms": 6.658438000016531,
+          "server_mean_ms": 2.36
+        },
+        {
+          "clients": 2,
+          "seconds": 20.0,
+          "ok": 8753,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 437.6,
+          "p50_ms": 4.270251000008329,
+          "p95_ms": 6.595216999983222,
+          "p99_ms": 8.394473000009839,
+          "server_mean_ms": 2.9
+        },
+        {
+          "clients": 4,
+          "seconds": 20.0,
+          "ok": 9951,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 497.4,
+          "p50_ms": 6.817884000014374,
+          "p95_ms": 18.95728399995278,
+          "p99_ms": 23.707829000017,
+          "server_mean_ms": 3.65
+        },
+        {
+          "clients": 8,
+          "seconds": 20.02,
+          "ok": 9030,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 451.0,
+          "p50_ms": 15.689414999997098,
+          "p95_ms": 32.79593499996736,
+          "p99_ms": 40.22819400000799,
+          "server_mean_ms": 4.14
+        },
+        {
+          "clients": 16,
+          "seconds": 20.02,
+          "ok": 9291,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 464.0,
+          "p50_ms": 31.636882999976024,
+          "p95_ms": 63.00712800003794,
+          "p99_ms": 80.7441409999683,
+          "server_mean_ms": 4.04
+        },
+        {
+          "clients": 32,
+          "seconds": 20.05,
+          "ok": 9238,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 460.7,
+          "p50_ms": 69.65220699999009,
+          "p95_ms": 127.24442400002545,
+          "p99_ms": 170.14003700001012,
+          "server_mean_ms": 4.05
+        }
+      ],
+      "sustained": {
+        "clients": 4,
+        "seconds": 20.0,
+        "ok": 9951,
+        "errors": 0,
+        "error_examples": [],
+        "rps": 497.4,
+        "p50_ms": 6.817884000014374,
+        "p95_ms": 18.95728399995278,
+        "p99_ms": 23.707829000017,
+        "server_mean_ms": 3.65
+      },
+      "usd_per_1m": 0.012
+    },
+    {
+      "model": "minilm_ft_teacher",
+      "cpus": 1.0,
+      "mode": "serial",
+      "health": {
+        "ok": true,
+        "loaded": [
+          "minilm_ft_teacher"
+        ],
+        "cpus": 1,
+        "concurrency": 1,
+        "threads_per_inference": 1
+      },
+      "run_id": "36330067782",
+      "host": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "cpu_count": 4,
+        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "runner": "GitHub Actions 1000000302"
+      },
+      "seconds_per_level": 20,
+      "levels": [
+        {
+          "clients": 1,
+          "seconds": 20.0,
+          "ok": 5290,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 264.5,
+          "p50_ms": 3.558227999974406,
+          "p95_ms": 5.447883999977421,
+          "p99_ms": 7.21488300001738,
+          "server_mean_ms": 2.57
+        },
+        {
+          "clients": 2,
+          "seconds": 20.0,
+          "ok": 4789,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 239.4,
+          "p50_ms": 5.9492199999908735,
+          "p95_ms": 31.84347999996362,
+          "p99_ms": 35.43597800000953,
+          "server_mean_ms": 4.07
+        },
+        {
+          "clients": 4,
+          "seconds": 20.01,
+          "ok": 4548,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 227.3,
+          "p50_ms": 13.177171999984694,
+          "p95_ms": 40.96723199995722,
+          "p99_ms": 47.21286500000588,
+          "server_mean_ms": 4.24
+        },
+        {
+          "clients": 8,
+          "seconds": 20.02,
+          "ok": 4716,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 235.5,
+          "p50_ms": 27.17610299998796,
+          "p95_ms": 55.64798899996504,
+          "p99_ms": 61.264986000026056,
+          "server_mean_ms": 4.06
+        },
+        {
+          "clients": 16,
+          "seconds": 20.07,
+          "ok": 4548,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 226.6,
+          "p50_ms": 73.7599189999969,
+          "p95_ms": 90.8485219999875,
+          "p99_ms": 128.65968800002747,
+          "server_mean_ms": 4.23
+        },
+        {
+          "clients": 32,
+          "seconds": 20.13,
+          "ok": 4643,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 230.6,
+          "p50_ms": 132.79239799999232,
+          "p95_ms": 177.23913599996877,
+          "p99_ms": 300.7033540000066,
+          "server_mean_ms": 4.18
+        }
+      ],
+      "sustained": {
+        "clients": 1,
+        "seconds": 20.0,
+        "ok": 5290,
+        "errors": 0,
+        "error_examples": [],
+        "rps": 264.5,
+        "p50_ms": 3.558227999974406,
+        "p95_ms": 5.447883999977421,
+        "p99_ms": 7.21488300001738,
+        "server_mean_ms": 2.57
+      },
+      "usd_per_1m": 0.011
+    },
+    {
+      "model": "minilm_ft_teacher",
+      "cpus": 2.0,
+      "mode": "serial",
+      "health": {
+        "ok": true,
+        "loaded": [
+          "minilm_ft_teacher"
+        ],
+        "cpus": 2,
+        "concurrency": 1,
+        "threads_per_inference": 2
+      },
+      "run_id": "36330067782",
+      "host": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "cpu_count": 4,
+        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "runner": "GitHub Actions 1000000302"
+      },
+      "seconds_per_level": 20,
+      "levels": [
+        {
+          "clients": 1,
+          "seconds": 20.0,
+          "ok": 6027,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 301.3,
+          "p50_ms": 3.1391389999839703,
+          "p95_ms": 4.449387999954979,
+          "p99_ms": 5.5670410000061565,
+          "server_mean_ms": 1.99
+        },
+        {
+          "clients": 2,
+          "seconds": 20.0,
+          "ok": 6237,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 311.8,
+          "p50_ms": 5.115638999996008,
+          "p95_ms": 21.314142999983687,
+          "p99_ms": 25.066309999999703,
+          "server_mean_ms": 3.04
+        },
+        {
+          "clients": 4,
+          "seconds": 20.01,
+          "ok": 6080,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 303.9,
+          "p50_ms": 10.742729000014606,
+          "p95_ms": 29.32473199996366,
+          "p99_ms": 33.89382699998578,
+          "server_mean_ms": 3.14
+        },
+        {
+          "clients": 8,
+          "seconds": 20.02,
+          "ok": 5868,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 293.1,
+          "p50_ms": 23.58198199999606,
+          "p95_ms": 44.24309000000903,
+          "p99_ms": 57.6450720000139,
+          "server_mean_ms": 3.24
+        },
+        {
+          "clients": 16,
+          "seconds": 20.06,
+          "ok": 5699,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 284.2,
+          "p50_ms": 57.90882500002681,
+          "p95_ms": 73.63757600001009,
+          "p99_ms": 105.20183199992061,
+          "server_mean_ms": 3.35
+        },
+        {
+          "clients": 32,
+          "seconds": 20.1,
+          "ok": 5848,
+          "errors": 0,
+          "error_examples": [],
+          "rps": 291.0,
+          "p50_ms": 106.90482199993312,
+          "p95_ms": 141.51104500001566,
+          "p99_ms": 212.66774500008978,
+          "server_mean_ms": 3.26
+        }
+      ],
+      "sustained": {
+        "clients": 2,
+        "seconds": 20.0,
+        "ok": 6237,
+        "errors": 0,
+        "error_examples": [],
+        "rps": 311.8,
+        "p50_ms": 5.115638999996008,
+        "p95_ms": 21.314142999983687,
+        "p99_ms": 25.066309999999703,
+        "server_mean_ms": 3.04
+      },
+      "usd_per_1m": 0.019
+    }
+  ]
+}
