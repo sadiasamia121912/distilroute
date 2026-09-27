@@ -170,6 +170,34 @@ STEPS = [
         ),
         needs=ROOT / "models",  # the trained students live only on the laptop
     ),
+    # 7.5: the v1-vs-v2 descriptions choice was made on test queries; re-run it on the first
+    # 200 train rows (already labelled with v2, same batches) with v1 descriptions. ~10 calls.
+    label_step(
+        "descriptions v1 on 200 train queries (7.5)",
+        "groq",
+        LABELS / "train.desc_v1.jsonl",
+        200,
+        [
+            "--split",
+            "train",
+            "--seed",
+            "0",
+            "--limit",
+            "200",
+            "--descriptions-file",
+            "data/intent_descriptions_v1.json",
+            "--top-k",
+            "3",
+            "--run",
+            "desc_v1",
+        ],
+    ),
+    Step(
+        "descriptions check (7.5)",
+        "groq",
+        [[PY, "-u", "scripts/descriptions_check.py"]],
+        done=lambda: (ROOT / "results" / "descriptions_check.json").exists(),
+    ),
     # openrouter lane (1b.6 second-teacher gates) cut 2026-09-25: ~20 rows/day on the free tier
     # --- gemini: a second teacher (7.5) on the queries of test.gate_v2_top3, same prompt --------
     label_step(

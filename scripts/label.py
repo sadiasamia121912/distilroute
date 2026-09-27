@@ -101,6 +101,12 @@ def main() -> None:
         action="store_true",
         help="add the dataset's intent_descriptions.json to the prompt",
     )
+    add(
+        "--descriptions-file",
+        type=Path,
+        default=None,
+        help="use this descriptions file instead (implies --descriptions), e.g. the v1 file",
+    )
     add("--reasoning", default="low", choices=["low", "medium", "high"], help="gpt-oss only")
     add("--top-k", type=int, default=1, help="ask for a ranked top-k list (soft labels)")
     add(
@@ -136,8 +142,8 @@ def main() -> None:
         return
 
     desc, desc_version = None, None
-    if args.descriptions:
-        raw = json.loads(DESCRIPTIONS.read_text(encoding="utf-8"))
+    if args.descriptions or args.descriptions_file:
+        raw = json.loads((args.descriptions_file or DESCRIPTIONS).read_text(encoding="utf-8"))
         desc_version = raw.get("_version", "v1")
         desc = {k: v for k, v in raw.items() if not k.startswith("_")}
         missing = [n for n in labels if n not in desc]
