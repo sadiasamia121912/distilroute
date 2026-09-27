@@ -229,6 +229,18 @@ def report(paths: list[str], slo_ms: float) -> None:
     lines += [
         f"| the teacher LLM, one query per call (paid list price) | ${teacher:,.2f} |",
         "",
+        "**Tail latency.** "
+        + " ".join(
+            f"At {r['cpus']:g} CPU{'s' if r['cpus'] != 1 else ''} and one client, the median "
+            f"request takes {r['levels'][0]['p50_ms']:.1f} ms but p95 is "
+            f"{r['levels'][0]['p95_ms']:.0f} ms."
+            for r in runs
+        )
+        + " A tail that jumps like that with no queueing is typical of CPU-quota throttling: "
+        "onnxruntime sizes its thread pool to the host's cores, not to the `--cpus` limit, "
+        "spends the quota early in each scheduling period and then waits. Likely fix, not yet "
+        "measured: pin the session's intra-op threads to the CPUs the container gets.",
+        "",
         "**Caveats.** A GitHub runner is not a t3.small: different CPU, and a t3 is burstable — "
         'run flat out it needs "unlimited" CPU credits, which cost extra. The load generator '
         "shares the runner with the server (outside its CPU limit, but on the same host). "
