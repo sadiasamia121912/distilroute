@@ -35,6 +35,8 @@ accuracy is against the human labels on the untouched 3,080-query test split.
   rate-capped and not a production option. **Student cost** is CPU time on an AWS t3.small at
   on-demand price, one request at a time: an upper bound, and $0 on hardware you already own.
 - **Latency** is one query at a time, in-process, on a laptop CPU (`scripts/bench_latency.py`).
+  **Measured under load** (finding 10), the served container on 2 CPUs sustains **497 requests
+  per second**, which puts its cost at **$0.012 per 1M**, below the $0.02 estimate above.
 - **Accuracy of the fine-tuned rows is the fp32 model's;** latency and cost are the int8 graph's,
   which is what gets served. int8 costs 0.1–0.7 pt: the served MiniLM scores **0.842** on this
   CPU (DistilBERT 0.838, TinyBERT 0.792).
@@ -114,6 +116,28 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    intent, so every batch of 20 queries shared one intent and the LLM used the batch as a hint.
    Relabelled in shuffled order: **0.867**. The labeller now always shuffles.
    [docs/teacher.md](docs/teacher.md)
+8. **A new banking intent is much harder to notice than off-topic chatter, and needs ~50
+   labels to add.** Retrained without 10 of the 77 intents (3 random draws), the student catches
+   only **53 %** of their queries at the same 10 % escalation budget that catches 96 % of
+   CLINC150's out-of-scope traffic (AUROC 0.83 vs 0.98). The unknown intent is absorbed by a
+   neighbour (`failed_transfer` → `declined_transfer`, 88 %), so in production the signal is a
+   *volume shift* into one intent, not per-message confidence. Adding the intent back with 5
+   labelled examples routes 39 % of it correctly; **50 match the student that had it from the
+   start**. [docs/new_intents.md](docs/new_intents.md)
+9. **Long tickets break the fine-tuned students; routing sentence by sentence mostly fixes
+   it.** The served model reads 64 tokens, so a question at the end of a 120-word ticket drops
+   it from 0.867 to **0.013** (the cascade escalates 90 % of those, so they cost LLM calls rather
+   than misroutes). The frozen MiniLM, which reads 256 tokens, keeps 0.763, and **0.837** when
+   each sentence is routed alone after an entropy filter drops the small talk. Two questions in
+   one message: the top-1 is one of them 60–87 % of the time, and per-sentence routing finds both
+   in about half. [docs/stress.md](docs/stress.md)
+10. **Load-tested, the router costs $0.012 per 1M requests.** The Docker image on a Linux
+    runner, real queries, 1–32 concurrent clients, no errors: 270 req/s on 1 CPU, 497 on 2. Two
+    service fixes came out of it: size onnxruntime's thread pool to the container's CPU quota
+    (it had been throttled into a 53–79 ms p95 at a single client), then run one single-thread
+    inference per CPU (1.6× the throughput of one multi-thread inference at a time, compared on
+    the same runner; runner CPUs changed between runs and moved the model's speed 3×).
+    [docs/load_test.md](docs/load_test.md)
 
 ## Protocol
 
@@ -187,12 +211,13 @@ Labelling more data needs a free key (no card): copy `.env.example` to `.env`, s
   batch size, top-3) were also chosen on those 200 *test* queries. Both are disclosed choices, not
   a strict zero-shot protocol.
 - **Benchmark text, not tickets.** Banking77 queries are short (median 47 characters), English,
-  one intent each and one snapshot in time. Real tickets are longer, mix several requests, carry
-  personal data and drift as products change; none of that is measured here, and adding an
-  intent means relabelling and retraining.
-- **Cost and latency are modelled, not load-tested.** Teacher cost is a list price; student cost
-  is CPU time priced on a t3.small; latency is one query at a time, in-process, on one laptop. No
-  concurrency, network or batching was measured.
+  one intent each and one snapshot in time. Long tickets, two questions in one message and new
+  intents are simulated (findings 8 and 9) with rule-built text and held-out intents, not real
+  traffic; personal data and slow drift are not measured at all.
+- **Cost is list prices on stand-in hardware.** Teacher cost is a list price. Student cost is
+  measured throughput (finding 10) on GitHub's shared runners, priced as a t3.small, which is a
+  different and burstable machine; runner CPUs vary between runs, so throughput moves by up to
+  3× from run to run.
 - **One teacher, mostly one training seed.** Every result uses gpt-oss-120b with one prompt; the
   only second teacher tried (nemotron-550b) was weaker (0.835 vs 0.905 on the gate), so how the
   findings transfer to other LLMs is untested. The bootstrap intervals cover test sampling, not
@@ -206,9 +231,9 @@ Labelling more data needs a free key (no card): copy `.env.example` to `.env`, s
 
 Distillation into a fixed-label classifier covers "read a short text, pick a bucket": routing,
 moderation, triage, sentiment. It does not cover free-text outputs such as summaries or
-replies. The out-of-scope test uses CLINC150, whose negatives are *far* from banking; a
-mortgage or insurance question would be harder, and no near-out-of-scope set exists for
-Banking77.
+replies. The out-of-scope test uses CLINC150, whose negatives are *far* from banking; the
+near case is simulated by holding intents out of Banking77 itself (finding 8), and a mortgage or
+insurance question, outside Banking77 altogether, is not measured.
 
-_Status and the full task list: [ROADMAP.md](ROADMAP.md). Project write-up:
-[docs/PROJECT.md](docs/PROJECT.md)._
+_A one-page map of every result and script: [docs/START_HERE.md](docs/START_HERE.md). Status and
+the full task list: [ROADMAP.md](ROADMAP.md). Project write-up: [docs/PROJECT.md](docs/PROJECT.md)._

@@ -303,7 +303,7 @@ run while `jobs.py` labels.
   matter.
 - [x] **7.6 Stress text (free):** _(2026-09-27: `scripts/stress.py` → `docs/stress.md`. The served int8 MiniLM reads 64 tokens: a question at the end of a 120-word ticket drops it 0.867 → 0.013 (cascade escalates 90 %); frozen MiniLM (256 tokens) keeps 0.763, and 0.837 routed sentence by sentence with a per-sentence entropy off-topic filter. Sentence routing rescues DistilBERT (0.023 → 0.770) but only partly the served model (0.550): it is confidently wrong on 4 of 18 chit-chat lines. Two questions in one message: top-1 is one of them 60–87 %, both in the top-2 only 7–48 %; sentence routing finds both in ~50 %.)_ two queries joined into one message (is the pair in the
   top 2?) and queries padded to ticket length.
-- [ ] **7.7 Publish** (4.2) once 7.1–7.4 land, so the posts carry the stronger numbers; trim the
+- [ ] **7.7 Publish** _(2026-09-28: README gained findings 8–10 (new intents, long tickets, load test) and updated Limitations/Scope; `docs/START_HERE.md` is the one-page map. Posting still waits for 7.1, 7.3 and the HF Space.)_ (4.2) once 7.1–7.4 land, so the posts carry the stronger numbers; trim the
   ROADMAP or add a one-page "start here".
 
 ---
