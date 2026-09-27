@@ -112,15 +112,19 @@ def inference_threads() -> int:
     return max(1, int(os.environ.get("DISTILROUTE_THREADS") or 1))
 
 
+MAX_TOKENS = 64  # tokens an ONNX student reads; the rest of a long message is cut
+
+
 class OnnxRouter(Router):
     kind = "onnx"
 
     def __init__(self, path: Path, meta: dict):
         import onnxruntime as ort
-        from transformers import AutoTokenizer
+        from tokenizers import Tokenizer  # the fast tokenizer alone: no transformers at serve time
 
         self.name, self.temperature = meta["name"], meta.get("temperature")
-        self.tokenizer = AutoTokenizer.from_pretrained(path)
+        self.tokenizer = Tokenizer.from_file(str(path / "tokenizer.json"))
+        self.tokenizer.no_padding()
         opts = ort.SessionOptions()
         opts.intra_op_num_threads = inference_threads()
         opts.inter_op_num_threads = 1
@@ -128,10 +132,15 @@ class OnnxRouter(Router):
             str(path / "model.int8.onnx"), opts, providers=["CPUExecutionProvider"]
         )
         self.classes = json.loads((path / "classes.json").read_text())
+        self.max_tokens = MAX_TOKENS
 
     def proba(self, text: str):
-        enc = self.tokenizer([text], truncation=True, max_length=64, return_tensors="np")
-        feed = {k: np.asarray(enc[k]).astype("int64") for k in ("input_ids", "attention_mask")}
+        self.tokenizer.enable_truncation(max_length=self.max_tokens)
+        enc = self.tokenizer.encode(text)
+        feed = {
+            "input_ids": np.array([enc.ids], dtype="int64"),
+            "attention_mask": np.array([enc.attention_mask], dtype="int64"),
+        }
         logits = self.session.run(["logits"], feed)[0][0]
         z = np.exp(logits - logits.max())
         return self.classes, z / z.sum()
