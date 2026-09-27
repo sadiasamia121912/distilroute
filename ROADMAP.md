@@ -318,10 +318,58 @@ run while `jobs.py` labels.
 
 ## Session log
 
+**2026-09-28 (HANDOFF — start here next session)**
+
+**Done this session** (2026-09-27 evening → 2026-09-28, all pushed, CI green):
+- **Phase 7:** 7.2 new intents (`docs/new_intents.md`), 7.6 stress text (`docs/stress.md`), 7.4 load
+  test (`docs/load_test.md`; served container 497 req/s on 2 CPUs, **$0.012 / 1M**), 7.7 README
+  findings 8–10 + `docs/START_HERE.md`. Prepared, waiting on the user: 7.1 `scripts/review.py`,
+  7.3 `notebooks/finetune_colab.ipynb`, 7.5 Gemini lane in `jobs.py` + v1-vs-v2 descriptions
+  re-check queued at the end of the groq lane (`scripts/descriptions_check.py`).
+- **Service fixes** (each measured): onnxruntime threads sized to the CPU quota, then one
+  single-thread inference per CPU by default (`/health` reports it); ONNX students read **512
+  tokens** (was 64: question at the end of a 120-word ticket 0.013 → 0.803, short queries
+  unchanged); `transformers` dropped from the image (packages 296 → 164 MB, identical tokens);
+  **`GET /monitor`** flags an intent whose traffic share jumps (a new intent at 5 % of traffic
+  caught within 2,000 messages 94 % of the time, 1.6 % false alarms); **`also`** in `POST /route`
+  (second request from another sentence, threshold 0.95 because the fine-tuned model is
+  confidently wrong on small talk).
+- **Negative results kept:** distance scores (Mahalanobis, k-NN) are worse than entropy on new
+  banking intents (0.72 vs 0.83) though best on off-topic (0.997); cross-run load-test
+  comparisons were confounded by 4 runner CPU types, so setups are compared within one run.
+- **Outlier exposure** (`--outlier-exposure N` in `setfit_student.py` and `finetune.py`; 2,000
+  non-banking CLINC150 train queries, uniform target): frozen MiniLM off-topic AUROC 0.982 →
+  0.992. The plain frozen model was already calm on small talk; the fine-tuned ones are not.
+- **CI:** `.github/workflows/tests.yml` (ruff + 50 tests); fixed `httpx` in requirements-dev,
+  pytest `pythonpath`, data download.
+- Labels: train **6,020 / 10,003**.
+
+**In flight at handoff:** `finetune.py --model minilm --labels teacher --export-onnx
+--outlier-exposure 2000` on the laptop CPU (~1 h, log `%TEMP%\ft_oe.log`). If
+`results/minilm_ft_oe_teacher.json` exists: run `scripts/stress.py` and `scripts/oos.py` (the model
+is already in stress.py's list), compare with `minilm_ft_teacher` (filler sentences passing the
+filter, `also` invented rate, off-topic AUROC, clean accuracy); if the invented rate falls,
+lower `ALSO_THRESHOLD` in `distilroute/multi.py` to the value the table supports, and consider
+serving it (int8 must not lose > 0.3 pt on clean). If the file is missing, the run was
+interrupted: the same model is in the Colab notebook, or re-run the command.
+
+**Left, in order:**
+1. `jobs.py` once a day, ideally evenings (Groq's rolling 24 h budget); `retrain_check.py --rows
+   7500` past 7,500; the descriptions re-check and teacher-on-noise run at the end of the queue.
+2. **User:** 7.1 review (`.\.venv\Scripts\python.exe scripts\review.py`, 2–3 h, resumable), then
+   `review.py --report`.
+3. **User:** Colab run of the notebook (aug, seeds 1–2, outlier exposure; the 10,003-label run
+   skips itself until labelling is done), then `seeds.py`, `robustness.py`, `stress.py`,
+   `oos.py`, `evaluate.py`.
+4. **User:** Gemini key in `.env` (aistudio.google.com/apikey) → check the model name, run the lane.
+5. **User:** `hf auth login` → HF Space (7.4's last piece; `build_hf_release.py`).
+6. After those: 1.6 retrain on 10,003 labels; README headline + case study rebuild; 7.7 posts
+   (user shares and posts).
+
 **2026-09-27 evening** — `.venv` rebuilt (38 tests pass). `jobs.py`: train labels 4,900 →
 **5,860 / 10,003** (0 unparsed), paused on Groq's rolling limit at 21:14. **5,000-row check**
 (`results/teacher5000/`): frozen MiniLM 0.848 → 0.853, TF-IDF 0.812 → 0.833, gap to teacher
-1.4 pt. **7.2 done** (`docs/new_intents.md`). Commits `61305cc`, `e4790bf`, `b4368ae` not pushed yet.
+1.4 pt. **7.2 done** (`docs/new_intents.md`). Commits `61305cc`, `e4790bf`, `b4368ae` (pushed).
 **Next:** run `jobs.py` once a day; `retrain_check.py --rows 7500` past 7,500; start 7.1.
 
 **2026-09-27 (labelling resumed)** — Ran `jobs.py`: Banking77 train labels **3,000 → 4,900 /
