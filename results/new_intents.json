@@ -1,0 +1,354 @@
+{
+  "hold": 10,
+  "min_rows": 120,
+  "draws": [
+    {
+      "draw": 0,
+      "held_out": [
+        "Refund_not_showing_up",
+        "activate_my_card",
+        "automatic_top_up",
+        "card_about_to_expire",
+        "card_payment_fee_charged",
+        "card_payment_wrong_exchange_rate",
+        "direct_debit_payment_not_recognised",
+        "failed_transfer",
+        "pending_transfer",
+        "top_up_reverted"
+      ],
+      "pool_rows": 2578,
+      "new_test_queries": 400,
+      "reference": {
+        "acc_new": 0.7875,
+        "acc_kept": 0.8544776119402985,
+        "acc_all": 0.8457792207792207
+      },
+      "auroc_max_prob": 0.7971277985074626,
+      "caught_max_prob_at_5pct": 0.2575,
+      "caught_max_prob_at_10pct": 0.4425,
+      "caught_max_prob_at_20pct": 0.6525,
+      "auroc_entropy": 0.7896809701492538,
+      "caught_entropy_at_5pct": 0.27,
+      "caught_entropy_at_10pct": 0.465,
+      "caught_entropy_at_20pct": 0.65,
+      "landings": {
+        "Refund_not_showing_up": {
+          "to": "request_refund",
+          "share": 0.95
+        },
+        "activate_my_card": {
+          "to": "card_linking",
+          "share": 0.7
+        },
+        "automatic_top_up": {
+          "to": "topping_up_by_card",
+          "share": 0.425
+        },
+        "card_about_to_expire": {
+          "to": "order_physical_card",
+          "share": 0.475
+        },
+        "card_payment_fee_charged": {
+          "to": "extra_charge_on_statement",
+          "share": 0.4
+        },
+        "card_payment_wrong_exchange_rate": {
+          "to": "wrong_exchange_rate_for_cash_withdrawal",
+          "share": 0.475
+        },
+        "direct_debit_payment_not_recognised": {
+          "to": "card_payment_not_recognised",
+          "share": 0.725
+        },
+        "failed_transfer": {
+          "to": "declined_transfer",
+          "share": 0.875
+        },
+        "pending_transfer": {
+          "to": "transfer_timing",
+          "share": 0.425
+        },
+        "top_up_reverted": {
+          "to": "top_up_failed",
+          "share": 0.8
+        }
+      },
+      "add_back": [
+        {
+          "k": 0,
+          "added": 0,
+          "acc_new": 0.0,
+          "acc_kept": 0.8611940298507462,
+          "acc_all": 0.7493506493506493
+        },
+        {
+          "k": 5,
+          "added": 50,
+          "acc_new": 0.4,
+          "acc_kept": 0.8634328358208955,
+          "acc_all": 0.8032467532467532
+        },
+        {
+          "k": 10,
+          "added": 100,
+          "acc_new": 0.6075,
+          "acc_kept": 0.8630597014925373,
+          "acc_all": 0.8298701298701299
+        },
+        {
+          "k": 25,
+          "added": 250,
+          "acc_new": 0.76,
+          "acc_kept": 0.8593283582089553,
+          "acc_all": 0.8464285714285714
+        },
+        {
+          "k": 50,
+          "added": 500,
+          "acc_new": 0.8425,
+          "acc_kept": 0.8529850746268657,
+          "acc_all": 0.8516233766233766
+        },
+        {
+          "k": 100,
+          "added": 1000,
+          "acc_new": 0.9075,
+          "acc_kept": 0.8488805970149254,
+          "acc_all": 0.8564935064935065
+        }
+      ]
+    },
+    {
+      "draw": 1,
+      "held_out": [
+        "activate_my_card",
+        "beneficiary_not_allowed",
+        "card_payment_fee_charged",
+        "cash_withdrawal_not_recognised",
+        "declined_card_payment",
+        "declined_transfer",
+        "pending_card_payment",
+        "supported_cards_and_currencies",
+        "transaction_charged_twice",
+        "verify_top_up"
+      ],
+      "pool_rows": 2559,
+      "new_test_queries": 400,
+      "reference": {
+        "acc_new": 0.8375,
+        "acc_kept": 0.8470149253731343,
+        "acc_all": 0.8457792207792207
+      },
+      "auroc_max_prob": 0.8371091417910447,
+      "caught_max_prob_at_5pct": 0.3625,
+      "caught_max_prob_at_10pct": 0.5575,
+      "caught_max_prob_at_20pct": 0.735,
+      "auroc_entropy": 0.8451222014925374,
+      "caught_entropy_at_5pct": 0.28,
+      "caught_entropy_at_10pct": 0.55,
+      "caught_entropy_at_20pct": 0.785,
+      "landings": {
+        "activate_my_card": {
+          "to": "card_linking",
+          "share": 0.725
+        },
+        "beneficiary_not_allowed": {
+          "to": "failed_transfer",
+          "share": 0.7
+        },
+        "card_payment_fee_charged": {
+          "to": "extra_charge_on_statement",
+          "share": 0.375
+        },
+        "cash_withdrawal_not_recognised": {
+          "to": "pending_cash_withdrawal",
+          "share": 0.35
+        },
+        "declined_card_payment": {
+          "to": "reverted_card_payment?",
+          "share": 0.4
+        },
+        "declined_transfer": {
+          "to": "failed_transfer",
+          "share": 0.45
+        },
+        "pending_card_payment": {
+          "to": "pending_transfer",
+          "share": 0.375
+        },
+        "supported_cards_and_currencies": {
+          "to": "fiat_currency_support",
+          "share": 0.5
+        },
+        "transaction_charged_twice": {
+          "to": "extra_charge_on_statement",
+          "share": 0.625
+        },
+        "verify_top_up": {
+          "to": "why_verify_identity",
+          "share": 0.275
+        }
+      },
+      "add_back": [
+        {
+          "k": 0,
+          "added": 0,
+          "acc_new": 0.0,
+          "acc_kept": 0.8600746268656716,
+          "acc_all": 0.7483766233766234
+        },
+        {
+          "k": 5,
+          "added": 50,
+          "acc_new": 0.41,
+          "acc_kept": 0.8582089552238806,
+          "acc_all": 0.8
+        },
+        {
+          "k": 10,
+          "added": 100,
+          "acc_new": 0.64,
+          "acc_kept": 0.8597014925373134,
+          "acc_all": 0.8311688311688312
+        },
+        {
+          "k": 25,
+          "added": 250,
+          "acc_new": 0.8075,
+          "acc_kept": 0.8578358208955223,
+          "acc_all": 0.8512987012987013
+        },
+        {
+          "k": 50,
+          "added": 500,
+          "acc_new": 0.875,
+          "acc_kept": 0.8541044776119403,
+          "acc_all": 0.8568181818181818
+        },
+        {
+          "k": 100,
+          "added": 1000,
+          "acc_new": 0.9175,
+          "acc_kept": 0.8462686567164179,
+          "acc_all": 0.8555194805194806
+        }
+      ]
+    },
+    {
+      "draw": 2,
+      "held_out": [
+        "balance_not_updated_after_bank_transfer",
+        "card_linking",
+        "card_payment_not_recognised",
+        "change_pin",
+        "declined_card_payment",
+        "declined_transfer",
+        "lost_or_stolen_phone",
+        "pending_top_up",
+        "reverted_card_payment?",
+        "why_verify_identity"
+      ],
+      "pool_rows": 2583,
+      "new_test_queries": 400,
+      "reference": {
+        "acc_new": 0.8275,
+        "acc_kept": 0.8485074626865672,
+        "acc_all": 0.8457792207792207
+      },
+      "auroc_max_prob": 0.8496436567164178,
+      "caught_max_prob_at_5pct": 0.405,
+      "caught_max_prob_at_10pct": 0.5625,
+      "caught_max_prob_at_20pct": 0.745,
+      "auroc_entropy": 0.8400708955223881,
+      "caught_entropy_at_5pct": 0.3775,
+      "caught_entropy_at_10pct": 0.58,
+      "caught_entropy_at_20pct": 0.735,
+      "landings": {
+        "balance_not_updated_after_bank_transfer": {
+          "to": "pending_transfer",
+          "share": 0.5
+        },
+        "card_linking": {
+          "to": "activate_my_card",
+          "share": 0.4
+        },
+        "card_payment_not_recognised": {
+          "to": "compromised_card",
+          "share": 0.375
+        },
+        "change_pin": {
+          "to": "get_physical_card",
+          "share": 0.675
+        },
+        "declined_card_payment": {
+          "to": "declined_cash_withdrawal",
+          "share": 0.5
+        },
+        "declined_transfer": {
+          "to": "failed_transfer",
+          "share": 0.325
+        },
+        "lost_or_stolen_phone": {
+          "to": "lost_or_stolen_card",
+          "share": 0.5
+        },
+        "pending_top_up": {
+          "to": "top_up_failed",
+          "share": 0.575
+        },
+        "reverted_card_payment?": {
+          "to": "pending_card_payment",
+          "share": 0.3
+        },
+        "why_verify_identity": {
+          "to": "verify_my_identity",
+          "share": 0.65
+        }
+      },
+      "add_back": [
+        {
+          "k": 0,
+          "added": 0,
+          "acc_new": 0.0,
+          "acc_kept": 0.8656716417910447,
+          "acc_all": 0.7532467532467533
+        },
+        {
+          "k": 5,
+          "added": 50,
+          "acc_new": 0.3725,
+          "acc_kept": 0.8656716417910447,
+          "acc_all": 0.8016233766233766
+        },
+        {
+          "k": 10,
+          "added": 100,
+          "acc_new": 0.6025,
+          "acc_kept": 0.8664179104477612,
+          "acc_all": 0.8321428571428572
+        },
+        {
+          "k": 25,
+          "added": 250,
+          "acc_new": 0.805,
+          "acc_kept": 0.8652985074626866,
+          "acc_all": 0.8574675324675325
+        },
+        {
+          "k": 50,
+          "added": 500,
+          "acc_new": 0.865,
+          "acc_kept": 0.8563432835820896,
+          "acc_all": 0.8574675324675325
+        },
+        {
+          "k": 100,
+          "added": 1000,
+          "acc_new": 0.9125,
+          "acc_kept": 0.8481343283582089,
+          "acc_all": 0.8564935064935065
+        }
+      ]
+    }
+  ]
+}
