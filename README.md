@@ -124,13 +124,16 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    *volume shift* into one intent, not per-message confidence. Adding the intent back with 5
    labelled examples routes 39 % of it correctly; **50 match the student that had it from the
    start**. [docs/new_intents.md](docs/new_intents.md)
-9. **Long tickets break the fine-tuned students; routing sentence by sentence mostly fixes
-   it.** The served model reads 64 tokens, so a question at the end of a 120-word ticket drops
-   it from 0.867 to **0.013** (the cascade escalates 90 % of those, so they cost LLM calls rather
-   than misroutes). The frozen MiniLM, which reads 256 tokens, keeps 0.763, and **0.837** when
-   each sentence is routed alone after an entropy filter drops the small talk. Two questions in
-   one message: the top-1 is one of them 60–87 % of the time, and per-sentence routing finds both
-   in about half. [docs/stress.md](docs/stress.md)
+9. **Long tickets used to break the served model; now it reads them.** It was cut at the
+   64 tokens it was trained on, so a question at the end of a 120-word ticket scored **0.013**
+   (the cascade escalated 90 % of those, so they cost LLM calls rather than misroutes). Reading
+   its full 512 tokens it scores **0.803** there, with short queries unchanged (0.842; none
+   reaches 64 tokens). DistilBERT recovers the same way (0.023 → 0.783); TinyBERT does not
+   cope with long padding at all. Routing each sentence alone is the other lever: it lifts the
+   frozen MiniLM from 0.763 to **0.837**, but the fine-tuned students are confidently wrong on
+   small talk ("hi there, hope you are well" → `card_arrival`), so for them it helps less. Two
+   questions in one message: the top-1 is one of them 60–87 % of the time, and per-sentence
+   routing finds both in about half. [docs/stress.md](docs/stress.md)
 10. **Load-tested, the router costs $0.012 per 1M requests.** The Docker image on a Linux
     runner, real queries, 1–32 concurrent clients, no errors: 270 req/s on 1 CPU, 497 on 2. Two
     service fixes came out of it: size onnxruntime's thread pool to the container's CPU quota

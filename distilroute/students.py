@@ -112,7 +112,11 @@ def inference_threads() -> int:
     return max(1, int(os.environ.get("DISTILROUTE_THREADS") or 1))
 
 
-MAX_TOKENS = 64  # tokens an ONNX student reads; the rest of a long message is cut
+# Tokens an ONNX student reads: its position limit (512 for MiniLM, DistilBERT and TinyBERT).
+# It was 64, the training length, which cut a question at the end of a long ticket clean off
+# (0.013 accuracy); at 512 the served model scores 0.803 there and exactly the same on short
+# queries, which never reach 64 (docs/stress.md).
+MAX_TOKENS = 512
 
 
 class OnnxRouter(Router):

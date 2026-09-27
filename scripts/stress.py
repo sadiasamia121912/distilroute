@@ -11,9 +11,9 @@ Banking77 queries are one short sentence with one intent. Real tickets are not:
   two wins, and does its confidence drop, so that the cascade escalates the mixed message?
 - **Ticket length.** Test queries padded with intent-neutral filler (greetings, apologies,
   "I've been a customer for years") to ~50 and ~120 words, with the question at the start, at
-  the end, or in the middle. The fine-tuned students read at most 64 tokens (the ONNX
-  tokenizer truncates, as served), so a question at the end of a long ticket may never reach
-  them. Accuracy is against the same queries unpadded.
+  the end, or in the middle. The fine-tuned students read up to 512 tokens as served; until
+  2026-09-28 they read 64, and `minilm_ft_teacher@64` re-runs the served model with that old
+  limit, so the doc shows what it cost. Accuracy is against the same queries unpadded.
 
 Everything runs through `distilroute.students`, the code path the service uses, with the
 cascade's calibrated 0.8 threshold for "escalated". No LLM calls. Writes results/stress.json and
@@ -40,6 +40,7 @@ MODELS = [
     "tfidf_lr_teacher",
     "minilm_frozen_teacher",
     "minilm_ft_teacher",  # the served model
+    "minilm_ft_teacher@64",  # ... with the 64-token limit it was served with until 2026-09-28
     "tinybert_ft_teacher",
     "distilbert_ft_teacher",
 ]
@@ -116,7 +117,7 @@ def entropy(p: np.ndarray) -> float:
 class SplitRouter:
     """The fix to test: route each sentence alone, answer with the most confident one.
 
-    Every sentence fits in the 64-token window, and the set of confident per-sentence answers is
+    Each sentence is routed on its own, and the set of confident per-sentence answers is
     a cheap multi-intent signal. With `max_entropy` set, sentences above it are dropped first as
     off-topic (the out-of-scope test of 6.2, applied per sentence); if none is left, the whole
     message is routed as before. `cache` is shared between routers of one model: the filler
@@ -181,10 +182,13 @@ def main() -> None:
 
     rows = []
     for name in args.models.split(","):
-        if name not in students.available():
+        base, _, tokens = name.partition("@")  # name@N: an ONNX student reading N tokens
+        if base not in students.available():
             print(f"skip {name}: not under models/")
             continue
-        router = students.load(name)
+        router = students.load(base)
+        if tokens:
+            router.max_tokens = int(tokens)
         t0 = time.time()
         pred1, _, conf1 = route(router, [texts[k] for k in singles])
         # Off-topic cut: the entropy above which 10 % of clean queries fall (6.2's budget).
@@ -287,12 +291,21 @@ def takeaways(rows: list[dict]) -> str:
     if "minilm_ft_teacher" in by and "minilm_frozen_teacher" in by:
         ft, fr = by["minilm_ft_teacher"], by["minilm_frozen_teacher"]
         e = f"{LENGTHS[-1]}_end"
-        out.append(
-            f"The served model falls from {ft['padded']['clean']['acc']:.3f} to "
-            f"{ft['padded'][e]['acc']:.3f} when the question ends a {LENGTHS[-1]}-word ticket — "
-            "it never reads past token 64 — though the cascade escalates "
-            f"{ft['padded'][e]['escalated']:.0%} of those."
-        )
+        old = by.get("minilm_ft_teacher@64")
+        if old:
+            out.append(
+                f"Reading only 64 tokens, as it was served until 2026-09-28, the served model "
+                f"fell from {old['padded']['clean']['acc']:.3f} to {old['padded'][e]['acc']:.3f} "
+                f"when the question ends a {LENGTHS[-1]}-word ticket (the cascade escalated "
+                f"{old['padded'][e]['escalated']:.0%} of those). Reading its full 512 tokens, it "
+                f"keeps {ft['padded'][e]['acc']:.3f} there and the same "
+                f"{ft['padded']['clean']['acc']:.3f} on short queries, which never reach 64."
+            )
+        else:
+            out.append(
+                f"The served model keeps {ft['padded'][e]['acc']:.3f} when the question ends a "
+                f"{LENGTHS[-1]}-word ticket (clean {ft['padded']['clean']['acc']:.3f})."
+            )
         out.append(
             f"The frozen MiniLM, which reads 256 tokens, keeps {fr['padded'][e]['acc']:.3f} on "
             "the same tickets, and routed sentence by sentence with the off-topic filter it keeps "
@@ -373,15 +386,16 @@ def write_doc(o: dict) -> None:
         + ", ".join(f"{r['model']} {r['padded']['clean']['escalated']:.0%}" for r in rows)
         + ".",
         "",
-        "## The fix: route sentence by sentence",
+        "## Routing sentence by sentence",
         "",
         "Split the message on sentence ends, route each sentence alone, answer with the most "
-        "confident one (escalate if even that is below the threshold). Every sentence fits the "
-        f"64-token window, and a sentence whose answer reaches {FOUND} calibrated confidence "
-        "counts as a detected intent — a cheap multi-intent signal. **naive** routes every "
-        "sentence; **+ off-topic filter** first drops sentences whose entropy is above the level "
-        "only 10 % of clean queries reach (the out-of-scope test of [6.2](oos.md), per "
-        "sentence), and routes the whole message if nothing is left. Same models, no retraining.",
+        "confident one (escalate if even that is below the threshold). A sentence whose "
+        f"answer reaches {FOUND} calibrated confidence counts as a detected intent — a cheap "
+        "multi-intent signal, which the service returns as `also` (see the pairs columns). "
+        "**naive** routes every sentence; **+ off-topic filter** first drops sentences whose "
+        "entropy is above the level only 10 % of clean queries reach (the out-of-scope test of "
+        "[6.2](oos.md), per sentence), and routes the whole message if nothing is left. Same "
+        "models, no retraining.",
         "",
         "| model | variant | clean (whole message) | "
         + " | ".join(f"{n} words, {w}" for n in LENGTHS for w in WHERE)
