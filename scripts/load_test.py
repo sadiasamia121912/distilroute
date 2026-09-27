@@ -225,11 +225,26 @@ def before_after(runs: list[dict], slo_ms: float) -> list[str]:
         serial = kept["load_test_serial.json"]
         if 1 in serial and any(r["cpus"] == 1 for r in runs):
             gap = one_client_gap(serial, {r["cpus"]: r for r in runs if r["cpus"] == 1})
-            notes.append(
-                "On 1 CPU the parallel setup *is* the serial one (one slot, one thread), so its "
-                f"1-CPU rows measure noise again: {gap:.0%} apart at one client. The comparison "
-                "that matters is 2 CPUs."
+            noise = (
+                one_client_gap(kept["load_test_pinned.json"], serial)
+                if "load_test_pinned.json" in kept
+                else None
             )
+            if noise is not None and gap > 2 * noise:
+                notes.append(
+                    "On 1 CPU the serial and parallel setups *should* be identical (one slot, "
+                    f"and one thread if the quota is detected), yet they are {gap:.0%} apart at "
+                    f"one client, far beyond the {noise:.0%} noise. So they were not the same: "
+                    "most likely the serial service did not detect the 1-CPU quota inside the "
+                    "container and still ran onnxruntime with several threads, and the gain "
+                    "credited to pinning came from its other settings. Unverified."
+                )
+            else:
+                notes.append(
+                    "On 1 CPU the parallel setup *is* the serial one (one slot, one thread), so "
+                    f"its 1-CPU rows measure noise again: {gap:.0%} apart at one client. The "
+                    "comparison that matters is 2 CPUs."
+                )
     if notes:
         lines += ["", " ".join(notes)]
     return [*lines, ""]
