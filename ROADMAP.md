@@ -318,7 +318,42 @@ run while `jobs.py` labels.
 
 ## Session log
 
-**2026-09-28 (HANDOFF — start here next session)**
+**2026-09-30 (HANDOFF — start here next session)**
+
+**Done this session** (02:10–04:00):
+- `jobs.py`: Banking77 train labels **6,020 → 7,780 / 10,003** (0 unparsed), paused on Groq's rolling
+  limit at 02:38 (`9329872`, pushed). Run it with **`.venv\Scripts\python.exe`**: bare `python` is
+  the system 3.13 without pandas, and jobs.py reuses `sys.executable`, so every step fails at once.
+- **7,500-row check** (`retrain_check.py --rows 7500`, `results/teacher7500/`, `docs/teacher7500/`,
+  `8055731`, pushed): new labels as good as the old (teacher vs gold 0.850 on rows 3,001–7,500,
+  0.848 on the first 3,000). Frozen MiniLM 0.848 → **0.861** (0.6 pt behind the teacher's 0.867),
+  TF-IDF 0.812 → 0.836; denoising still does not beat the plain student; learning curve still
+  rising (0.835 / 0.852 / 0.860 at 2k / 5k / 7.5k) → the 10,003 retrain should add a little more.
+- **Outlier-exposure fine-tune finished** (the 2026-09-28 run had died at epoch 7/14; re-run on
+  the laptop CPU, 87 min): `finetune.py --model minilm --labels teacher --export-onnx
+  --outlier-exposure 2000` → `results/minilm_ft_oe_teacher.json` + `_test_probs.npz` (committed),
+  model in `models/minilm_ft_oe_teacher/` (gitignored, local only). Same 2,697 teacher rows as the
+  served model. Clean accuracy **0.841** (served `minilm_ft_teacher`: 0.847), int8 **0.837**
+  (served 0.845); int8 loses 0.4 pt vs its fp32 — over the 0.3 pt serving rule. int8 p50 3.5 ms.
+  Caveat: the served model had 24 epochs on a GPU, this one 14 on CPU.
+
+**In flight / not done:** the robustness side of the OE model is **not evaluated**. `oos.py` then
+`stress.py` were started and killed by Claude Code for low system memory before writing anything
+(`results/oos.json`, `results/stress.json` unchanged). Next: free memory, run them **one at a
+time** (`oos.py` loads every model under `models/` by default; check whether `--models` rewrites
+the whole json before narrowing it). Compare with the served model's numbers: off-topic AUROC
+(entropy) **0.956**, caught at 5 % false alarms **0.827**, filler passing the filter **4**, `also`
+invented on filler at the start **0.65 / 0.50 / 0.003** at thresholds 0.8 / 0.9 / 0.95. Frozen
+MiniLM + OE for reference: AUROC 0.992, 0.973, 0 filler. Decision rule unchanged: lower
+`ALSO_THRESHOLD` (0.95, `distilroute/multi.py`) only if the invented rate falls; serving needs
+int8 within 0.3 pt of clean — on clean accuracy alone it is not a candidate now.
+
+**Left, in order:** (1) `jobs.py` daily, evenings (≈2,200 train rows + 80 self-agreement + noise
+runs + descriptions left; `data/labels/test.self_agreement.jsonl`, 220 / 300, stays uncommitted
+until its step finishes); (2) the OE evaluation above; (3)–(6) as in the 2026-09-28 list below
+(7.1 review, Colab, Gemini key, `hf auth login`, then the 10,003 retrain).
+
+**2026-09-28 (handoff)**
 
 **Done this session** (2026-09-27 evening → 2026-09-28, all pushed, CI green):
 - **Phase 7:** 7.2 new intents (`docs/new_intents.md`), 7.6 stress text (`docs/stress.md`), 7.4 load
