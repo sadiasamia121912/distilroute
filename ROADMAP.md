@@ -334,6 +334,18 @@ run while `jobs.py` labels.
 - **Blocker for serving it:** clean 0.841 vs 0.847 and int8 −0.4 pt (rule: ≤ 0.3). Next try: OE
   in the Colab run (GPU, 24 epochs like the served model) and/or on the 10,003 labels; if clean
   and int8 then pass, serve it and set `ALSO_THRESHOLD = 0.8`.
+- **Gemini key added** (7.5). `gemini-2.0-flash` and `gemini-2.5-flash` are closed to new keys and
+  `gemini-3.8-flash` timed out, so the default is now **`gemini-3.5-flash`** (`50157a4`;
+  `GEMINI_MODEL` in `.env` too). Gate: **120 / 200** (`data/labels/test.gate_gemini.jsonl`, 0
+  unparsed, uncommitted until the step finishes); the free tier stopped it after 6 calls with a
+  daily 429, back 08:00. The next `jobs.py` run resumes it, then runs `second_teacher.py`. A second
+  Groq pass added 60 train labels → **9,640 / 10,003** (`beb15ae`).
+
+**Next session, in order:** (1) `jobs.py` in the evening: finishes the Gemini gate + comparison and
+the last 363 train labels; (2) with 10,003 labels, ask the user before the retrain (1.6 plan);
+(3) **user:** `hf auth login` (write token from huggingface.co/settings/tokens) + username →
+`build_hf_release.py --user X --publish` after confirming; (4) **user:** 7.1 review, 7.3 Colab
+(add OE to it).
 
 **2026-09-30 (HANDOFF — start here next session)**
 
