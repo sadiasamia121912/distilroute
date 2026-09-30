@@ -24,6 +24,7 @@ Yes — the signal is already there, for free, in every student. **AUROC** of ea
 | tfidf_lr_teacher | 0.961 | 0.948 | **0.973** | **89%** | **94%** | **96%** |
 | tinybert_ft_gold | 0.908 | 0.907 | **0.925** | **66%** | **80%** | **90%** |
 | tinybert_ft_teacher | 0.883 | 0.891 | **0.896** | **44%** | **67%** | **85%** |
+| minilm_ft_oe_teacher | 0.989 | 0.989 | **0.989** | **97%** | **98%** | **98%** |
 
 **Budget** = the share of *in-scope* queries the service is willing to escalate; the threshold is that quantile of in-scope uncertainty, and the cell says how much out-of-scope traffic it catches (scored by entropy). Escalating 10 % of real tickets is a policy an operator would accept; whatever share of out-of-scope messages that catches comes free with it.
 
@@ -51,5 +52,6 @@ Out-of-scope queries that stay below the 10 %-budget threshold, by the intent th
 | tfidf_lr_teacher | `lost_or_stolen_phone` (25), `edit_personal_details` (5), `card_delivery_estimate` (5) |
 | tinybert_ft_gold | `country_support` (22), `edit_personal_details` (21), `lost_or_stolen_phone` (17) |
 | tinybert_ft_teacher | `country_support` (25), `supported_cards_and_currencies` (24), `age_limit` (20) |
+| minilm_ft_oe_teacher | `exchange_rate` (4), `edit_personal_details` (3), `request_refund` (3) |
 
 **Caveat.** CLINC's out-of-scope queries are *far* out of scope — cooking, sport, trivia. A message about a mortgage or an insurance claim is much closer to banking and would be harder; no such near-out-of-scope set exists for Banking77, so these numbers are an upper bound on how easy the problem is.

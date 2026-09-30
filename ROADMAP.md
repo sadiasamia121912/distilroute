@@ -318,6 +318,23 @@ run while `jobs.py` labels.
 
 ## Session log
 
+**2026-10-01 (HANDOFF — start here next session)**
+
+- `jobs.py`: Banking77 train labels **7,780 → 9,580 / 10,003** (0 unparsed, `9432097`, pushed); Groq
+  limit at 02:34. Next run should finish train labels (423 left) → then the 10,003 retrain (needs
+  the user's go-ahead), self-agreement (220 / 300), noise, descriptions.
+- **OE fine-tune evaluated** (`oos.py --models minilm_ft_oe_teacher`, which now merges into
+  `results/oos.json` instead of overwriting it; `stress.py`). vs the served `minilm_ft_teacher`:
+  off-topic AUROC (entropy) 0.956 → **0.989**, caught at 5 % false alarms 0.827 → **0.968**; filler
+  passing the filter 4 → **0** of 18; sentence routing with the filter, question at the end of 120
+  words 0.550 → **0.830**; `also` invented at 0.8 / 0.9 / 0.95: 82 % / 72 % / 1 % → **3 % / 2 % /
+  1 %**, found 53 % / 47 % / 20 % → 51 % / 44 % / 31 %. So OE removes the small-talk problem, and
+  with it `ALSO_THRESHOLD` could drop to 0.8 (found 51 %, invented 3 %) — but only with this
+  model served; the served model must stay at 0.95. `ALSO_THRESHOLD` unchanged.
+- **Blocker for serving it:** clean 0.841 vs 0.847 and int8 −0.4 pt (rule: ≤ 0.3). Next try: OE
+  in the Colab run (GPU, 24 epochs like the served model) and/or on the 10,003 labels; if clean
+  and int8 then pass, serve it and set `ALSO_THRESHOLD = 0.8`.
+
 **2026-09-30 (HANDOFF — start here next session)**
 
 **Done this session** (02:10–04:00):

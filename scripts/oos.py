@@ -111,6 +111,11 @@ def main() -> None:
         )
 
     RESULTS.mkdir(exist_ok=True)
+    if args.models and (RESULTS / "oos.json").exists():
+        # A narrowed run updates its models' rows and keeps everyone else's.
+        fresh = {r["model"]: r for r in rows}
+        old = json.loads((RESULTS / "oos.json").read_text())
+        rows = [fresh.pop(r["model"], r) for r in old] + list(fresh.values())
     (RESULTS / "oos.json").write_text(json.dumps(rows, indent=2))
 
     lines = [

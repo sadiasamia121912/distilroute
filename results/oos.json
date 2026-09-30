@@ -478,5 +478,35 @@
       "supported_cards_and_currencies": 24,
       "age_limit": 20
     }
+  },
+  {
+    "model": "minilm_ft_oe_teacher",
+    "temperature": 0.8871956052316113,
+    "auroc_max_prob": 0.9886866883116884,
+    "caught_max_prob_at_5pct": 0.9666666666666667,
+    "threshold_max_prob_at_5pct": -0.4468802809715271,
+    "caught_max_prob_at_10pct": 0.9725,
+    "threshold_max_prob_at_10pct": -0.5642088651657104,
+    "caught_max_prob_at_20pct": 0.9833333333333333,
+    "threshold_max_prob_at_20pct": -0.7635260820388794,
+    "auroc_max_prob_calibrated": 0.9885684523809524,
+    "caught_max_prob_calibrated_at_5pct": 0.9658333333333333,
+    "threshold_max_prob_calibrated_at_5pct": -0.5040277242660522,
+    "caught_max_prob_calibrated_at_10pct": 0.9733333333333334,
+    "threshold_max_prob_calibrated_at_10pct": -0.6251338720321655,
+    "caught_max_prob_calibrated_at_20pct": 0.9825,
+    "threshold_max_prob_calibrated_at_20pct": -0.8301616907119751,
+    "auroc_entropy": 0.9890105519480521,
+    "caught_entropy_at_5pct": 0.9683333333333334,
+    "threshold_entropy_at_5pct": 2.0020177364349365,
+    "caught_entropy_at_10pct": 0.9775,
+    "threshold_entropy_at_10pct": 1.5202690362930298,
+    "caught_entropy_at_20pct": 0.9841666666666666,
+    "threshold_entropy_at_20pct": 1.063462257385254,
+    "top_magnets": {
+      "exchange_rate": 4,
+      "edit_personal_details": 3,
+      "request_refund": 3
+    }
   }
 ]
