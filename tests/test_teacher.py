@@ -93,7 +93,7 @@ def test_payload_shapes():
     g = Teacher(labels=LABELS, provider="gemini", transport=fake({}))
     gp = g._payload("sys", "usr")
     assert gp["generationConfig"]["responseMimeType"] == "application/json"
-    assert g.model == "gemini-2.0-flash"
+    assert g.model == "gemini-3.5-flash"
 
 
 def test_missing_key_is_a_clear_error(monkeypatch):
