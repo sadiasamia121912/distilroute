@@ -331,8 +331,14 @@ run while `jobs.py` labels.
   96 % of rows (0.927 accurate there); only 5 of the teacher's 19 errors fall in the 4 % disputed.
   `docs/second_teacher.md`.
 
-**Next session, in order:** (1) `jobs.py` in the evening: slang (40 left) → wrap → robustness →
-descriptions v1 + check; (2) the **10,003 retrain** (1.6 plan) — asked the user, no answer yet;
+**Next session, in order — start here:** (0) the **10,003 retrain**, explained to the user
+(why: the learning curve was still rising at 7,500, 0.835 / 0.852 / 0.860; 6.1 "student beats
+teacher" is 0.6 pt away; it decides whether the served model changes, rule int8 > 0.842 + 0.3 pt).
+Proposed split, user to confirm tomorrow: laptop part now — `retrain_check.py` on all 10,003
+(frozen MiniLM + TF-IDF, ~3–5 min, writes `results/teacher10003/`); fine-tuned MiniLM on Colab
+(7.3 notebook, GPU), not the laptop CPU (~5 h, scaled from the 87-min OE run);
+(1) `jobs.py` in the evening: slang (40 left) → wrap → robustness → descriptions v1 + check;
+(2) after the Colab run, serve the new model only if it passes the rule;
 (3) **user:** `hf auth login` + username → `build_hf_release.py --user X --publish`; (4) **user:**
 7.1 review, 7.3 Colab (add OE to it).
 
