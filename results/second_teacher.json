@@ -1,0 +1,23 @@
+{
+  "a": {
+    "file": "test.gate_v2_top3",
+    "model": "openai/gpt-oss-120b (groq)",
+    "acc": 0.905,
+    "top3": 0.96
+  },
+  "b": {
+    "file": "test.gate_gemini",
+    "model": "gemini-3.5-flash (gemini)",
+    "acc": 0.91,
+    "top3": 0.98
+  },
+  "n": 200,
+  "unparsed_b": 0,
+  "agree": 0.96,
+  "acc_when_agree": 0.9270833333333334,
+  "acc_a_when_disagree": 0.375,
+  "acc_b_when_disagree": 0.5,
+  "either_right": 0.925,
+  "a_errors": 19,
+  "a_errors_in_disagreement": 5
+}
