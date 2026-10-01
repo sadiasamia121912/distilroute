@@ -318,6 +318,24 @@ run while `jobs.py` labels.
 
 ## Session log
 
+**2026-10-02 (HANDOFF — start here next session)**
+
+- `jobs.py` (00:33–01:00): **Banking77 train labels complete, 10,003 / 10,003** (0 unparsed, no
+  duplicate `idx`, `271ddc2`). Self-agreement 300 / 300 (`08eb56f`): top-1 agreement **0.977**,
+  35 of the teacher's 40 errors on those queries are stable (same wrong label twice) —
+  `docs/teacher.md` regenerated. Noise labels typo1 / typo3 / chat done (`c4c3c52`, `30d1ee2`,
+  `0ef8205`); slang **260 / 300** (uncommitted until the step finishes). Groq's rolling limit hit
+  at 00:55; a restart at 01:00 got one call before the next limit.
+- **Gemini lane finished** (`2ab5f51`): gate 200 / 200; on the same 200 test queries gemini-3.5-flash
+  **0.910** (top-3 0.980) vs gpt-oss-120b 0.905 (0.960) — within the ±5 pt noise. They agree on
+  96 % of rows (0.927 accurate there); only 5 of the teacher's 19 errors fall in the 4 % disputed.
+  `docs/second_teacher.md`.
+
+**Next session, in order:** (1) `jobs.py` in the evening: slang (40 left) → wrap → robustness →
+descriptions v1 + check; (2) the **10,003 retrain** (1.6 plan) — asked the user, no answer yet;
+(3) **user:** `hf auth login` + username → `build_hf_release.py --user X --publish`; (4) **user:**
+7.1 review, 7.3 Colab (add OE to it).
+
 **2026-10-01 (HANDOFF — start here next session)**
 
 - `jobs.py`: Banking77 train labels **7,780 → 9,580 / 10,003** (0 unparsed, `9432097`, pushed); Groq
