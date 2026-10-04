@@ -325,8 +325,15 @@ run while `jobs.py` labels.
   up and the old keys count as compromised; Claude memory from the private `portfolio-notes`
   repo, `claude-memory/`; trained `models/` from the `models-backup-2026-10-04` release on
   portfolio-notes). `RUNBOOK.md` also covers running everything without Claude.
-- `jobs.py`: noise slang 300 / 300 (`a16baa3`) and wrap 300 / 300 (`29f3243`) done; then
-  robustness with the teacher, descriptions v1, descriptions check — see `jobs.py --status`.
+- **`jobs.py` queue is empty — every step done.** Noise slang / wrap labels (`a16baa3`,
+  `29f3243`). **Robustness with the teacher** (`docs/robustness.md`, new last table): on the same
+  300 rows per kind, 3 typos cost the teacher only 0.870 → 0.843 (−2.7 pt) but the served
+  `minilm_ft_teacher` 0.823 → 0.487 (−33.6) and TF-IDF −11.7 — so the students degrade far more
+  than the teacher on typos; chat / slang / wrap cost everyone ≤ 4 pt. **Descriptions check**
+  (`docs/descriptions_check.md`): v2 over v1 is +2.0 pt on the test queries it was chosen on and
+  +3.5 pt (95 % +0.0 to +7.0) on 200 fresh train queries — holds in direction, within noise.
+  (`descriptions_check.py` crashed printing "−" to the cp1252 console after writing its outputs;
+  fixed with `sys.stdout.reconfigure`.)
 - **1.6 step 1–2 done** (`retrain_check.py`, all 10,003, `results/teacher10003/`,
   `docs/teacher10003/`): new labels as good as the old (teacher vs gold 0.849 on rows 3,001–10,003,
   0.848 on the first 3,000). TF-IDF 0.812 → **0.849**, frozen MiniLM 0.848 → **0.858** (0.861 at
@@ -339,7 +346,7 @@ run while `jobs.py` labels.
 **Next session, in order:** (1) set up per RUNBOOK §0; (2) **user:** Colab run (RUNBOOK §2),
 then the laptop follow-up commands there, then decide per RUNBOOK §3 (int8 > 0.845 and int8
 loss ≤ 0.3 pt) whether `minilm_ft_teacher` or `minilm_ft_oe_teacher` at 10,003 replaces the
-served model; (3) `jobs.py` for whatever `--status` shows pending; (4) **user:** `hf auth login`
+served model; (3) **user:** `hf auth login`
 → `build_hf_release.py --user X --publish`; 7.1 review; 4.2 posts.
 
 **2026-10-02 (HANDOFF — start here next session)**

@@ -37,6 +37,7 @@ TEST_GATE = {"v1": 0.885, "v2": 0.905}  # 2026-09-18, the 200 test queries (ROAD
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to cp1252
     if not (LABELS / "train.desc_v1.jsonl").exists():
         sys.exit("train.desc_v1.jsonl not found: run the groq lane of scripts/jobs.py first")
     first = [

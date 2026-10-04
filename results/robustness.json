@@ -87,8 +87,8 @@
         "clean": {
           "acc": 0.7918831168831169,
           "acc_changed": null,
-          "escalated": 0.3220779220779221,
-          "kept_acc": 0.9008620689655172
+          "escalated": 0.32175324675324674,
+          "kept_acc": 0.9009095260890378
         },
         "typo1": {
           "acc": 0.634090909090909,
@@ -115,10 +115,10 @@
           "kept_acc": 0.904
         },
         "wrap": {
-          "acc": 0.7503246753246753,
-          "acc_changed": 0.7503246753246753,
-          "escalated": 0.43116883116883115,
-          "kept_acc": 0.9046803652968036
+          "acc": 0.7506493506493507,
+          "acc_changed": 0.7506493506493507,
+          "escalated": 0.43084415584415586,
+          "kept_acc": 0.9041642897889333
         }
       }
     },
@@ -128,38 +128,38 @@
         "clean": {
           "acc": 0.8422077922077922,
           "acc_changed": null,
-          "escalated": 0.15681818181818183,
-          "kept_acc": 0.9014247208317289
+          "escalated": 0.15714285714285714,
+          "kept_acc": 0.901386748844376
         },
         "typo1": {
           "acc": 0.7448051948051948,
           "acc_changed": 0.7439660795825179,
-          "escalated": 0.31396103896103894,
-          "kept_acc": 0.8826313298627544
+          "escalated": 0.3142857142857143,
+          "kept_acc": 0.8825757575757576
         },
         "typo3": {
-          "acc": 0.5412337662337663,
-          "acc_changed": 0.5412337662337663,
+          "acc": 0.5415584415584416,
+          "acc_changed": 0.5415584415584416,
           "escalated": 0.5792207792207792,
           "kept_acc": 0.8472222222222222
         },
         "chat": {
           "acc": 0.8425324675324676,
           "acc_changed": 0.8451032644903398,
-          "escalated": 0.15974025974025974,
-          "kept_acc": 0.9010819165378671
+          "escalated": 0.16006493506493508,
+          "kept_acc": 0.9010436799381523
         },
         "slang": {
           "acc": 0.8295454545454546,
           "acc_changed": 0.8038825286212046,
-          "escalated": 0.20584415584415586,
-          "kept_acc": 0.9010629599345871
+          "escalated": 0.20616883116883117,
+          "kept_acc": 0.9010224948875256
         },
         "wrap": {
-          "acc": 0.8301948051948052,
-          "acc_changed": 0.8301948051948052,
-          "escalated": 0.18474025974025973,
-          "kept_acc": 0.9000398247710075
+          "acc": 0.8305194805194805,
+          "acc_changed": 0.8305194805194805,
+          "escalated": 0.18506493506493507,
+          "kept_acc": 0.9
         }
       }
     },
@@ -292,20 +292,20 @@
         "clean": {
           "acc": 0.8376623376623377,
           "acc_changed": null,
-          "escalated": 0.17987012987012987,
-          "kept_acc": 0.9117181314330958
+          "escalated": 0.18019480519480519,
+          "kept_acc": 0.9120792079207921
         },
         "typo1": {
-          "acc": 0.7438311688311688,
-          "acc_changed": 0.7436399217221135,
-          "escalated": 0.3912337662337662,
-          "kept_acc": 0.8992
+          "acc": 0.7441558441558441,
+          "acc_changed": 0.7439660795825179,
+          "escalated": 0.39155844155844155,
+          "kept_acc": 0.8991462113127001
         },
         "typo3": {
           "acc": 0.5045454545454545,
           "acc_changed": 0.5045454545454545,
-          "escalated": 0.7181818181818181,
-          "kept_acc": 0.8870967741935484
+          "escalated": 0.7188311688311688,
+          "kept_acc": 0.8879907621247113
         },
         "chat": {
           "acc": 0.8357142857142857,
@@ -322,8 +322,8 @@
         "wrap": {
           "acc": 0.8207792207792208,
           "acc_changed": 0.8207792207792208,
-          "escalated": 0.26396103896103895,
-          "kept_acc": 0.9219232465813851
+          "escalated": 0.26461038961038963,
+          "kept_acc": 0.9222958057395143
         }
       }
     },
@@ -410,5 +410,221 @@
       }
     }
   ],
-  "teacher": {}
+  "teacher": {
+    "typo1": {
+      "n": 300,
+      "teacher_clean": 0.87,
+      "teacher_noisy": 0.8466666666666667,
+      "students": {
+        "tfidf_lr_teacher": {
+          "clean": 0.79,
+          "noisy": 0.7666666666666667
+        },
+        "tinybert_ft_teacher": {
+          "clean": 0.7666666666666667,
+          "noisy": 0.61
+        },
+        "minilm_ft_teacher": {
+          "clean": 0.8233333333333334,
+          "noisy": 0.7266666666666667
+        },
+        "minilm_frozen_teacher": {
+          "clean": 0.8133333333333334,
+          "noisy": 0.7633333333333333
+        },
+        "tfidf_lr_aug_teacher": {
+          "clean": 0.78,
+          "noisy": 0.7633333333333333
+        },
+        "minilm_frozen_aug_teacher": {
+          "clean": 0.8333333333333334,
+          "noisy": 0.7966666666666666
+        },
+        "distilbert_ft_teacher": {
+          "clean": 0.8033333333333333,
+          "noisy": 0.7233333333333334
+        },
+        "minilm_ft_gold": {
+          "clean": 0.9033333333333333,
+          "noisy": 0.8233333333333334
+        },
+        "tfidf_lr_gold": {
+          "clean": 0.8966666666666666,
+          "noisy": 0.86
+        }
+      }
+    },
+    "typo3": {
+      "n": 300,
+      "teacher_clean": 0.87,
+      "teacher_noisy": 0.8433333333333334,
+      "students": {
+        "tfidf_lr_teacher": {
+          "clean": 0.79,
+          "noisy": 0.6733333333333333
+        },
+        "tinybert_ft_teacher": {
+          "clean": 0.7666666666666667,
+          "noisy": 0.3333333333333333
+        },
+        "minilm_ft_teacher": {
+          "clean": 0.8233333333333334,
+          "noisy": 0.4866666666666667
+        },
+        "minilm_frozen_teacher": {
+          "clean": 0.8133333333333334,
+          "noisy": 0.51
+        },
+        "tfidf_lr_aug_teacher": {
+          "clean": 0.78,
+          "noisy": 0.69
+        },
+        "minilm_frozen_aug_teacher": {
+          "clean": 0.8333333333333334,
+          "noisy": 0.63
+        },
+        "distilbert_ft_teacher": {
+          "clean": 0.8033333333333333,
+          "noisy": 0.4533333333333333
+        },
+        "minilm_ft_gold": {
+          "clean": 0.9033333333333333,
+          "noisy": 0.59
+        },
+        "tfidf_lr_gold": {
+          "clean": 0.8966666666666666,
+          "noisy": 0.79
+        }
+      }
+    },
+    "chat": {
+      "n": 300,
+      "teacher_clean": 0.87,
+      "teacher_noisy": 0.8566666666666667,
+      "students": {
+        "tfidf_lr_teacher": {
+          "clean": 0.79,
+          "noisy": 0.7833333333333333
+        },
+        "tinybert_ft_teacher": {
+          "clean": 0.7666666666666667,
+          "noisy": 0.77
+        },
+        "minilm_ft_teacher": {
+          "clean": 0.8233333333333334,
+          "noisy": 0.8233333333333334
+        },
+        "minilm_frozen_teacher": {
+          "clean": 0.8133333333333334,
+          "noisy": 0.8
+        },
+        "tfidf_lr_aug_teacher": {
+          "clean": 0.78,
+          "noisy": 0.78
+        },
+        "minilm_frozen_aug_teacher": {
+          "clean": 0.8333333333333334,
+          "noisy": 0.8366666666666667
+        },
+        "distilbert_ft_teacher": {
+          "clean": 0.8033333333333333,
+          "noisy": 0.8066666666666666
+        },
+        "minilm_ft_gold": {
+          "clean": 0.9033333333333333,
+          "noisy": 0.9033333333333333
+        },
+        "tfidf_lr_gold": {
+          "clean": 0.8966666666666666,
+          "noisy": 0.89
+        }
+      }
+    },
+    "slang": {
+      "n": 300,
+      "teacher_clean": 0.87,
+      "teacher_noisy": 0.8466666666666667,
+      "students": {
+        "tfidf_lr_teacher": {
+          "clean": 0.79,
+          "noisy": 0.7833333333333333
+        },
+        "tinybert_ft_teacher": {
+          "clean": 0.7666666666666667,
+          "noisy": 0.7266666666666667
+        },
+        "minilm_ft_teacher": {
+          "clean": 0.8233333333333334,
+          "noisy": 0.8133333333333334
+        },
+        "minilm_frozen_teacher": {
+          "clean": 0.8133333333333334,
+          "noisy": 0.8
+        },
+        "tfidf_lr_aug_teacher": {
+          "clean": 0.78,
+          "noisy": 0.77
+        },
+        "minilm_frozen_aug_teacher": {
+          "clean": 0.8333333333333334,
+          "noisy": 0.82
+        },
+        "distilbert_ft_teacher": {
+          "clean": 0.8033333333333333,
+          "noisy": 0.7933333333333333
+        },
+        "minilm_ft_gold": {
+          "clean": 0.9033333333333333,
+          "noisy": 0.8566666666666667
+        },
+        "tfidf_lr_gold": {
+          "clean": 0.8966666666666666,
+          "noisy": 0.89
+        }
+      }
+    },
+    "wrap": {
+      "n": 300,
+      "teacher_clean": 0.87,
+      "teacher_noisy": 0.8566666666666667,
+      "students": {
+        "tfidf_lr_teacher": {
+          "clean": 0.79,
+          "noisy": 0.78
+        },
+        "tinybert_ft_teacher": {
+          "clean": 0.7666666666666667,
+          "noisy": 0.74
+        },
+        "minilm_ft_teacher": {
+          "clean": 0.8233333333333334,
+          "noisy": 0.8166666666666667
+        },
+        "minilm_frozen_teacher": {
+          "clean": 0.8133333333333334,
+          "noisy": 0.8066666666666666
+        },
+        "tfidf_lr_aug_teacher": {
+          "clean": 0.78,
+          "noisy": 0.7866666666666666
+        },
+        "minilm_frozen_aug_teacher": {
+          "clean": 0.8333333333333334,
+          "noisy": 0.8
+        },
+        "distilbert_ft_teacher": {
+          "clean": 0.8033333333333333,
+          "noisy": 0.79
+        },
+        "minilm_ft_gold": {
+          "clean": 0.9033333333333333,
+          "noisy": 0.8933333333333333
+        },
+        "tfidf_lr_gold": {
+          "clean": 0.8966666666666666,
+          "noisy": 0.8933333333333333
+        }
+      }
+    }
+  }
 }
