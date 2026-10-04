@@ -1,0 +1,13 @@
+{
+  "model": "MiniLM-L6 frozen + soft",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "n_train": 9003,
+  "accuracy": 0.8603896103896104,
+  "macro_f1": 0.8576774082336799,
+  "variant": "soft",
+  "note": "rank-weighted top-3, alpha=0.3",
+  "soft_alpha": 0.3,
+  "temperature": 0.5257322921037838,
+  "n_calib": 1000
+}

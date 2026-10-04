@@ -1,0 +1,17 @@
+{
+  "model": "MiniLM-L6 frozen",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "n_train": 9003,
+  "accuracy": 0.8581168831168832,
+  "macro_f1": 0.8543405724167604,
+  "p50_ms": 21.236400003544986,
+  "p95_ms": 25.184495060238984,
+  "fit_seconds": 111.54873609542847,
+  "encoder": "sentence-transformers/all-MiniLM-L6-v2",
+  "max_steps": null,
+  "augment": null,
+  "outlier_exposure": null,
+  "temperature": 0.7954410928103086,
+  "n_calib": 1000
+}
