@@ -46,8 +46,8 @@ copy .env.example .env      # then paste NEW keys (Groq, Gemini, OpenRouter); th
 - It ends by itself with `daily limit reached in <step>, back at <time>; lane paused`
   (see `logs\queue.log`). Then it is safe to close the laptop.
 - Never run `label.py` by hand while `jobs.py` runs: two writers duplicate rows.
-- Left as of 2026-10-04: noise `wrap` → robustness with the teacher → descriptions v1 (200)
-  → descriptions check.
+- As of 2026-10-04 the queue is empty (every step done). New steps only appear if `jobs.py` gains
+  them; `--status` says.
 
 **After a step shows `done`**, commit what it wrote and push:
 
