@@ -318,6 +318,30 @@ run while `jobs.py` labels.
 
 ## Session log
 
+**2026-10-04 (HANDOFF — start here next session; laptop SSD replaced after this)**
+
+- The user's laptop SSD was replaced after this session and Claude Pro paused. **Setting up the
+  new machine: `RUNBOOK.md` §0** (clone, venv, data, *new* API keys since `.env` was not backed
+  up and the old keys count as compromised; Claude memory from the private `portfolio-notes`
+  repo, `claude-memory/`; trained `models/` from the `models-backup-2026-10-04` release on
+  portfolio-notes). `RUNBOOK.md` also covers running everything without Claude.
+- `jobs.py`: noise slang 300 / 300 (`a16baa3`) and wrap 300 / 300 (`29f3243`) done; then
+  robustness with the teacher, descriptions v1, descriptions check — see `jobs.py --status`.
+- **1.6 step 1–2 done** (`retrain_check.py`, all 10,003, `results/teacher10003/`,
+  `docs/teacher10003/`): new labels as good as the old (teacher vs gold 0.849 on rows 3,001–10,003,
+  0.848 on the first 3,000). TF-IDF 0.812 → **0.849**, frozen MiniLM 0.848 → **0.858** (0.861 at
+  7,500: the frozen curve has flattened), denoise base **0.861** (−0.6 pt to the teacher's 0.867),
+  soft 0.860, filter 0.859. Data curve at 10,003: frozen 0.859, TF-IDF 0.844.
+- **Colab notebook** gained run 5: outlier exposure on all 10,003 labels (`efcf38b`) — the
+  candidate most likely to pass the serving rule (OE fixes small talk; more labels should win
+  back its clean-accuracy cost).
+
+**Next session, in order:** (1) set up per RUNBOOK §0; (2) **user:** Colab run (RUNBOOK §2),
+then the laptop follow-up commands there, then decide per RUNBOOK §3 (int8 > 0.845 and int8
+loss ≤ 0.3 pt) whether `minilm_ft_teacher` or `minilm_ft_oe_teacher` at 10,003 replaces the
+served model; (3) `jobs.py` for whatever `--status` shows pending; (4) **user:** `hf auth login`
+→ `build_hf_release.py --user X --publish`; 7.1 review; 4.2 posts.
+
 **2026-10-02 (HANDOFF — start here next session)**
 
 - `jobs.py` (00:33–01:00): **Banking77 train labels complete, 10,003 / 10,003** (0 unparsed, no
