@@ -7,6 +7,27 @@ without pandas, and every step fails at once.
 Where things stand: the top entry of **ROADMAP.md → Session log**. A future Claude session
 should read that first ("continue" is enough).
 
+## 0. Setting up on a new machine (e.g. after the 2026-10 SSD swap)
+
+```powershell
+mkdir C:\Users\User\dev; cd C:\Users\User\dev      # keep this exact path: Claude's memory folder is named after it
+git clone https://github.com/sadiasamia121912/distilroute
+git clone https://github.com/sadiasamia121912/portfolio-notes   # private: notes, Claude memory, models backup
+cd distilroute
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+.\.venv\Scripts\python.exe scripts\download_data.py
+.\.venv\Scripts\python.exe scripts\download_clinc.py
+copy .env.example .env      # then paste NEW keys (Groq, Gemini, OpenRouter); the old ones are compromised
+```
+
+- **Claude's memory:** copy `portfolio-notes\claude-memory\distilroute\*` into
+  `C:\Users\User\.claude\projects\C--Users-User-dev-distilroute\memory\` (same for `tabaudit` →
+  `...-dev-tabaudit\memory\`, `dev` → `...-dev\memory\`). Or ask Claude to do it.
+- **Trained models:** download the `models-backup-*` release zip from portfolio-notes
+  (`gh release download -R sadiasamia121912/portfolio-notes`) and unzip it here, giving `models\`.
+- Then open Claude Code in `distilroute` and say "continue".
+
 ## 1. Daily LLM jobs (Groq)
 
 ```powershell
