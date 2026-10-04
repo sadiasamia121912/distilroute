@@ -24,8 +24,15 @@ copy .env.example .env      # then paste NEW keys (Groq, Gemini, OpenRouter); th
 - **Claude's memory:** copy `portfolio-notes\claude-memory\distilroute\*` into
   `C:\Users\User\.claude\projects\C--Users-User-dev-distilroute\memory\` (same for `tabaudit` →
   `...-dev-tabaudit\memory\`, `dev` → `...-dev\memory\`). Or ask Claude to do it.
-- **Trained models:** download the `models-backup-*` release zip from portfolio-notes
-  (`gh release download -R sadiasamia121912/portfolio-notes`) and unzip it here, giving `models\`.
+- **Trained models:** the `models-backup-2026-10-04` release on portfolio-notes holds one zip per
+  model folder (`models-<name>.zip`, paths start with `models/`). In the distilroute folder:
+  ```powershell
+  gh release download models-backup-2026-10-04 -R sadiasamia121912/portfolio-notes -p "models-*.zip"
+  Get-ChildItem models-*.zip | ForEach-Object { Expand-Archive $_ -DestinationPath . -Force }
+  Remove-Item models-*.zip
+  ```
+  Anything missing there can be retrained (Colab notebook for the fine-tuned ones, the scripts
+  for the rest); the served model is also in the public `model-v1` release.
 - Then open Claude Code in `distilroute` and say "continue".
 
 ## 1. Daily LLM jobs (Groq)
