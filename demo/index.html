@@ -181,18 +181,18 @@ footer a { color: var(--accent); }
         </tbody>
       </table>
       <p class="note" id="savings">Route a few messages to see this session's mix.</p>
-      <p class="note">On the full 3,080-message test set, this cascade escalates 15 % of messages and scores <b>0.874</b>, above the LLM alone (0.867). The student by itself scores 0.842 (int8, as served here).</p>
+      <p class="note">On the full 3,080-message test set, this cascade escalates 14 % of messages and scores <b>0.872</b>, level with the LLM alone (0.867). The student by itself scores 0.859 (int8, as served here).</p>
     </aside>
   </div>
 
   <section class="how" aria-label="How it works">
-    <div><h2>Distilled, not hand-labelled</h2><p>gpt-oss-120b labelled <b>3,000</b> Banking77 messages zero-shot. The student learned only from those labels, then was scored against the human labels on 3,080 held-out messages.</p></div>
+    <div><h2>Distilled, not hand-labelled</h2><p>gpt-oss-120b labelled all <b>10,003</b> Banking77 training messages zero-shot. The student learned only from those labels, plus 2,000 non-banking questions marked "none of these" so that small talk and off-topic text get low confidence. It was scored against the human labels on 3,080 held-out messages.</p></div>
     <div><h2>Calibrated, so 0.8 means 0.8</h2><p>Confidence goes through <b>temperature scaling</b> (T = <span id="temp"></span>), fitted on held-out training labels. That makes the escalation threshold mean what it says.</p></div>
     <div><h2>Out of scope by entropy</h2><p>A message the model has never seen the like of spreads probability over many intents. Above an entropy of <b id="ent"></b> it is flagged: that catches <b id="caught"></b> of CLINC150's off-topic questions while flagging 10 % of real banking ones.</p></div>
   </section>
 
   <footer>
-    <span>Model: MiniLM-L6, fine-tuned, int8 ONNX, onnxruntime-web (WebAssembly, 1 thread)</span>
+    <span>Model: MiniLM-L6, fine-tuned with outlier exposure (model-v3), int8 ONNX, onnxruntime-web (WebAssembly, 1 thread)</span>
     <span id="selfcheck">Self-check: waiting for the model</span>
     <span>No message leaves your browser. The LLM is never called: escalation is shown, not performed.</span>
   </footer>

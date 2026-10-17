@@ -8,8 +8,9 @@ onnxruntime-web, so it needs next to it:
 - `ort-wasm-simd-threaded.wasm` — the WebAssembly runtime, downloaded from npm at the pinned
   version the page imports (an artifact page may load scripts from a CDN but not fetch files
   from one, so the binary is published alongside the page);
-- `model.part{1,2,3}.txt` — the ONNX graph as base64, in parts under the 15 MB per-file limit
-  (artifact pages serve text, not arbitrary binaries);
+- `<model>.part{1..6}.txt` — the ONNX graph as base64, in ~5 MB parts (artifact pages serve
+  text, not arbitrary binaries; small parts upload on a slow line, and the model name in the
+  file name lets a new model upload next to the live one before the page switches over);
 - `vocab.json` — the WordPiece vocabulary, id-ordered; the page tokenizes in JavaScript;
 - `demo.json` — classes, the fitted temperature, the escalation threshold, the out-of-scope
   entropy threshold (measured here, on this exact model), cost per 1M requests, and reference
@@ -36,7 +37,7 @@ from distilroute.data import MODELS, RAW, RESULTS, ROOT, load_split, rel  # noqa
 MODEL = "minilm_ft_oe_10k_teacher"  # model-v3, 2026-10-17
 ORT_VERSION = "1.30.0"  # must match the import in demo/index.html
 WASM = "ort-wasm-simd-threaded.wasm"
-PARTS = 3
+PARTS = 6
 ESCALATE_BELOW = 0.8
 OOS_BUDGET = 0.10  # share of in-scope messages the out-of-scope flag may catch
 CHECKS = [
@@ -79,7 +80,7 @@ def main() -> None:
     size = -(-len(graph) // PARTS)
     size += (-size) % 3  # a multiple of 3 bytes, so each part decodes on its own
     for i in range(PARTS):
-        name = f"model.part{i + 1}.txt"
+        name = f"{MODEL}.part{i + 1}.txt"
         (OUT / name).write_bytes(base64.b64encode(graph[i * size : (i + 1) * size]))
         assets.append([name, (OUT / name).stat().st_size])
 

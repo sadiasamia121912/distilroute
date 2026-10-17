@@ -24,9 +24,8 @@ PAGE = DOCS / "case-study"
 STUDENTS = {  # run -> display name, parameter count
     "tfidf_lr_teacher": ("TF-IDF + LR", None),
     "tinybert_ft_teacher": ("TinyBERT", "14M"),
-    "minilm_ft_teacher": ("MiniLM, fine-tuned", "22M"),
-    "minilm_ft_10k_teacher": ("MiniLM, fine-tuned, 10k labels", "22M"),
-    "minilm_ft_oe_10k_teacher": ("MiniLM, fine-tuned + OE, 10k labels", "22M"),
+    "minilm_ft_teacher": ("MiniLM, fine-tuned, 3k labels", "22M"),
+    "minilm_ft_oe_10k_teacher": ("MiniLM, fine-tuned, 10k labels", "22M"),
     "minilm_frozen_teacher": ("MiniLM, frozen", "22M"),
     "distilbert_ft_teacher": ("DistilBERT", "67M"),
 }
@@ -102,9 +101,16 @@ def main() -> None:
         for b, v in two["budgets"].items()
     ]
     best = max(cascade_curve, key=lambda r: r["acc"])
+    # The TF-IDF first tier against the served chain alone, on identical halves.
+    folds = zip(three["match_llm"]["folds"], two["match_llm"]["folds"], strict=True)
+    first_tier_cheaper = [a["usd"] < b["usd"] for a, b in folds]
 
     curves = {p.stem: json.loads(p.read_text()) for p in (RESULTS / "curves").glob("*.json")}
     oos = json.loads((RESULTS / "oos.json").read_text())
+    oos_by = {r["model"]: r for r in oos}
+    others = [oos_by[r] for r in STUDENTS if r != SERVED and r in oos_by]
+    weakest = min(others, key=lambda r: r["caught_entropy_at_10pct"])
+    frozen_all = ROOT / "results" / "teacher10003" / "minilm_frozen_teacher.json"
 
     data = {
         "teacher": {
@@ -115,6 +121,10 @@ def main() -> None:
         "leak": {"sorted": teacher_accuracy("test.sorted_batches"), "shuffled": teacher},
         "n_test": len(load_split("test")),
         "n_train_labels": int(json.loads((RESULTS / f"{SERVED}.json").read_text())["n_train"]),
+        "n_labels_bought": sum(1 for _ in (ROOT / "data" / "labels" / "train.jsonl").open()),
+        "frozen_all_labels": (
+            json.loads(frozen_all.read_text())["accuracy"] if frozen_all.exists() else None
+        ),
         "students": students,
         "served": served,
         "gold_reference": json.loads((RESULTS / "minilm_ft_gold.json").read_text())["accuracy"],
@@ -126,6 +136,8 @@ def main() -> None:
                 k: three["match_llm"][k] for k in ("acc", "llm", "usd", "ms", "first")
             },
             "seeds": cascade["seeds"],
+            "first_tier_cheaper": sum(first_tier_cheaper),
+            "halves": len(first_tier_cheaper),
         },
         "data_curve": {
             "gold": mean_by_n(curves["minilm_gold"]),
@@ -141,6 +153,11 @@ def main() -> None:
             "caught_max": max(r["caught_entropy_at_10pct"] for r in oos),
             "auroc_min": min(r["auroc_entropy"] for r in oos),
             "auroc_max": max(r["auroc_entropy"] for r in oos),
+            "served_caught": oos_by[SERVED]["caught_entropy_at_10pct"],
+            "served_auroc": oos_by[SERVED]["auroc_entropy"],
+            "others_min": weakest["caught_entropy_at_10pct"],
+            "others_min_label": STUDENTS[weakest["model"]][0],
+            "others_max": max(r["caught_entropy_at_10pct"] for r in others),
         },
         "robustness": None,
         "second_domain": None,

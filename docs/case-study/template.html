@@ -98,8 +98,8 @@ footer { border-top: 1px solid var(--rule); padding-top: 16px; font: 400 13px/1.
   <header class="col" style="display:grid;gap:18px">
     <div class="kicker">Case study · distilroute · Banking77</div>
     <h1>Distilling a 120B ticket router into 22M parameters</h1>
-    <p class="standfirst">A zero-shot LLM labelled 3,000 banking support messages. A small model trained only on those labels now routes new messages on a laptop CPU in under 3 ms. With a confidence-based fallback to the LLM, it beats the LLM on its own for a fraction of the cost.</p>
-    <div class="meta"><span>Built for $0: free-tier LLM, free Colab GPU, laptop CPU</span><span id="m-test"></span></div>
+    <p class="standfirst">A zero-shot LLM labelled 10,003 banking support messages. A small model trained only on those labels now routes new messages on an ordinary CPU in about 4 ms, within a point of the LLM's accuracy. With a confidence-based fallback to the LLM, it matches the LLM on its own for a few percent of the cost.</p>
+    <div class="meta"><span>Built for $0: free-tier LLM, free Colab GPU, a laptop</span><span id="m-test"></span></div>
   </header>
 
   <div class="tiles" id="tiles"></div>
@@ -108,7 +108,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 16px; font: 400 13px/1.
     <section class="col">
       <h2>The setup</h2>
       <p>Banking77 is 13,083 real messages from a banking app's support inbox, each labelled by a person with one of 77 intents: <span class="num">card_arrival</span>, <span class="num">top_up_by_card_charge</span>, <span class="num">compromised_card</span> and so on. Many intents are near-synonyms, which makes it a hard routing problem.</p>
-      <p>The teacher is <b>gpt-oss-120b</b> on Groq's free tier, prompted zero-shot with the 77 intent names and a one-line description of each, and no example messages. It labelled <span class="num" id="n-train"></span> training messages. The students never see a human label. Every accuracy on this page is measured against the human labels on <span class="num" id="n-test2"></span> held-out test messages that nobody trained or tuned on.</p>
+      <p>The teacher is <b>gpt-oss-120b</b> on Groq's free tier, prompted zero-shot with the 77 intent names and a one-line description of each, and no example messages. It labelled all <span class="num" id="n-bought"></span> training messages; the served student trains on <span class="num" id="n-train"></span> of them and uses the rest to calibrate its confidence. The comparison students were trained on the first 3,000, the budget everything was first compared at. The students never see a human label. Every accuracy on this page is measured against the human labels on <span class="num" id="n-test2"></span> held-out test messages that nobody trained or tuned on.</p>
     </section>
 
     <figure>
@@ -152,7 +152,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 16px; font: 400 13px/1.
       <div class="fig-title col">Student accuracy by number of training labels</div>
       <div class="legend" id="lg-data"></div>
       <div class="chart" id="c-data"></div>
-      <figcaption>Frozen MiniLM encoder with a logistic head, mean over 3 random samples per size. Teacher labels stop at 3,000 because that is how many were bought.</figcaption>
+      <figcaption id="cap-data">Frozen MiniLM encoder with a logistic head, mean over 3 random samples per size.</figcaption>
       <details><summary>Show the numbers</summary><div class="tablewrap" id="t-data"></div></details>
     </figure>
 
@@ -178,10 +178,10 @@ footer { border-top: 1px solid var(--rule); padding-top: 16px; font: 400 13px/1.
     <section class="col">
       <h2>What did not work</h2>
       <ul class="plain">
-        <li><b>Beating the teacher.</b> Soft labels, a filter for likely-wrong teacher labels and self-training on unlabelled messages added 0.7 points together. The student still sits 1.8 points below the teacher at 3,000 labels. The data curve says more labels would close the gap sooner than more tricks.</li>
+        <li><b>Beating the teacher.</b> At 3,000 labels, soft labels, a filter for likely-wrong teacher labels and self-training on unlabelled messages added 0.7 points together and left the student 1.8 points below the teacher. Buying the remaining 7,003 labels (about $0.19 at paid prices) did more than all the tricks: the fine-tuned student reached 0.863 against the teacher's 0.867, a tie within test noise. But not a win: a student that learns only from the teacher inherits its mistakes.</li>
         <li><b>Soft labels.</b> Training on the teacher's top-3 guesses instead of its top answer made students slightly worse, on both the frozen and the fine-tuned model. With 77 near-synonym intents, the teacher's second and third guesses are more often noise than signal.</li>
         <li><b>Uncertainty sampling</b>, as above: the messages it picks are the ones the teacher gets wrong.</li>
-        <li><b>A bigger student.</b> DistilBERT (67M) is no more accurate than MiniLM (22M), and it is twice as slow.</li>
+        <li><b>A bigger student.</b> DistilBERT (67M) is no more accurate than MiniLM (22M), and it is about three times as slow.</li>
       </ul>
     </section>
 
@@ -201,7 +201,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 16px; font: 400 13px/1.
 
   <footer>
     <span>Scope: this recipe covers "read a short message, pick a queue" tasks such as routing, triage and moderation. It does not cover free-text outputs like summaries or replies.</span>
-    <span>Costs: the LLM at Groq's paid list price, one message per call. Students as CPU time on an AWS t3.small at on-demand price, which is an upper bound; on hardware you already own they cost nothing. Latency is single-message, in-process, on a laptop CPU.</span>
+    <span>Costs: the LLM at Groq's paid list price, one message per call. Students as CPU time on an AWS t3.small at on-demand price, which is an upper bound; on hardware you already own they cost nothing. Latency is single-message, in-process, on a consumer CPU.</span>
   </footer>
 </div>
 
@@ -315,13 +315,14 @@ function render() {
   const t = D.teacher, s = D.served, c = D.cascade, tt = c.three_tier_match;
   $("m-test").textContent = `${D.n_test.toLocaleString("en-US")} held-out test messages · accuracy against human labels`;
   $("n-train").textContent = D.n_train_labels.toLocaleString("en-US");
+  $("n-bought").textContent = D.n_labels_bought.toLocaleString("en-US");
   $("n-test2").textContent = D.n_test.toLocaleString("en-US");
 
   const tiles = [
     [f3(s.acc_int8 ?? s.acc), `student accuracy, ${pct((s.acc_int8 ?? s.acc) / t.acc)} of the LLM's ${f3(t.acc)}`, s.acc_int8 ? "MiniLM, 22M, int8 as served" : "MiniLM, 22M parameters"],
-    [s.p50.toFixed(1) + " ms", "per message on a laptop CPU", "int8 ONNX, one core"],
+    [s.p50.toFixed(1) + " ms", "per message on an ordinary CPU", "int8 ONNX, one core"],
     [usd(s.usd), `per 1M messages, against ${usd(t.usd)} for the LLM`, `${Math.round(t.usd / s.usd).toLocaleString("en-US")}× cheaper`],
-    [f3(c.best.acc), `with ${pct(c.best.llm)} of messages sent to the LLM`, "beats the LLM alone"],
+    [f3(c.best.acc), `with ${pct(c.best.llm)} of messages sent to the LLM`, c.best.acc > t.acc ? "level with or above the LLM alone" : "close to the LLM alone"],
   ];
   $("tiles").replaceChildren(...tiles.map(([b, span, small]) => {
     const d = document.createElement("div"); d.className = "tile";
@@ -336,7 +337,8 @@ function render() {
   const place = {
     tfidf_lr_teacher: { side: "left", dy: 4, labelNarrow: false },
     tinybert_ft_teacher: { side: "left", dy: 4, labelNarrow: false },
-    minilm_ft_teacher: { side: "left", dy: 4 },
+    minilm_ft_teacher: { side: "left", dy: 4, labelNarrow: false },
+    minilm_ft_oe_10k_teacher: { side: "left", dy: 4 },
     minilm_frozen_teacher: { side: "right", dy: -8, labelNarrow: false },
     distilbert_ft_teacher: { side: "right", dy: 16, labelNarrow: false },
   };
@@ -361,7 +363,7 @@ function render() {
   $("cap-pareto").innerHTML = "";
   $("cap-pareto").append(
     "Each dot is a whole system, scored on the same test set. The students cost four orders of magnitude less than the LLM and lose 2–7 points. ",
-    Object.assign(document.createElement("b"), { textContent: "The cascades land above the LLM or level with it, at 5–20 % of its cost. " }),
+    Object.assign(document.createElement("b"), { textContent: `The cascades land level with the LLM, at ${pct(tt.usd / t.usd)}–${pct(c.best.usd / t.usd)} of its cost. ` }),
     "Cascade thresholds are chosen on one half of the test set and scored on the other, so the tuning never sees the messages it is scored on."
   );
   table("t-pareto", ["system", "accuracy", "$ per 1M", "p50 ms"], [
@@ -392,9 +394,9 @@ function render() {
     series: [{ name: "MiniLM → LLM", color: "--s3", line: true, points: cc }],
     tip: (p) => [`${pct(p.r.llm, 1)} sent to the LLM`, `accuracy ${f3(p.y)}`, `${usd(p.r.usd)} per 1M messages`],
   });
-  $("cap-cascade").textContent = `The fine-tuned MiniLM answers alone at 0 %. Sending its least confident ${pct(c.two_tier_match.llm)} to the LLM matches the LLM's accuracy for ${usd(c.two_tier_match.usd)} per 1M messages. At about ${pct(c.best.llm)} the cascade reaches ${f3(c.best.acc)}, better than the LLM by itself: the student is right on some messages the LLM gets wrong. Mean of ${c.seeds * 2} held-out halves.`;
+  $("cap-cascade").textContent = `The fine-tuned MiniLM answers alone at 0 %. Sending its least confident ${pct(c.two_tier_match.llm)} to the LLM matches the LLM's accuracy for ${usd(c.two_tier_match.usd)} per 1M messages. At about ${pct(c.best.llm)} the cascade reaches ${f3(c.best.acc)}, a little above the LLM by itself (within test noise): the student is right on some messages the LLM gets wrong. Mean of ${c.seeds * 2} held-out halves.`;
   table("t-cascade", ["LLM budget", "sent to the LLM", "accuracy", "$ per 1M"], c.curve.map((r) => [pct(r.budget), pct(r.llm, 1), f3(r.acc), usd(r.usd)]));
-  $("three-tier").textContent = `A cheaper first tier helps a little. Putting TF-IDF (${D.students.find((x) => x.run === "tfidf_lr_teacher").p50.toFixed(1)} ms) in front of MiniLM lets it answer ${pct(tt.first)} of messages itself and cuts the share sent to the LLM to ${pct(tt.llm, 1)}. Matching the LLM then costs ${usd(tt.usd)} per 1M messages instead of ${usd(c.two_tier_match.usd)}, cheaper in all ${c.seeds * 2} test halves. It does not make the system more accurate, and it adds a little CPU time, because the MiniLM behind it takes only 3 ms.`;
+  $("three-tier").textContent = `A cheaper first tier helps a little. Putting TF-IDF (${D.students.find((x) => x.run === "tfidf_lr_teacher").p50.toFixed(1)} ms) in front of MiniLM lets it answer ${pct(tt.first)} of messages itself and cuts the share sent to the LLM to ${pct(tt.llm, 1)}. Matching the LLM then costs ${usd(tt.usd)} per 1M messages instead of ${usd(c.two_tier_match.usd)}, cheaper in ${c.first_tier_cheaper === c.halves ? "all" : c.first_tier_cheaper + " of"} ${c.halves} test halves. It does not make the system more accurate, and it saves little CPU time, because the MiniLM behind it takes only ${s.p50.toFixed(0)} ms.`;
 
   // Figure 3: data curve.
   const dc = D.data_curve;
@@ -413,6 +415,9 @@ function render() {
   const ns = [...new Set([...dc.gold, ...dc.teacher].map((r) => r[0]))].sort((a, b) => a - b);
   const find = (arr, n) => { const r = arr.find((x) => x[0] === n); return r ? f3(r[1]) : "—"; };
   table("t-data", ["labels", "human labels", "teacher labels"], ns.map((n) => [n.toLocaleString("en-US"), find(dc.gold, n), find(dc.teacher, n)]));
+  if (D.frozen_all_labels) {
+    $("cap-data").textContent += ` The teacher-label curve was drawn at 3,000 labels; trained on all ${D.n_labels_bought.toLocaleString("en-US")}, the same frozen student reaches ${f3(D.frozen_all_labels)}, so it has nearly flattened at the teacher's ${f3(t.acc)}.`;
+  }
 
   // Figure 4: active labelling.
   const A = D.active;
@@ -434,7 +439,7 @@ function render() {
 
   // OOS.
   const o = D.oos;
-  $("oos-text").textContent = `A banking router will also receive messages that are not about banking at all. To test this, 1,200 off-topic questions from the CLINC150 dataset ("how much has the dow changed today") were sent to every student, which never saw anything like them. Flagging a message when the model's probability is spread across many intents (high entropy) catches ${pct(o.caught_min)}–${pct(o.caught_max)} of them while flagging only 10 % of real banking messages. That score works better than the model's top confidence on every student. Temperature scaling, which makes the cascade work, slightly hurts this separation, so the two need different scores.`;
+  $("oos-text").textContent = `A banking router will also receive messages that are not about banking at all. To test this, 1,200 off-topic questions from the CLINC150 dataset ("how much has the dow changed today") were sent to every student. Flagging a message when the model's probability is spread across many intents (high entropy) catches ${pct(o.served_caught)} of them with the served model while flagging only 10 % of real banking messages. That model was trained with outlier exposure: 2,000 other non-banking CLINC150 questions, from a different split of the same dataset, labelled "none of these intents". So its ${pct(o.served_caught)} is an in-distribution figure; students that never saw anything like them catch ${pct(o.others_min)} (${o.others_min_label}) to ${pct(o.others_max)}, the safer guide to new kinds of off-topic text. Outlier exposure costs nothing on banking messages, and it also stops the model being confidently wrong on small talk ("hi there, hope you are well"). Entropy works better than the model's top confidence on every student. Temperature scaling, which makes the cascade work, slightly hurts this separation, so the two need different scores.`;
 
   // Robustness (6.6), when the run has finished.
   const rob = $("robustness");
@@ -444,7 +449,7 @@ function render() {
     const names = { typo1: "1 typo", typo3: "3 typos", chat: "lowercase, no punctuation", slang: "u / pls / acct", wrap: "greeting and sign-off" };
     const row = (r) => [r.model.replace("_teacher", "").replace("_gold", " (human labels)"), f3(r.kinds.clean.acc), ...kinds.map((k) => (r.kinds[k].acc - r.kinds.clean.acc >= 0 ? "+" : "") + ((r.kinds[k].acc - r.kinds.clean.acc) * 100).toFixed(1))];
     const p = document.createElement("p");
-    const tf = R.students.find((r) => r.model === "tfidf_lr_teacher"), mf = R.students.find((r) => r.model === "minilm_ft_teacher");
+    const tf = R.students.find((r) => r.model === "tfidf_lr_teacher"), mf = R.students.find((r) => r.model === D.served.run);
     p.textContent = `Real messages have typos. Re-scoring every student on noisy copies of the test set shows the fine-tuned transformers are the fragile ones: three typos cost the served MiniLM ${((mf.kinds.clean.acc - mf.kinds.typo3.acc) * 100).toFixed(0)} points, against ${((tf.kinds.clean.acc - tf.kinds.typo3.acc) * 100).toFixed(0)} for TF-IDF, whose character n-grams still overlap with a misspelt word. Lowercase text, texting abbreviations and greetings barely matter. The cascade softens the blow: the students also get less sure, so with three typos the served MiniLM sends ${pct(mf.kinds.typo3.escalated)} of messages to the LLM instead of ${pct(mf.kinds.clean.escalated)}, and stays ${f3(mf.kinds.typo3.kept_acc)} accurate on the rest. Messy input turns into LLM cost rather than silent mistakes.`;
     const wrap = document.createElement("div"); wrap.className = "tablewrap"; wrap.id = "t-rob";
     rob.append(p, wrap);
