@@ -9,13 +9,15 @@ On the picking half: the cheapest thresholds whose accuracy reaches the LLM's ow
 | system | held-out accuracy | sent to the LLM | answered by tier 1 | student ms | $ per 1M |
 |---|---:|---:|---:|---:|---:|
 | LLM only | 0.867 | 100 % | — | — | 216.15 |
-| tfidf_lr → LLM | 0.866 ± 0.007 | 30.8% ± 3.6% | 69% | 2.13 | **66.58** ± 7.86 |
-| tinybert_ft → LLM | 0.867 ± 0.006 | 68.2% ± 20.6% | 32% | 2.06 | **147.39** ± 44.56 |
-| minilm_ft → LLM | 0.866 ± 0.015 | 8.9% ± 5.3% | 91% | 3.05 | **19.19** ± 11.37 |
-| minilm_frozen → LLM | 0.865 ± 0.008 | 14.0% ± 11.7% | 86% | 11.29 | **30.33** ± 25.19 |
-| tfidf_lr → minilm_ft → LLM | 0.864 ± 0.014 | 6.4% ± 4.5% | 58% | 3.41 | **13.76** ± 9.68 |
-| tinybert_ft → minilm_ft → LLM | 0.865 ± 0.015 | 8.8% ± 5.3% | 10% | 4.80 | **19.09** ± 11.37 |
-| tfidf_lr → minilm_frozen → LLM | 0.864 ± 0.008 | 9.4% ± 5.6% | 60% | 6.62 | **20.38** ± 12.21 |
+| tfidf_lr → LLM | 0.866 ± 0.007 | 30.8% ± 3.6% | 69% | 2.11 | **66.58** ± 7.86 |
+| tinybert_ft → LLM | 0.867 ± 0.006 | 68.2% ± 20.6% | 32% | 2.44 | **147.39** ± 44.56 |
+| minilm_ft → LLM | 0.866 ± 0.015 | 8.9% ± 5.3% | 91% | 4.62 | **19.20** ± 11.37 |
+| minilm_ft_10k → LLM | 0.866 ± 0.012 | 2.1% ± 2.7% | 98% | 4.64 | **4.67** ± 5.89 |
+| minilm_frozen → LLM | 0.865 ± 0.008 | 14.0% ± 11.7% | 86% | 13.06 | **30.34** ± 25.19 |
+| tfidf_lr → minilm_ft → LLM | 0.864 ± 0.014 | 6.4% ± 4.5% | 58% | 4.04 | **13.76** ± 9.68 |
+| tfidf_lr → minilm_ft_10k → LLM | 0.864 ± 0.014 | 1.1% ± 1.3% | 59% | 4.00 | **2.47** ± 2.81 |
+| tinybert_ft → minilm_ft → LLM | 0.865 ± 0.015 | 8.8% ± 5.3% | 10% | 6.59 | **19.10** ± 11.37 |
+| tfidf_lr → minilm_frozen → LLM | 0.864 ± 0.008 | 9.4% ± 5.6% | 60% | 7.30 | **20.38** ± 12.21 |
 
 ### Does a cheaper first tier pay?
 
@@ -23,9 +25,10 @@ Adding a first tier to a chain, compared on the same halves (matching the LLM, a
 
 | change | Δ $ per 1M | cheaper in | Δ sent to the LLM | Δ student ms |
 |---|---:|---:|---:|---:|
-| tfidf_lr in front of minilm_ft → LLM | -5.43 | 10 / 10 | -2.5% | +0.36 |
-| tinybert_ft in front of minilm_ft → LLM | -0.10 | 3 / 10 | -0.1% | +1.75 |
-| tfidf_lr in front of minilm_frozen → LLM | -9.95 | 10 / 10 | -4.6% | -4.67 |
+| tfidf_lr in front of minilm_ft → LLM | -5.44 | 10 / 10 | -2.5% | -0.58 |
+| tfidf_lr in front of minilm_ft_10k → LLM | -2.21 | 10 / 10 | -1.0% | -0.64 |
+| tinybert_ft in front of minilm_ft → LLM | -0.10 | 3 / 10 | -0.1% | +1.97 |
+| tfidf_lr in front of minilm_frozen → LLM | -9.96 | 10 / 10 | -4.6% | -5.76 |
 
 ## Best accuracy for a budget of LLM calls
 
@@ -36,7 +39,9 @@ At most this share of queries may reach the LLM (on the picking half) → held-o
 | tfidf_lr → LLM | 0.812 ($0) | 0.825 ($9) | 0.833 ($20) | 0.842 ($31) | 0.850 ($41) | 0.865 ($63) |
 | tinybert_ft → LLM | 0.796 ($0) | 0.815 ($10) | 0.830 ($21) | 0.840 ($31) | 0.845 ($41) | 0.856 ($62) |
 | minilm_ft → LLM | 0.847 ($0) | 0.860 ($10) | 0.867 ($19) | 0.872 ($30) | 0.873 ($36) | 0.874 ($43) |
+| minilm_ft_10k → LLM | 0.862 ($0) | 0.868 ($8) | 0.870 ($16) | 0.870 ($17) | 0.870 ($18) | 0.869 ($25) |
 | minilm_frozen → LLM | 0.848 ($0) | 0.859 ($10) | 0.864 ($19) | 0.864 ($28) | 0.867 ($38) | 0.870 ($53) |
 | tfidf_lr → minilm_ft → LLM | 0.848 ($0) | 0.862 ($10) | 0.868 ($20) | 0.871 ($28) | 0.873 ($35) | 0.873 ($37) |
+| tfidf_lr → minilm_ft_10k → LLM | 0.863 ($0) | 0.870 ($9) | 0.870 ($15) | 0.869 ($16) | 0.869 ($21) | 0.869 ($21) |
 | tinybert_ft → minilm_ft → LLM | 0.846 ($0) | 0.860 ($11) | 0.867 ($19) | 0.871 ($30) | 0.872 ($37) | 0.874 ($42) |
 | tfidf_lr → minilm_frozen → LLM | 0.849 ($0) | 0.857 ($8) | 0.864 ($18) | 0.867 ($30) | 0.871 ($40) | 0.871 ($49) |

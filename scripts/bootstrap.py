@@ -31,7 +31,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.calibration import apply_temperature  # noqa: E402
 from distilroute.data import DOCS, RESULTS, load_labels, load_split, rel  # noqa: E402
 
+SERVED = "minilm_ft_10k_teacher"  # served since 2026-10-17 (model-v2); minilm_ft_teacher before
 STUDENTS = {  # run -> label, in README table order
+    "minilm_ft_10k_teacher": "MiniLM-L6 fine-tuned, 10,003 labels (fp32)",
     "minilm_ft_teacher": "MiniLM-L6 fine-tuned (fp32)",
     "minilm_frozen_teacher": "MiniLM-L6 frozen + LR",
     "distilbert_ft_teacher": "DistilBERT fine-tuned",
@@ -42,7 +44,7 @@ STUDENTS = {  # run -> label, in README table order
     "minilm_ft_gold": "MiniLM-L6 fine-tuned, human labels",
     "tfidf_lr_gold": "TF-IDF + LR, human labels",
 }
-CASCADE = ("minilm_ft_teacher", 0.8)  # README: MiniLM, escalate below 0.8 calibrated confidence
+CASCADE = (SERVED, 0.8)  # README: MiniLM, escalate below 0.8 calibrated confidence
 CORRECTION = {  # scripts/correct.py runs, seed 0
     "base": "frozen MiniLM, 0 human labels",
     "random_500": "+ 500 human checks, random rows",
@@ -60,13 +62,14 @@ PAIRS = [  # (a, b, the README claim it checks)
         "MiniLM (22M) is at least as good as DistilBERT (67M)",
     ),
     ("minilm_ft_teacher", "minilm_frozen_teacher", "fine-tuned and frozen MiniLM are a tie"),
-    ("minilm_ft_teacher_int8", "minilm_ft_teacher", "int8 costs about half a point"),
+    (f"{SERVED}_int8", SERVED, "int8 costs at most a few tenths of a point"),
+    (SERVED, "minilm_ft_teacher", "10,003 teacher labels beat 3,000"),
     (
         "minilm_frozen_aug_teacher",
         "minilm_frozen_teacher",
         "typo augmentation is free on clean text",
     ),
-    ("cascade", "minilm_ft_teacher", "the cascade is better than its student alone"),
+    ("cascade", SERVED, "the cascade is better than its student alone"),
     ("correction_disagreement_500", "correction_random_500", "targeted checks beat random ones"),
     ("correction_disagreement_500", "correction_add_new_500", "fixing labels beats adding rows"),
 ]
@@ -86,9 +89,9 @@ def served_int8(texts: list[str]) -> np.ndarray | None:
     """The served model's predictions through the serving code path (int8 ONNX)."""
     from distilroute import students
 
-    if "minilm_ft_teacher" not in students.available():
+    if SERVED not in students.available():
         return None
-    router = students.load("minilm_ft_teacher")
+    router = students.load(SERVED)
     return np.array([router.route(t).intent for t in texts])
 
 
@@ -107,7 +110,10 @@ def main() -> None:
         if (RESULTS / f"{run}_test_probs.npz").exists():
             hits[run] = (label, student(run)[0] == gold)
     if not args.no_int8 and (pred := served_int8(test.text.tolist())) is not None:
-        hits["minilm_ft_teacher_int8"] = ("MiniLM-L6 fine-tuned, int8 as served", pred == gold)
+        hits[f"{SERVED}_int8"] = (
+            "MiniLM-L6 fine-tuned, 10,003 labels, int8 as served",
+            pred == gold,
+        )
     run, thr = CASCADE
     pred, conf = student(run)
     mixed = np.where(conf < thr, teacher, pred)

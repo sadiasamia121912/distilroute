@@ -25,10 +25,11 @@ STUDENTS = {  # run -> display name, parameter count
     "tfidf_lr_teacher": ("TF-IDF + LR", None),
     "tinybert_ft_teacher": ("TinyBERT", "14M"),
     "minilm_ft_teacher": ("MiniLM, fine-tuned", "22M"),
+    "minilm_ft_10k_teacher": ("MiniLM, fine-tuned, 10k labels", "22M"),
     "minilm_frozen_teacher": ("MiniLM, frozen", "22M"),
     "distilbert_ft_teacher": ("DistilBERT", "67M"),
 }
-SERVED = "minilm_ft_teacher"
+SERVED = "minilm_ft_10k_teacher"  # model-v2, 2026-10-17; minilm_ft_teacher (3,000 labels) before
 
 
 def mean_by_n(curve: dict) -> list[list[float]]:

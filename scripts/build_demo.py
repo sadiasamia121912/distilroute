@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute import students  # noqa: E402
 from distilroute.data import MODELS, RAW, RESULTS, ROOT, load_split, rel  # noqa: E402
 
-MODEL = "minilm_ft_teacher"
+MODEL = "minilm_ft_10k_teacher"  # model-v2, 2026-10-17
 ORT_VERSION = "1.30.0"  # must match the import in demo/index.html
 WASM = "ort-wasm-simd-threaded.wasm"
 PARTS = 3
@@ -93,7 +93,8 @@ def main() -> None:
     checks = []
     for text in CHECKS:
         routed = router.route(text)
-        ids = router.tokenizer([text], truncation=True, max_length=64)["input_ids"][0]
+        router.tokenizer.enable_truncation(max_length=64)  # the page's tokenizer stops at 64
+        ids = router.tokenizer.encode(text).ids
         checks.append(
             {"text": text, "ids": ids, "intent": routed.intent, "conf": round(routed.confidence, 4)}
         )

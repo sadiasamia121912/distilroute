@@ -318,6 +318,36 @@ run while `jobs.py` labels.
 
 ## Session log
 
+**2026-10-17 (HANDOFF — start here next session; new machine)**
+
+- **New machine** (Windows 11, user `HP`, 16 GB RAM): repo at `C:\Users\HP\Desktop\New folder\distilroute`,
+  outside OneDrive. Set up per RUNBOOK §0 plus two gaps now in it: `requirements-train.txt`
+  (onnxruntime) and the VC++ runtime (onnxruntime's "DLL load failed" on fresh Windows). `.env`
+  keys still empty — nothing queued needs them.
+- **Colab 7.3 run done:** 10,003-label MiniLM fp32 **0.862** / int8 0.860; OE at 10,003 0.863 /
+  0.859 (int8 −0.4 pt, fails the rule); seeds 1–2 of the served config 0.841 / 0.841 vs 0.847
+  (`docs/seeds.md`: seed spread ~0.6 pt); `minilm_ft_aug_teacher` 0.848 clean, 3 typos −10.5 pt
+  vs −30 for the plain one.
+- **1.6 step 4 decided: the served model changed.** `minilm_ft_10k_teacher` (copy of
+  `teacher10003/minilm_ft_teacher` under its own name, so every 3,000-label number stays
+  reproducible; `DEFAULT_TEACHER_ROWS` unchanged) is served: **0.859** int8 through the serving
+  code vs 0.842; paired bootstrap +1.5 pt [+0.6, +2.4] over 3,000 labels; vs teacher −0.8 pt
+  [−1.7, +0.1], so "below its teacher" is no longer certain. Cascade at 0.8: 0.872. Cheapest
+  system matching the LLM: TF-IDF → MiniLM-10k → LLM, **$2.47 / 1M** (±2.81), 1.1 % to the LLM
+  (was $13.76). OOS entropy AUROC 0.962 (was 0.956). Typos unchanged (3 typos −30.9 pt).
+  Latency re-benched for every student on this machine (served p50 4.2 ms; the old laptop gave
+  2.8 — machine, not model). `build_demo.py` fixed (it still called the tokenizer the
+  transformers way). Robustness / stress / oos / cascade / bootstrap / evaluate / demo / case
+  study regenerated.
+- **Release `model-v2`** (`minilm_ft_10k_teacher.zip`, SHA-256 `39d36a55…fe62d`): docker.yml and
+  load-test.yml point at it; it must exist before the push or Docker CI fails.
+
+**Next session, in order:** (1) README headline + findings to the 10k numbers (1.6 step 5);
+republish the demo and case-study artifacts; (2) typo augmentation on 10,003 labels in Colab
+(`--augment typo1,typo3`; the aug model kept clean accuracy and cut the 3-typo loss by two
+thirds); (3) **user:** `hf auth login` → `build_hf_release.py --user X --publish`; 7.1 review;
+4.2 posts.
+
 **2026-10-04 (HANDOFF — start here next session; laptop SSD replaced after this)**
 
 - The user's laptop SSD was replaced after this session and Claude Pro paused. **Setting up the

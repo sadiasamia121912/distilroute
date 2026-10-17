@@ -34,92 +34,148 @@
     },
     "minilm_frozen_gold": {
       "model": "minilm_frozen_gold",
-      "mode": "11.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.011380188799463212,
+      "mode": "12.7 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.012690068999952928,
       "usd_per_1m": 0.07,
       "usd_per_1m_own_hardware": 0.0
     },
     "tfidf_lr_gold": {
       "model": "tfidf_lr_gold",
-      "mode": "1.8 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.0017886746022850275,
+      "mode": "2.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.0020988243999454427,
       "usd_per_1m": 0.01,
       "usd_per_1m_own_hardware": 0.0
     },
     "distilbert_ft_gold": {
       "model": "distilbert_ft_gold",
-      "mode": "7.0 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.007024523599306122,
-      "usd_per_1m": 0.04,
+      "mode": "13.3 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.01326633380002022,
+      "usd_per_1m": 0.08,
       "usd_per_1m_own_hardware": 0.0
     },
     "distilbert_ft_soft_teacher": {
       "model": "distilbert_ft_soft_teacher",
-      "mode": "7.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.00710137000028044,
-      "usd_per_1m": 0.04,
+      "mode": "13.3 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.013278298200013524,
+      "usd_per_1m": 0.08,
       "usd_per_1m_own_hardware": 0.0
     },
     "distilbert_ft_teacher": {
       "model": "distilbert_ft_teacher",
-      "mode": "6.8 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.006825630799634382,
-      "usd_per_1m": 0.04,
+      "mode": "13.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.013421315199870151,
+      "usd_per_1m": 0.08,
       "usd_per_1m_own_hardware": 0.0
     },
     "minilm_frozen_teacher": {
       "model": "minilm_frozen_teacher",
-      "mode": "11.3 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.0112869471993763,
-      "usd_per_1m": 0.07,
+      "mode": "13.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.013055469400002039,
+      "usd_per_1m": 0.08,
       "usd_per_1m_own_hardware": 0.0
     },
     "minilm_ft_gold": {
       "model": "minilm_ft_gold",
-      "mode": "3.0 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.002965364001924172,
-      "usd_per_1m": 0.02,
+      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004618039599925396,
+      "usd_per_1m": 0.03,
       "usd_per_1m_own_hardware": 0.0
     },
     "minilm_ft_teacher": {
       "model": "minilm_ft_teacher",
-      "mode": "3.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.003051597999408841,
-      "usd_per_1m": 0.02,
+      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004620195600247825,
+      "usd_per_1m": 0.03,
       "usd_per_1m_own_hardware": 0.0
     },
     "minilm_setfit_16pc_gold": {
       "model": "minilm_setfit_16pc_gold",
-      "mode": "13.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.013064758999971672,
+      "mode": "14.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.014555026000052748,
       "usd_per_1m": 0.08,
       "usd_per_1m_own_hardware": 0.0
     },
     "minilm_setfit_7pc_teacher": {
       "model": "minilm_setfit_7pc_teacher",
-      "mode": "12.9 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.012882607602514327,
-      "usd_per_1m": 0.07,
+      "mode": "14.8 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.014765436600006069,
+      "usd_per_1m": 0.09,
       "usd_per_1m_own_hardware": 0.0
     },
     "tfidf_lr_teacher": {
       "model": "tfidf_lr_teacher",
       "mode": "2.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.0021309684000443666,
+      "cpu_seconds_per_query": 0.002105009200015047,
       "usd_per_1m": 0.01,
       "usd_per_1m_own_hardware": 0.0
     },
     "tinybert_ft_gold": {
       "model": "tinybert_ft_gold",
-      "mode": "2.0 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.001977817599195987,
+      "mode": "2.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.0024367189999466065,
       "usd_per_1m": 0.01,
       "usd_per_1m_own_hardware": 0.0
     },
     "tinybert_ft_teacher": {
       "model": "tinybert_ft_teacher",
-      "mode": "2.1 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.0020632071965374053,
+      "mode": "2.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.0024449770000574064,
+      "usd_per_1m": 0.01,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_frozen_aug_teacher": {
+      "model": "minilm_frozen_aug_teacher",
+      "mode": "12.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.012404365800088272,
+      "usd_per_1m": 0.07,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_frozen_oe_teacher": {
+      "model": "minilm_frozen_oe_teacher",
+      "mode": "12.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.012645723800058477,
+      "usd_per_1m": 0.07,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_ft_10k_teacher": {
+      "model": "minilm_ft_10k_teacher",
+      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004643176400000812,
+      "usd_per_1m": 0.03,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_ft_aug_teacher": {
+      "model": "minilm_ft_aug_teacher",
+      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004617266400047811,
+      "usd_per_1m": 0.03,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_ft_oe_teacher": {
+      "model": "minilm_ft_oe_teacher",
+      "mode": "4.7 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004689652000030037,
+      "usd_per_1m": 0.03,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_ft_s1_teacher": {
+      "model": "minilm_ft_s1_teacher",
+      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004609283800047706,
+      "usd_per_1m": 0.03,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_ft_s2_teacher": {
+      "model": "minilm_ft_s2_teacher",
+      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004570704200094042,
+      "usd_per_1m": 0.03,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "tfidf_lr_aug_teacher": {
+      "model": "tfidf_lr_aug_teacher",
+      "mode": "2.3 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.002326602799963439,
       "usd_per_1m": 0.01,
       "usd_per_1m_own_hardware": 0.0
     }

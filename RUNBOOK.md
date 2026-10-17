@@ -16,6 +16,8 @@ git clone https://github.com/sadiasamia121912/portfolio-notes   # private: notes
 cd distilroute
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-train.txt   # onnxruntime + torch: every model script needs them
+winget install --id Microsoft.VCRedist.2015+.x64 -e   # fresh Windows: without it onnxruntime fails with "DLL load failed"
 .\.venv\Scripts\python.exe scripts\download_data.py
 .\.venv\Scripts\python.exe scripts\download_clinc.py
 copy .env.example .env      # then paste NEW keys (Groq, Gemini, OpenRouter); the old ones are compromised
@@ -86,14 +88,16 @@ git add results docs; git commit -m "Colab 7.3 runs: aug, seeds, OE, 10,003 labe
 
 ## 3. Should the served model change? (the rule)
 
-The served model is `minilm_ft_teacher` (int8 ONNX, **0.842** on the test split through the
-serving code). A new model replaces it **only if its int8 accuracy is above 0.845** (0.842 +
-0.3 pt run-to-run noise) **and** int8 loses at most 0.3 pt against its own fp32. The numbers are in
-`results\teacher10003\minilm_ft_teacher.json` and `minilm_ft_oe_teacher.json`.
+Since 2026-10-17 the served model is `minilm_ft_10k_teacher` (fine-tuned MiniLM on all 10,003
+teacher labels, `model-v2` release; int8 ONNX, **0.859** on the test split through the serving
+code). It replaced `minilm_ft_teacher` (3,000 labels, 0.842), which stays as a comparison row.
+A new model replaces it **only if its int8 accuracy is above 0.862** (0.859 + 0.3 pt run-to-run
+noise) **and** int8 loses at most 0.3 pt against its own fp32.
 
 - **It passes:** the swap touches several files (`SERVED`/`MODEL` in `scripts\build_demo.py`,
-  `build_case_study.py`, `build_hf_release.py`, the `Dockerfile`, `.github\workflows\docker.yml`
-  and `load-test.yml`, plus a `model-v2` GitHub release). Best done in a Claude session.
+  `build_case_study.py`, `build_hf_release.py`, `bootstrap.py`, `stress.py`, the `Dockerfile`,
+  `.github\workflows\docker.yml` and `load-test.yml`, plus a new GitHub release). Best done in a
+  Claude session; the 2026-10-17 swap to `model-v2` is the worked example.
   With the OE model served, `ALSO_THRESHOLD` in `distilroute\multi.py` can drop from 0.95 to 0.8.
 - **It does not pass:** that is a result too. The labels are saturated and the gap is the
   teacher's own error rate. Write it into ROADMAP 1.6 and keep the served model.

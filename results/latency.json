@@ -1,19 +1,19 @@
 {
   "minilm_frozen_gold": {
-    "p50_ms": 11.1055500456132,
-    "p95_ms": 13.7468250002712,
-    "mean_ms": 11.380188799463212,
+    "p50_ms": 12.513450001279125,
+    "p95_ms": 15.889705000881797,
+    "mean_ms": 12.690068999952928,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "minilm"
   },
   "tfidf_lr_gold": {
-    "p50_ms": 1.745849964208901,
-    "p95_ms": 2.1157699287869036,
-    "mean_ms": 1.7886746022850275,
+    "p50_ms": 1.973199998246855,
+    "p95_ms": 2.894975002709543,
+    "mean_ms": 2.0988243999454426,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "tfidf"
   },
@@ -36,101 +36,101 @@
     "kind": "tfidf"
   },
   "distilbert_ft_gold": {
-    "p50_ms": 6.415550014935434,
-    "p95_ms": 11.690089956391603,
-    "mean_ms": 7.0245235993061215,
+    "p50_ms": 11.799200001405552,
+    "p95_ms": 23.39966000163256,
+    "mean_ms": 13.26633380002022,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
   "distilbert_ft_soft_teacher": {
-    "p50_ms": 6.4493000390939415,
-    "p95_ms": 12.29326497414149,
-    "mean_ms": 7.10137000028044,
+    "p50_ms": 11.878399998749956,
+    "p95_ms": 23.65577500113431,
+    "mean_ms": 13.278298200013523,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
   "distilbert_ft_teacher": {
-    "p50_ms": 6.167850049678236,
-    "p95_ms": 11.593250022269785,
-    "mean_ms": 6.825630799634382,
+    "p50_ms": 11.902700000064215,
+    "p95_ms": 24.704720002046077,
+    "mean_ms": 13.42131519987015,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
   "minilm_frozen_teacher": {
-    "p50_ms": 10.99490001797676,
-    "p95_ms": 13.93396001658402,
-    "mean_ms": 11.2869471993763,
+    "p50_ms": 12.578349998875638,
+    "p95_ms": 16.65198000118835,
+    "mean_ms": 13.055469400002039,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "minilm"
   },
   "minilm_ft_gold": {
-    "p50_ms": 2.692549955099821,
-    "p95_ms": 4.711685003712771,
-    "mean_ms": 2.965364001924172,
+    "p50_ms": 4.140999999435735,
+    "p95_ms": 8.364845000687628,
+    "mean_ms": 4.618039599925396,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
   "minilm_ft_teacher": {
-    "p50_ms": 2.8294000076130033,
-    "p95_ms": 4.933950072154402,
-    "mean_ms": 3.051597999408841,
+    "p50_ms": 4.063150001456961,
+    "p95_ms": 8.262935000129792,
+    "mean_ms": 4.6201956002478255,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
   "minilm_setfit_16pc_gold": {
-    "p50_ms": 12.699200015049428,
-    "p95_ms": 16.398474952438846,
-    "mean_ms": 13.064758999971673,
+    "p50_ms": 14.488799999526236,
+    "p95_ms": 18.057435000264373,
+    "mean_ms": 14.555026000052749,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "minilm"
   },
   "minilm_setfit_7pc_teacher": {
-    "p50_ms": 12.465300038456917,
-    "p95_ms": 15.851709980051965,
-    "mean_ms": 12.882607602514327,
+    "p50_ms": 14.520600001560524,
+    "p95_ms": 17.842239999663434,
+    "mean_ms": 14.765436600006069,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "minilm"
   },
   "tfidf_lr_teacher": {
-    "p50_ms": 1.6469500842504203,
-    "p95_ms": 1.995144941611215,
-    "mean_ms": 2.1309684000443667,
+    "p50_ms": 1.9790000005741604,
+    "p95_ms": 2.902120003091112,
+    "mean_ms": 2.105009200015047,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "tfidf"
   },
   "tinybert_ft_gold": {
-    "p50_ms": 1.8402999849058688,
-    "p95_ms": 3.264685056637972,
-    "mean_ms": 1.977817599195987,
+    "p50_ms": 2.1689999994123355,
+    "p95_ms": 4.017715000554744,
+    "mean_ms": 2.4367189999466063,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
   "tinybert_ft_teacher": {
-    "p50_ms": 1.9430500105954707,
-    "p95_ms": 3.160884964745491,
-    "mean_ms": 2.0632071965374053,
+    "p50_ms": 2.2117999997135485,
+    "p95_ms": 4.23824999888893,
+    "mean_ms": 2.4449770000574063,
     "n": 500,
-    "host": "Samin",
+    "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "onnx"
   },
@@ -142,5 +142,77 @@
     "host": "Samin",
     "mode": "in-process",
     "kind": "teacher"
+  },
+  "minilm_frozen_aug_teacher": {
+    "p50_ms": 12.121450001359335,
+    "p95_ms": 15.578135001305782,
+    "mean_ms": 12.404365800088271,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "minilm"
+  },
+  "minilm_frozen_oe_teacher": {
+    "p50_ms": 12.422699999660836,
+    "p95_ms": 15.587990000494754,
+    "mean_ms": 12.645723800058477,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "minilm"
+  },
+  "minilm_ft_10k_teacher": {
+    "p50_ms": 4.165449998254189,
+    "p95_ms": 7.95521999862103,
+    "mean_ms": 4.6431764000008116,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_ft_aug_teacher": {
+    "p50_ms": 4.117549999136827,
+    "p95_ms": 8.299649997206865,
+    "mean_ms": 4.617266400047811,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_ft_oe_teacher": {
+    "p50_ms": 4.1923000007955125,
+    "p95_ms": 8.430784998017769,
+    "mean_ms": 4.689652000030037,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_ft_s1_teacher": {
+    "p50_ms": 4.141050001635449,
+    "p95_ms": 7.959730001311967,
+    "mean_ms": 4.609283800047706,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "minilm_ft_s2_teacher": {
+    "p50_ms": 4.078300000401214,
+    "p95_ms": 7.988614999885613,
+    "mean_ms": 4.570704200094042,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "onnx"
+  },
+  "tfidf_lr_aug_teacher": {
+    "p50_ms": 2.0450000010896474,
+    "p95_ms": 3.364195001449841,
+    "mean_ms": 2.326602799963439,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "tfidf"
   }
 }
