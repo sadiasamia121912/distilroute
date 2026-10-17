@@ -10,6 +10,8 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.867** on the full 3,080-query 
 | MiniLM-L6 frozen + filter | 23M | teacher | 8,868 | **0.859** | 0.856 | 0.906 | 0.013 → 0.067 (T=0.68) | — |
 | MiniLM-L6 frozen + soft | 23M | teacher | 9,003 | **0.860** | 0.858 | 0.907 | 0.131 → 0.049 (T=0.53) | — |
 | MiniLM-L6 frozen | 23M | teacher | 9,003 | **0.858** | 0.854 | 0.907 | 0.012 → 0.042 (T=0.80) | 21.2 / 25.2 † |
+| minilm fine-tuned | 23M | teacher | 9,003 | **0.863** | 0.860 | 0.915 | 0.018 → 0.050 (T=0.84) | 23.2 / 27.1 † |
+| minilm fine-tuned | 23M | teacher | 9,003 | **0.862** | 0.858 | 0.912 | 0.043 → 0.053 (T=0.96) | 23.2 / 29.7 † |
 | tfidf+lr | — | teacher | 9,003 | **0.849** | 0.845 | 0.888 | 0.039 → 0.041 (T=0.78) | 6.7 / 9.3 † |
 
 ## Cascade preview — escalate the least-confident queries to the teacher
@@ -22,6 +24,8 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | MiniLM-L6 frozen + filter | teacher | 0.859 | 0.868 | 0.873 | 0.873 | 0.873 |
 | MiniLM-L6 frozen + soft | teacher | 0.860 | 0.867 | 0.871 | 0.872 | 0.872 |
 | MiniLM-L6 frozen | teacher | 0.858 | 0.870 | 0.875 | 0.871 | 0.871 |
+| minilm fine-tuned | teacher | 0.863 | 0.869 | 0.870 | 0.872 | 0.870 |
+| minilm fine-tuned | teacher | 0.862 | 0.871 | 0.872 | 0.871 | 0.871 |
 | tfidf+lr | teacher | 0.849 | 0.859 | 0.863 | 0.869 | 0.871 |
 
 ## Cascade by confidence threshold — the policy a service would actually run
@@ -34,6 +38,8 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | MiniLM-L6 frozen + filter | teacher | 3% · 0.877 · 0.866 | 9% · 0.903 · 0.872 | 13% · 0.917 · 0.873 | 20% · 0.930 · 0.872 | 27% · 0.944 · 0.873 |
 | MiniLM-L6 frozen + soft | teacher | 3% · 0.876 · 0.865 | 11% · 0.906 · 0.871 | 16% · 0.920 · 0.873 | 24% · 0.941 · 0.871 | 35% · 0.953 · 0.870 |
 | MiniLM-L6 frozen | teacher | 5% · 0.886 · 0.869 | 12% · 0.915 · 0.875 | 17% · 0.927 · 0.872 | 26% · 0.946 · 0.873 | 37% · 0.961 · 0.870 |
+| minilm fine-tuned | teacher | 3% · 0.880 · 0.869 | 10% · 0.899 · 0.871 | 13% · 0.911 · 0.872 | 23% · 0.925 · 0.872 | 38% · 0.946 · 0.871 |
+| minilm fine-tuned | teacher | 3% · 0.877 · 0.869 | 7% · 0.894 · 0.872 | 11% · 0.903 · 0.872 | 20% · 0.917 · 0.871 | 37% · 0.941 · 0.869 |
 | tfidf+lr | teacher | 7% · 0.882 · 0.860 | 15% · 0.911 · 0.866 | 20% · 0.925 · 0.868 | 30% · 0.940 · 0.871 | 39% · 0.953 · 0.872 |
 
 ## Data efficiency — accuracy vs. number of training labels
