@@ -84,7 +84,7 @@
     "minilm_ft_teacher": {
       "model": "minilm_ft_teacher",
       "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.004620195600247825,
+      "cpu_seconds_per_query": 0.004589182399853598,
       "usd_per_1m": 0.03,
       "usd_per_1m_own_hardware": 0.0
     },
@@ -139,8 +139,8 @@
     },
     "minilm_ft_10k_teacher": {
       "model": "minilm_ft_10k_teacher",
-      "mode": "4.6 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
-      "cpu_seconds_per_query": 0.004643176400000812,
+      "mode": "4.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004437668199985637,
       "usd_per_1m": 0.03,
       "usd_per_1m_own_hardware": 0.0
     },
@@ -177,6 +177,13 @@
       "mode": "2.3 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
       "cpu_seconds_per_query": 0.002326602799963439,
       "usd_per_1m": 0.01,
+      "usd_per_1m_own_hardware": 0.0
+    },
+    "minilm_ft_oe_10k_teacher": {
+      "model": "minilm_ft_oe_10k_teacher",
+      "mode": "4.4 ms/query on AWS t3.small (2 vCPU, us-east-1, on-demand)",
+      "cpu_seconds_per_query": 0.004442810599946824,
+      "usd_per_1m": 0.03,
       "usd_per_1m_own_hardware": 0.0
     }
   }

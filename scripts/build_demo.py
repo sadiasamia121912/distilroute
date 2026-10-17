@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute import students  # noqa: E402
 from distilroute.data import MODELS, RAW, RESULTS, ROOT, load_split, rel  # noqa: E402
 
-MODEL = "minilm_ft_10k_teacher"  # model-v2, 2026-10-17
+MODEL = "minilm_ft_oe_10k_teacher"  # model-v3, 2026-10-17
 ORT_VERSION = "1.30.0"  # must match the import in demo/index.html
 WASM = "ort-wasm-simd-threaded.wasm"
 PARTS = 3

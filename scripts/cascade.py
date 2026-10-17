@@ -41,10 +41,12 @@ SYSTEMS = [
     ["tfidf_lr_teacher"],
     ["tinybert_ft_teacher"],
     ["minilm_ft_teacher"],
-    ["minilm_ft_10k_teacher"],  # served since 2026-10-17
+    ["minilm_ft_10k_teacher"],
+    ["minilm_ft_oe_10k_teacher"],  # served since 2026-10-17
     ["minilm_frozen_teacher"],
     ["tfidf_lr_teacher", "minilm_ft_teacher"],
     ["tfidf_lr_teacher", "minilm_ft_10k_teacher"],
+    ["tfidf_lr_teacher", "minilm_ft_oe_10k_teacher"],
     ["tinybert_ft_teacher", "minilm_ft_teacher"],
     ["tfidf_lr_teacher", "minilm_frozen_teacher"],
 ]

@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
 
 env:
-  MODEL: minilm_ft_10k_teacher
-  MODEL_URL: https://github.com/sadiasamia121912/distilroute/releases/download/model-v2/minilm_ft_10k_teacher.zip
-  MODEL_SHA256: 39d36a554f38c681aa17311621eac6d68727f15e8a685744effdba5e2b4fe62d
+  MODEL: minilm_ft_oe_10k_teacher
+  MODEL_URL: https://github.com/sadiasamia121912/distilroute/releases/download/model-v3/minilm_ft_oe_10k_teacher.zip
+  MODEL_SHA256: f9d79a90177f009b0a8ceae2b05dac04c752cfb0f5f7abd3f2d46894dff15035
 
 jobs:
   build-and-route:

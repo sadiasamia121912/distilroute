@@ -18,6 +18,21 @@
       "p_beats_teacher": 0.0
     },
     {
+      "system": "minilm_ft_oe_10k_teacher",
+      "label": "MiniLM-L6 fine-tuned + OE, 10,003 labels (fp32)",
+      "acc": 0.862987012987013,
+      "ci": [
+        0.8506493506493507,
+        0.8753246753246753
+      ],
+      "vs_teacher": -0.004220779220779236,
+      "vs_teacher_ci": [
+        -0.012987012987012991,
+        0.004870129870129913
+      ],
+      "p_beats_teacher": 0.1708
+    },
+    {
       "system": "minilm_ft_10k_teacher",
       "label": "MiniLM-L6 fine-tuned, 10,003 labels (fp32)",
       "acc": 0.8616883116883117,
@@ -168,34 +183,34 @@
       "p_beats_teacher": 1.0
     },
     {
-      "system": "minilm_ft_10k_teacher_int8",
-      "label": "MiniLM-L6 fine-tuned, 10,003 labels, int8 as served",
-      "acc": 0.8590909090909091,
+      "system": "minilm_ft_oe_10k_teacher_int8",
+      "label": "MiniLM-L6 fine-tuned + OE, 10,003 labels, int8 as served",
+      "acc": 0.8594155844155844,
       "ci": [
-        0.8467532467532467,
-        0.8714285714285714
+        0.8470779220779221,
+        0.8717532467532467
       ],
-      "vs_teacher": -0.008116883116883078,
+      "vs_teacher": -0.007792207792207795,
       "vs_teacher_ci": [
-        -0.016883116883116944,
-        0.0009740259740259605
+        -0.01655844155844155,
+        0.0009740259740260715
       ],
-      "p_beats_teacher": 0.0368
+      "p_beats_teacher": 0.0403
     },
     {
       "system": "cascade",
       "label": "Cascade: MiniLM, escalate below 0.8",
-      "acc": 0.8717532467532467,
+      "acc": 0.8724025974025974,
       "ci": [
-        0.8594155844155844,
-        0.8837662337662338
+        0.8603896103896104,
+        0.8844155844155844
       ],
-      "vs_teacher": 0.004545454545454519,
+      "vs_teacher": 0.0051948051948051965,
       "vs_teacher_ci": [
-        -0.0012987012987012436,
-        0.010389610389610393
+        -0.00032467532467539417,
+        0.01103896103896107
       ],
-      "p_beats_teacher": 0.9303
+      "p_beats_teacher": 0.9616
     },
     {
       "system": "correction_base",
@@ -312,15 +327,15 @@
       "p_a_better": 0.3633
     },
     {
-      "a": "minilm_ft_10k_teacher_int8",
-      "b": "minilm_ft_10k_teacher",
+      "a": "minilm_ft_oe_10k_teacher_int8",
+      "b": "minilm_ft_oe_10k_teacher",
       "claim": "int8 costs at most a few tenths of a point",
-      "diff": -0.0025974025974025983,
+      "diff": -0.0035714285714285587,
       "ci": [
-        -0.006818181818181834,
-        0.0016233766233766378
+        -0.007792207792207795,
+        0.0006493506493506773
       ],
-      "p_a_better": 0.0945
+      "p_a_better": 0.0368
     },
     {
       "a": "minilm_ft_10k_teacher",
@@ -332,6 +347,17 @@
         0.02402597402597406
       ],
       "p_a_better": 0.999
+    },
+    {
+      "a": "minilm_ft_oe_10k_teacher",
+      "b": "minilm_ft_10k_teacher",
+      "claim": "outlier exposure is free on in-scope text",
+      "diff": 0.0012987012987012436,
+      "ci": [
+        -0.00454545454545463,
+        0.0071428571428571175
+      ],
+      "p_a_better": 0.6434
     },
     {
       "a": "minilm_frozen_aug_teacher",
@@ -346,14 +372,14 @@
     },
     {
       "a": "cascade",
-      "b": "minilm_ft_10k_teacher",
+      "b": "minilm_ft_oe_10k_teacher",
       "claim": "the cascade is better than its student alone",
-      "diff": 0.010064935064934999,
+      "diff": 0.009415584415584433,
       "ci": [
-        0.0032467532467532756,
-        0.016883116883116833
+        0.002272727272727315,
+        0.01655844155844155
       ],
-      "p_a_better": 0.9983
+      "p_a_better": 0.9957
     },
     {
       "a": "correction_disagreement_500",

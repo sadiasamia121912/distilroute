@@ -41,7 +41,8 @@ MODELS = [
     "tfidf_lr_teacher",
     "tinybert_ft_teacher",
     "minilm_ft_teacher",
-    "minilm_ft_10k_teacher",  # served since 2026-10-17: same config, all 10,003 teacher labels
+    "minilm_ft_10k_teacher",  # same config, all 10,003 teacher labels
+    "minilm_ft_oe_10k_teacher",  # ... + outlier exposure: served since 2026-10-17 (model-v3)
     "minilm_frozen_teacher",
     "tfidf_lr_aug_teacher",  # trained with typo1,typo3 copies: the fix (skipped if absent)
     "minilm_frozen_aug_teacher",

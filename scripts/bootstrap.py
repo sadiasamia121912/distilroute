@@ -31,8 +31,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.calibration import apply_temperature  # noqa: E402
 from distilroute.data import DOCS, RESULTS, load_labels, load_split, rel  # noqa: E402
 
-SERVED = "minilm_ft_10k_teacher"  # served since 2026-10-17 (model-v2); minilm_ft_teacher before
+SERVED = "minilm_ft_oe_10k_teacher"  # model-v3, 2026-10-17; minilm_ft_teacher (3,000) before
 STUDENTS = {  # run -> label, in README table order
+    "minilm_ft_oe_10k_teacher": "MiniLM-L6 fine-tuned + OE, 10,003 labels (fp32)",
     "minilm_ft_10k_teacher": "MiniLM-L6 fine-tuned, 10,003 labels (fp32)",
     "minilm_ft_teacher": "MiniLM-L6 fine-tuned (fp32)",
     "minilm_frozen_teacher": "MiniLM-L6 frozen + LR",
@@ -63,7 +64,8 @@ PAIRS = [  # (a, b, the README claim it checks)
     ),
     ("minilm_ft_teacher", "minilm_frozen_teacher", "fine-tuned and frozen MiniLM are a tie"),
     (f"{SERVED}_int8", SERVED, "int8 costs at most a few tenths of a point"),
-    (SERVED, "minilm_ft_teacher", "10,003 teacher labels beat 3,000"),
+    ("minilm_ft_10k_teacher", "minilm_ft_teacher", "10,003 teacher labels beat 3,000"),
+    (SERVED, "minilm_ft_10k_teacher", "outlier exposure is free on in-scope text"),
     (
         "minilm_frozen_aug_teacher",
         "minilm_frozen_teacher",
@@ -111,7 +113,7 @@ def main() -> None:
             hits[run] = (label, student(run)[0] == gold)
     if not args.no_int8 and (pred := served_int8(test.text.tolist())) is not None:
         hits[f"{SERVED}_int8"] = (
-            "MiniLM-L6 fine-tuned, 10,003 labels, int8 as served",
+            "MiniLM-L6 fine-tuned + OE, 10,003 labels, int8 as served",
             pred == gold,
         )
     run, thr = CASCADE

@@ -21,13 +21,14 @@ Teacher (`gpt-oss-120b`, zero-shot): accuracy **0.867** on the full 3,080-query 
 | MiniLM-L6 frozen | 23M | gold | 9,000 | **0.927** | 0.927 | 0.863 | 0.074 → 0.011 (T=0.71) | 12.5 / 15.9 |
 | MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.845** | 0.843 | 0.880 | 0.164 → 0.024 (T=0.61) | 12.4 / 15.6 |
 | MiniLM-L6 frozen | 23M | teacher | 2,697 | **0.848** | 0.846 | 0.883 | 0.101 → 0.034 (T=0.70) | 12.6 / 16.7 |
-| minilm fine-tuned | 23M | teacher | 9,003 | **0.862** | 0.858 | 0.912 | 0.043 → 0.053 (T=0.96) | 4.2 / 8.0 |
+| minilm fine-tuned | 23M | teacher | 9,003 | **0.862** | 0.858 | 0.912 | 0.043 → 0.053 (T=0.96) | 4.0 / 7.6 |
 | minilm fine-tuned | 23M | teacher | 8,071 | **0.848** | 0.846 | 0.882 | 0.019 → 0.028 (T=0.97) | 4.1 / 8.3 |
 | minilm fine-tuned | 23M | gold | 9,000 | **0.927** | 0.927 | 0.864 | 0.024 → 0.016 (T=0.93) | 4.1 / 8.4 |
+| minilm fine-tuned | 23M | teacher | 9,003 | **0.863** | 0.860 | 0.915 | 0.018 → 0.050 (T=0.84) | 4.0 / 7.9 |
 | minilm fine-tuned | 23M | teacher | 2,697 | **0.841** | 0.839 | 0.877 | 0.028 → 0.051 (T=0.92) | 4.2 / 8.4 |
 | minilm fine-tuned | 23M | teacher | 2,697 | **0.841** | 0.840 | 0.876 | 0.078 → 0.054 (T=1.09) | 4.1 / 8.0 |
 | minilm fine-tuned | 23M | teacher | 2,697 | **0.841** | 0.839 | 0.882 | 0.077 → 0.045 (T=1.11) | 4.1 / 8.0 |
-| minilm fine-tuned | 23M | teacher | 2,697 | **0.847** | 0.845 | 0.884 | 0.074 → 0.042 (T=1.12) | 4.1 / 8.3 |
+| minilm fine-tuned | 23M | teacher | 2,697 | **0.847** | 0.845 | 0.884 | 0.074 → 0.042 (T=1.12) | 4.0 / 8.1 |
 | MiniLM-L6 setfit (16/intent) | 23M | gold | 1,078 | **0.864** | 0.863 | 0.831 | 0.214 → 0.059 (T=0.69) | 14.5 / 18.1 |
 | MiniLM-L6 setfit (7/intent) | 23M | teacher | 462 | **0.789** | 0.785 | 0.805 | 0.268 → 0.018 (T=0.55) | 14.5 / 17.8 |
 | tfidf+lr | — | teacher | 8,071 | **0.809** | 0.805 | 0.835 | 0.064 → 0.042 (T=0.78) | 2.0 / 3.4 |
@@ -63,6 +64,7 @@ Accuracy of the mixed system when the student's least-confident X % of test quer
 | minilm fine-tuned | teacher | 0.862 | 0.871 | 0.872 | 0.871 | 0.871 |
 | minilm fine-tuned | teacher | 0.848 | 0.859 | 0.867 | 0.873 | 0.872 |
 | minilm fine-tuned | gold | 0.927 | 0.931 | 0.931 | 0.923 | 0.908 |
+| minilm fine-tuned | teacher | 0.863 | 0.869 | 0.870 | 0.872 | 0.870 |
 | minilm fine-tuned | teacher | 0.841 | 0.855 | 0.864 | 0.871 | 0.871 |
 | minilm fine-tuned | teacher | 0.841 | 0.855 | 0.864 | 0.868 | 0.868 |
 | minilm fine-tuned | teacher | 0.841 | 0.858 | 0.864 | 0.872 | 0.869 |
@@ -99,6 +101,7 @@ Escalate a query when the student's *calibrated* confidence is below the thresho
 | minilm fine-tuned | teacher | 3% · 0.877 · 0.869 | 7% · 0.894 · 0.872 | 11% · 0.903 · 0.872 | 20% · 0.917 · 0.871 | 37% · 0.941 · 0.869 |
 | minilm fine-tuned | teacher | 4% · 0.869 · 0.859 | 13% · 0.895 · 0.868 | 19% · 0.910 · 0.872 | 32% · 0.934 · 0.871 | 62% · 0.956 · 0.868 |
 | minilm fine-tuned | gold | 2% · 0.937 · 0.930 | 6% · 0.955 · 0.932 | 9% · 0.965 · 0.932 | 15% · 0.975 · 0.929 | 29% · 0.988 · 0.909 |
+| minilm fine-tuned | teacher | 3% · 0.880 · 0.869 | 10% · 0.899 · 0.871 | 13% · 0.911 · 0.872 | 23% · 0.925 · 0.872 | 38% · 0.946 · 0.871 |
 | minilm fine-tuned | teacher | 5% · 0.865 · 0.854 | 12% · 0.888 · 0.867 | 17% · 0.901 · 0.871 | 26% · 0.921 · 0.874 | 47% · 0.946 · 0.869 |
 | minilm fine-tuned | teacher | 4% · 0.860 · 0.854 | 10% · 0.884 · 0.864 | 15% · 0.893 · 0.867 | 24% · 0.914 · 0.869 | 47% · 0.927 · 0.867 |
 | minilm fine-tuned | teacher | 4% · 0.865 · 0.855 | 10% · 0.885 · 0.864 | 15% · 0.898 · 0.870 | 25% · 0.916 · 0.871 | 57% · 0.945 · 0.867 |
@@ -156,9 +159,10 @@ Teacher at the provider's **paid** list price (openai/gpt-oss-120b on Groq (paid
 | tinybert_ft_teacher | AWS t3.small | 2.4 ms CPU | **0.01** |
 | minilm_frozen_aug_teacher | AWS t3.small | 12.4 ms CPU | **0.07** |
 | minilm_frozen_oe_teacher | AWS t3.small | 12.6 ms CPU | **0.07** |
-| minilm_ft_10k_teacher | AWS t3.small | 4.6 ms CPU | **0.03** |
+| minilm_ft_10k_teacher | AWS t3.small | 4.4 ms CPU | **0.03** |
 | minilm_ft_aug_teacher | AWS t3.small | 4.6 ms CPU | **0.03** |
 | minilm_ft_oe_teacher | AWS t3.small | 4.7 ms CPU | **0.03** |
 | minilm_ft_s1_teacher | AWS t3.small | 4.6 ms CPU | **0.03** |
 | minilm_ft_s2_teacher | AWS t3.small | 4.6 ms CPU | **0.03** |
 | tfidf_lr_aug_teacher | AWS t3.small | 2.3 ms CPU | **0.01** |
+| minilm_ft_oe_10k_teacher | AWS t3.small | 4.4 ms CPU | **0.03** |

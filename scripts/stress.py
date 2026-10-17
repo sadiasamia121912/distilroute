@@ -42,7 +42,8 @@ MODELS = [
     "minilm_frozen_oe_teacher",  # + outlier exposure: unsure on small talk (skipped if absent)
     "minilm_ft_teacher",  # the served model until 2026-10-17 (3,000 labels)
     "minilm_ft_teacher@64",  # ... with the 64-token limit it was served with until 2026-09-28
-    "minilm_ft_10k_teacher",  # the served model since 2026-10-17 (10,003 labels)
+    "minilm_ft_10k_teacher",  # 10,003 labels; served briefly on 2026-10-17 (model-v2)
+    "minilm_ft_oe_10k_teacher",  # ... + outlier exposure: the served model since 2026-10-17
     "minilm_ft_oe_teacher",  # the served config + outlier exposure (Colab; skipped if absent)
     "tinybert_ft_teacher",
     "distilbert_ft_teacher",
@@ -381,7 +382,7 @@ def also_doc(rows: list[dict]) -> list[str]:
             invented = np.mean([v["false_also"][t] for k, v in r["padded"].items() if k != "clean"])
             cells.append(f"{found:.0%} / {invented:.0%}")
         lines.append(f"| {r['model']} | " + " | ".join(cells) + " |")
-    served = next((r for r in rows if r["model"] == "minilm_ft_10k_teacher"), None)
+    served = next((r for r in rows if r["model"] == "minilm_ft_oe_10k_teacher"), None)
     if served:
         found = served["pairs"]["also"]["also"][ALSO_THRESHOLD]
         invented = np.mean(

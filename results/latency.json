@@ -81,9 +81,9 @@
     "kind": "onnx"
   },
   "minilm_ft_teacher": {
-    "p50_ms": 4.063150001456961,
-    "p95_ms": 8.262935000129792,
-    "mean_ms": 4.6201956002478255,
+    "p50_ms": 4.010849999758648,
+    "p95_ms": 8.145005000369563,
+    "mean_ms": 4.589182399853598,
     "n": 500,
     "host": "DESKTOP-88QILCP",
     "mode": "in-process",
@@ -162,9 +162,9 @@
     "kind": "minilm"
   },
   "minilm_ft_10k_teacher": {
-    "p50_ms": 4.165449998254189,
-    "p95_ms": 7.95521999862103,
-    "mean_ms": 4.6431764000008116,
+    "p50_ms": 3.9508999998361105,
+    "p95_ms": 7.5997849988198105,
+    "mean_ms": 4.437668199985637,
     "n": 500,
     "host": "DESKTOP-88QILCP",
     "mode": "in-process",
@@ -214,5 +214,14 @@
     "host": "DESKTOP-88QILCP",
     "mode": "in-process",
     "kind": "tfidf"
+  },
+  "minilm_ft_oe_10k_teacher": {
+    "p50_ms": 4.002350000519073,
+    "p95_ms": 7.878640001035817,
+    "mean_ms": 4.442810599946824,
+    "n": 500,
+    "host": "DESKTOP-88QILCP",
+    "mode": "in-process",
+    "kind": "onnx"
   }
 }

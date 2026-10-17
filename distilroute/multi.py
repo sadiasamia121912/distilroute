@@ -16,7 +16,8 @@ from __future__ import annotations
 import re
 
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
-ALSO_THRESHOLD = 0.95  # calibrated confidence a sentence needs; chosen in docs/stress.md
+ALSO_THRESHOLD = 0.9  # calibrated confidence a sentence needs; chosen in docs/stress.md
+# (0.95 until 2026-10-17, while the served model had no outlier exposure and was sure of small talk)
 
 
 def sentences(text: str) -> list[str]:

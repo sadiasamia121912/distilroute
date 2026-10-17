@@ -27,7 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import LABELS, MODELS, RESULTS, ROOT, load_labels, load_split  # noqa: E402
 
-SERVED = "minilm_ft_10k_teacher"  # model-v2, 2026-10-17
+SERVED = "minilm_ft_oe_10k_teacher"  # model-v3, 2026-10-17
 EXAMPLE = "I still have not received my new card"
 THRESHOLD = 0.8  # the cascade threshold of 1b.2 / 6.5
 MAX_LENGTH = 64
