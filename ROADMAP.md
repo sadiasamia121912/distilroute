@@ -353,11 +353,21 @@ run while `jobs.py` labels.
   vs CLINC150's own OOS set). Latency re-bench was polluted once (10.7 ms right after the long
   runs); re-run together: all three MiniLM fine-tunes 4.0 ms p50.
 
-**Next session, in order:** (1) republish the demo and case-study artifacts; (2) typo
-augmentation on 10,003 labels in Colab, on top of OE
-(`--augment typo1,typo3`; the aug model kept clean accuracy and cut the 3-typo loss by two
-thirds); (3) **user:** `hf auth login` → `build_hf_release.py --user X --publish`; 7.1 review;
-4.2 posts.
+- **Later that evening:** demo and case-study artifacts republished with model-v3 (`4a0376b`;
+  stale hand-written claims fixed; the demo model now ships as six ~5 MB parts named after the
+  model, because 30 MB publishes timed out on this line). Colab notebook rewritten for the next
+  session (`cfcd0e5`): `minilm_ft_aug_oe_teacher` (augment + OE, 10,003 labels) and
+  `minilm_ft_oe_s1_teacher` (seed 1 of model-v3). A second run at 22:31 used Colab's cached copy
+  of the *old* notebook (`Downloads\distilroute_runs (1).zip`, not unpacked): its 30 model and
+  prediction files are byte-identical to the 18:20 run, so fine-tuning on Colab is exactly
+  reproducible run to run.
+
+**Next session, in order:** (1) **user:** the Colab run, opened from
+`https://colab.research.google.com/github/sadiasamia121912/distilroute/blob/main/notebooks/finetune_colab.ipynb`
+(first cell must say "typo augmentation on the served model"); then unpack, robustness /
+stress / oos on `teacher10003/minilm_ft_aug_oe_teacher`, decide per RUNBOOK §3, and record the
+seed spread of model-v3; (2) **user:** `hf auth login` → `build_hf_release.py --user X
+--publish`; 7.1 review; 4.2 posts (share the two artifacts first).
 
 **2026-10-04 (HANDOFF — start here next session; laptop SSD replaced after this)**
 
