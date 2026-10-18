@@ -98,7 +98,10 @@ def ask(row: dict, classes: list[str], n: int, total: int) -> tuple[str | None, 
     for i, c in enumerate(options, 1):
         print(f"  {i}. {pretty(c)}")
     while True:
-        cmd = input("  > ").strip()
+        try:
+            cmd = input("  > ").strip().lstrip("﻿")  # PowerShell pipes prepend a BOM
+        except (EOFError, KeyboardInterrupt):  # Ctrl+C / closed input = q
+            return None
         if cmd == "":
             return row["teacher"], "accept"
         if cmd.lower() == "q":
@@ -285,6 +288,7 @@ def main() -> None:
     ap.add_argument("--report", action="store_true", help="score the review (reads gold)")
     ap.add_argument("--limit", type=int, default=200, help="rows to review, in ranking order")
     args = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # cp1252 can't print the rules
     report() if args.report else review(args.limit)
 
 

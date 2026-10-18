@@ -246,6 +246,47 @@
       }
     },
     {
+      "model": "minilm_ft_aug_oe_10k_teacher",
+      "kinds": {
+        "clean": {
+          "acc": 0.862012987012987,
+          "acc_changed": null,
+          "escalated": 0.11298701298701298,
+          "kept_acc": 0.9106881405563689
+        },
+        "typo1": {
+          "acc": 0.8470779220779221,
+          "acc_changed": 0.8470319634703196,
+          "escalated": 0.13993506493506494,
+          "kept_acc": 0.9060022650056625
+        },
+        "typo3": {
+          "acc": 0.8016233766233766,
+          "acc_changed": 0.8016233766233766,
+          "escalated": 0.21103896103896103,
+          "kept_acc": 0.8876543209876543
+        },
+        "chat": {
+          "acc": 0.8607142857142858,
+          "acc_changed": 0.8640906062624917,
+          "escalated": 0.13636363636363635,
+          "kept_acc": 0.9131578947368421
+        },
+        "slang": {
+          "acc": 0.8551948051948052,
+          "acc_changed": 0.8352414136386261,
+          "escalated": 0.1279220779220779,
+          "kept_acc": 0.9080416976917349
+        },
+        "wrap": {
+          "acc": 0.8626623376623377,
+          "acc_changed": 0.8626623376623377,
+          "escalated": 0.12597402597402596,
+          "kept_acc": 0.9101040118870728
+        }
+      }
+    },
+    {
       "model": "minilm_frozen_teacher",
       "kinds": {
         "clean": {
@@ -559,6 +600,10 @@
           "clean": 0.84,
           "noisy": 0.7533333333333333
         },
+        "minilm_ft_aug_oe_10k_teacher": {
+          "clean": 0.86,
+          "noisy": 0.8366666666666667
+        },
         "minilm_frozen_teacher": {
           "clean": 0.8133333333333334,
           "noisy": 0.7633333333333333
@@ -613,6 +658,10 @@
         "minilm_ft_oe_10k_teacher": {
           "clean": 0.84,
           "noisy": 0.5333333333333333
+        },
+        "minilm_ft_aug_oe_10k_teacher": {
+          "clean": 0.86,
+          "noisy": 0.7833333333333333
         },
         "minilm_frozen_teacher": {
           "clean": 0.8133333333333334,
@@ -669,6 +718,10 @@
           "clean": 0.84,
           "noisy": 0.84
         },
+        "minilm_ft_aug_oe_10k_teacher": {
+          "clean": 0.86,
+          "noisy": 0.8433333333333334
+        },
         "minilm_frozen_teacher": {
           "clean": 0.8133333333333334,
           "noisy": 0.8
@@ -724,6 +777,10 @@
           "clean": 0.84,
           "noisy": 0.8233333333333334
         },
+        "minilm_ft_aug_oe_10k_teacher": {
+          "clean": 0.86,
+          "noisy": 0.84
+        },
         "minilm_frozen_teacher": {
           "clean": 0.8133333333333334,
           "noisy": 0.8
@@ -778,6 +835,10 @@
         "minilm_ft_oe_10k_teacher": {
           "clean": 0.84,
           "noisy": 0.8433333333333334
+        },
+        "minilm_ft_aug_oe_10k_teacher": {
+          "clean": 0.86,
+          "noisy": 0.8533333333333334
         },
         "minilm_frozen_teacher": {
           "clean": 0.8133333333333334,

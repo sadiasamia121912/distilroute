@@ -44,6 +44,7 @@ MODELS = [
     "minilm_ft_teacher@64",  # ... with the 64-token limit it was served with until 2026-09-28
     "minilm_ft_10k_teacher",  # 10,003 labels; served briefly on 2026-10-17 (model-v2)
     "minilm_ft_oe_10k_teacher",  # ... + outlier exposure: the served model since 2026-10-17
+    "minilm_ft_aug_oe_10k_teacher",  # ... + typo1,typo3 copies (Colab 2026-10-18)
     "minilm_ft_oe_teacher",  # the served config + outlier exposure (Colab; skipped if absent)
     "tinybert_ft_teacher",
     "distilbert_ft_teacher",

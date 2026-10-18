@@ -1,0 +1,30 @@
+{
+  "model": "minilm fine-tuned",
+  "hf_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "params": 22713216,
+  "trained_on": "teacher",
+  "seed": 0,
+  "n_train": 26929,
+  "accuracy": 0.8649350649350649,
+  "macro_f1": 0.8617487365389217,
+  "fit_seconds": 109.63660097122192,
+  "device": "cuda",
+  "epochs": 4,
+  "lr": 0.0001,
+  "soft_alpha": null,
+  "augment": [
+    "typo1",
+    "typo3"
+  ],
+  "outlier_exposure": 2000,
+  "latency_host": "81dae28cf431",
+  "p50_ms": 22.87045799999987,
+  "p95_ms": 28.578678750000098,
+  "accuracy_int8": 0.8633116883116884,
+  "p50_ms_int8": 3.699434999987261,
+  "p95_ms_int8": 6.862512299969126,
+  "onnx_mb": 91.1,
+  "onnx_int8_mb": 23.1,
+  "temperature": 1.0099171369436133,
+  "n_calib": 1000
+}

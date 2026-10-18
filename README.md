@@ -113,8 +113,13 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    no extra LLM calls). On the fine-tuned MiniLM at 3,000 labels it cuts the three-typo loss
    from 30 to **10.5 pt** (one typo: 10 → 3) with clean accuracy unchanged (0.848 vs 0.847); on
    the frozen MiniLM from 29 to 16 pt; on TF-IDF from 12 to 9. It does not carry over to the
-   other kinds of noise, which barely hurt anyway. Not yet combined with the 10,003 labels of the
-   served model (next on the roadmap). [docs/robustness.md](docs/robustness.md)
+   other kinds of noise, which barely hurt anyway. Combined with the served recipe (10,003
+   labels + outlier exposure) it cuts three typos from 30 to **6 pt** (one typo: 8 → 1.5) at
+   0.862 clean, but it is **not served**: it grew surer of small talk, inventing an `also`
+   intent on 4 % of single-question long tickets (served: 2 %) and losing 3–5 pt on 120-word
+   tickets with sentence routing. It fails the swap rule fixed before the run (RUNBOOK §3), so
+   the trade-off is reported, not shipped. [docs/robustness.md](docs/robustness.md),
+   [docs/stress.md](docs/stress.md)
 5. **With no human labels the student does not beat its teacher; with 500 it does.** All
    10,003 LLM labels bring the fine-tuned student to 0.863 (fp32), a tie with the teacher's
    0.867 by test noise (−0.4 pt, −1.3 to +0.5) but not ahead of it. On 3,000 labels, soft
@@ -262,10 +267,11 @@ Labelling more data needs a free key (no card): copy `.env.example` to `.env`, s
   but no student was trained on its labels, so how the findings transfer to other LLMs is
   untested. The bootstrap intervals cover test sampling, not training randomness: three seeds of
   the 3,000-label fine-tune span **0.6 pt** (0.841–0.847; [docs/seeds.md](docs/seeds.md)), and
-  the served model is a single seed. Read differences under ~1 pt as ties.
+  the served model has a second seed within 0.2 pt int8 (0.859 / 0.860;
+  [docs/teacher10003/seeds.md](docs/teacher10003/seeds.md)). Read differences under ~1 pt as ties.
 - **Still open.** Most comparison rows use 3,000 labels; only the fine-tuned MiniLM was retrained
-  on all 10,003. The typo-augmented version of the served model is not trained yet, so the
-  served model still loses 30 pt on three-typo messages (finding 4).
+  on all 10,003. The served model still loses 30 pt on three-typo messages: its typo-augmented
+  version fixes that but is worse on small talk (finding 4), so typos stay a known weakness.
 
 ## Scope
 

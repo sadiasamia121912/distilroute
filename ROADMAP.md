@@ -292,7 +292,7 @@ run while `jobs.py` labels.
   Train students without ~10 of the 77 intents; score how many held-out queries are flagged
   (entropy, as in 6.2) against 10 % in-scope escalation. Then add the intents back with
   25 / 50 / 100 labels each: how many labels does a new intent need?
-- [ ] **7.3 One Colab session after 1.6 finishes**: _(2026-09-27: notebook ready — `notebooks/finetune_colab.ipynb` clones the public repo and runs `minilm_ft_aug_teacher`, seeds 1 and 2 of the served config, and the 10,003-label run (skipped until labelling is done), then downloads only the new outputs. `finetune.py` now names seeds ≠ 0 `<run>_s<N>` (seed 1 would have overwritten the published run) and records seed + augment; `scripts/seeds.py` reports the spread. The first two can run now; the user runs Colab.)_ fine-tuned MiniLM at N = 10,003 (1.6 step 3),
+- [x] **7.3 One Colab session after 1.6 finishes**: _(2026-10-18, done: `minilm_ft_aug_oe_10k_teacher` (typo aug + OE, 10,003 labels) int8 0.862 vs served 0.859, 3 typos −6.0 vs −30.4 pt, OOS 98 % both, but invented `also` 4 % vs 2 % at 0.9 and 120-word tickets with filter 0.79–0.81 vs 0.83–0.85 → fails RUNBOOK §3, **model-v3 stays served** (user's decision). Seed 1 of model-v3: int8 0.860 vs 0.859, `docs/teacher10003/seeds.md`.)_ _(2026-09-27: notebook ready — `notebooks/finetune_colab.ipynb` clones the public repo and runs `minilm_ft_aug_teacher`, seeds 1 and 2 of the served config, and the 10,003-label run (skipped until labelling is done), then downloads only the new outputs. `finetune.py` now names seeds ≠ 0 `<run>_s<N>` (seed 1 would have overwritten the published run) and records seed + augment; `scripts/seeds.py` reports the spread. The first two can run now; the user runs Colab.)_ fine-tuned MiniLM at N = 10,003 (1.6 step 3),
   `minilm_ft_aug_teacher` (6.6), and 3 seeds of the served config (seed noise, 6.10 caveat).
 - [ ] **7.4 Measured cost and latency** _(2026-09-27, load test done: `scripts/load_test.py` + `load-test.yml` → `docs/load_test.md`. Service changes along the way: onnxruntime's pool sized to the container's CPU quota (removed a 53–79 ms p95 tail at one client), then **one single-thread inference per CPU** as the default (`/health` reports cpus / concurrency / threads). Final run (Intel Xeon 8573C runner), same-runner comparison: 2 CPUs **497 req/s vs 312** for one multi-thread inference at a time, 8-client p95 33 vs 44 ms; 1 CPU 270 req/s; **$0.011–0.012 / 1M** (estimate was $0.020; teacher $216). Lesson: runners landed on four CPU types across five runs (model time 1.0–3.2 ms), so setups are compared only within one run; the earlier "quota not detected" guess was wrong — `/health` shows it detected. Still to do: the HF Space.)_: concurrent load test of `/route` (in GitHub Actions on
   Linux, avoiding Windows loopback); cost per 1M from measured throughput, not CPU-seconds.
@@ -317,6 +317,24 @@ run while `jobs.py` labels.
 - Every number in `docs/` comes from a script in `scripts/` that can be re-run.
 
 ## Session log
+
+**2026-10-18 (HANDOFF — start here next session)**
+
+- **Colab run (aug + OE, seed 1 of model-v3) unpacked and judged.** `minilm_ft_aug_oe_10k_teacher`
+  (copy of `teacher10003/minilm_ft_aug_oe_teacher` under its own name, like v3) through the
+  serving code: clean **0.862** (v3 0.859), 1 typo −1.5 (v3 −8.0), 3 typos **−6.0** (v3 −30.4),
+  OOS 98 % caught at 10 % (same), but invented `also` at 0.9 **4 %** (v3 2 %; 46 % at 0.8) and
+  120-word tickets with sentence routing + filter 0.797/0.793/0.810 vs 0.847/0.830/0.830.
+  Fails RUNBOOK §3 on stress → **model-v3 stays served**; README finding 4 and Limitations
+  record the trade-off. Seed 1 of v3: int8 0.860 vs 0.859 (`docs/teacher10003/seeds.md`).
+  robustness / stress / oos regenerated with the new row.
+- **7.1 review started by the user** (`data/labels/review.jsonl`, not committed until done).
+  `review.py`: Ctrl+C / EOF now quit like `q`; stdout forced to UTF-8 (cp1252 crashed on pipes).
+
+**Next session, in order:** (1) **user:** finish the 7.1 review (200 rows, resumable), then
+`review.py --report`; (2) **user:** `hf auth login` → `build_hf_release.py --user X --publish`;
+(3) 4.2 posts (share the two artifacts first). Optional experiment, labelled as such: aug+OE with
+`ALSO_THRESHOLD` 0.95 (invented 1 %, found 41 % vs v3's 50 % at 0.9).
 
 **2026-10-17 (HANDOFF — start here next session; new machine)**
 

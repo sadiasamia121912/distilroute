@@ -16,8 +16,10 @@ Yes — the signal is already there, for free, in every student. **AUROC** of ea
 | minilm_frozen_oe_teacher | 0.986 | 0.975 | **0.992** | **97%** | **98%** | **99%** |
 | minilm_frozen_teacher | 0.968 | 0.953 | **0.982** | **93%** | **96%** | **98%** |
 | minilm_ft_10k_teacher | 0.950 | 0.949 | **0.962** | **86%** | **91%** | **95%** |
+| minilm_ft_aug_oe_10k_teacher | 0.988 | 0.989 | **0.989** | **97%** | **98%** | **98%** |
 | minilm_ft_aug_teacher | 0.929 | 0.928 | **0.944** | **74%** | **86%** | **92%** |
 | minilm_ft_gold | 0.956 | 0.954 | **0.965** | **88%** | **91%** | **95%** |
+| minilm_ft_oe_10k_teacher | 0.987 | 0.986 | **0.987** | **97%** | **98%** | **98%** |
 | minilm_ft_oe_teacher | 0.986 | 0.986 | **0.987** | **96%** | **98%** | **98%** |
 | minilm_ft_s1_teacher | 0.944 | 0.946 | **0.954** | **83%** | **88%** | **94%** |
 | minilm_ft_s2_teacher | 0.946 | 0.949 | **0.958** | **83%** | **88%** | **95%** |
@@ -29,7 +31,6 @@ Yes — the signal is already there, for free, in every student. **AUROC** of ea
 | tfidf_lr_teacher | 0.961 | 0.948 | **0.973** | **89%** | **94%** | **96%** |
 | tinybert_ft_gold | 0.908 | 0.907 | **0.925** | **66%** | **80%** | **90%** |
 | tinybert_ft_teacher | 0.883 | 0.891 | **0.896** | **44%** | **67%** | **85%** |
-| minilm_ft_oe_10k_teacher | 0.987 | 0.986 | **0.987** | **97%** | **98%** | **98%** |
 
 **Budget** = the share of *in-scope* queries the service is willing to escalate; the threshold is that quantile of in-scope uncertainty, and the cell says how much out-of-scope traffic it catches (scored by entropy). Escalating 10 % of real tickets is a policy an operator would accept; whatever share of out-of-scope messages that catches comes free with it.
 
@@ -49,8 +50,10 @@ Out-of-scope queries that stay below the 10 %-budget threshold, by the intent th
 | minilm_frozen_oe_teacher | `Refund_not_showing_up` (3), `age_limit` (2), `lost_or_stolen_phone` (2) |
 | minilm_frozen_teacher | `lost_or_stolen_phone` (8), `age_limit` (7), `exchange_rate` (5) |
 | minilm_ft_10k_teacher | `age_limit` (21), `lost_or_stolen_phone` (18), `exchange_rate` (10) |
+| minilm_ft_aug_oe_10k_teacher | `exchange_rate` (7), `edit_personal_details` (3), `Refund_not_showing_up` (3) |
 | minilm_ft_aug_teacher | `age_limit` (31), `lost_or_stolen_phone` (21), `exchange_rate` (12) |
 | minilm_ft_gold | `lost_or_stolen_phone` (32), `age_limit` (19), `country_support` (9) |
+| minilm_ft_oe_10k_teacher | `exchange_rate` (6), `edit_personal_details` (4), `terminate_account` (3) |
 | minilm_ft_oe_teacher | `exchange_rate` (5), `edit_personal_details` (4), `lost_or_stolen_phone` (3) |
 | minilm_ft_s1_teacher | `lost_or_stolen_phone` (24), `age_limit` (21), `card_delivery_estimate` (21) |
 | minilm_ft_s2_teacher | `lost_or_stolen_phone` (31), `age_limit` (22), `card_delivery_estimate` (15) |
@@ -62,6 +65,5 @@ Out-of-scope queries that stay below the 10 %-budget threshold, by the intent th
 | tfidf_lr_teacher | `lost_or_stolen_phone` (25), `edit_personal_details` (5), `card_delivery_estimate` (5) |
 | tinybert_ft_gold | `country_support` (22), `edit_personal_details` (21), `lost_or_stolen_phone` (17) |
 | tinybert_ft_teacher | `country_support` (25), `supported_cards_and_currencies` (24), `age_limit` (20) |
-| minilm_ft_oe_10k_teacher | `exchange_rate` (6), `edit_personal_details` (4), `terminate_account` (3) |
 
 **Caveat.** CLINC's out-of-scope queries are *far* out of scope — cooking, sport, trivia. A message about a mortgage or an insurance claim is much closer to banking and would be harder; no such near-out-of-scope set exists for Banking77, so these numbers are an upper bound on how easy the problem is.
