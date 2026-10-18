@@ -7,440 +7,440 @@
   },
   "runs": [
     {
-      "model": "minilm_ft_teacher",
+      "model": "minilm_ft_oe_10k_teacher",
       "cpus": 1.0,
       "mode": "default",
       "health": {
         "ok": true,
         "loaded": [
-          "minilm_ft_teacher"
+          "minilm_ft_oe_10k_teacher"
         ],
         "cpus": 1,
         "concurrency": 1,
         "threads_per_inference": 1
       },
-      "run_id": "36330067782",
+      "run_id": "39100700078",
       "host": {
         "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
         "cpu_count": 4,
-        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
-        "runner": "GitHub Actions 1000000302"
+        "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+        "runner": "GitHub Actions 1000000343"
       },
       "seconds_per_level": 20,
       "levels": [
         {
           "clients": 1,
           "seconds": 20.0,
-          "ok": 5399,
+          "ok": 11073,
           "errors": 0,
           "error_examples": [],
-          "rps": 269.9,
-          "p50_ms": 3.4938259999961474,
-          "p95_ms": 5.506140000008486,
-          "p99_ms": 7.161224000000743,
-          "server_mean_ms": 2.52
+          "rps": 553.6,
+          "p50_ms": 1.4364879999959612,
+          "p95_ms": 4.261679999999046,
+          "p99_ms": 6.115053999998565,
+          "server_mean_ms": 0.96
         },
         {
           "clients": 2,
           "seconds": 20.01,
-          "ok": 4482,
+          "ok": 10011,
           "errors": 0,
           "error_examples": [],
-          "rps": 224.0,
-          "p50_ms": 6.33850400001279,
-          "p95_ms": 32.10440899999867,
-          "p99_ms": 35.28485399999681,
-          "server_mean_ms": 4.33
+          "rps": 500.4,
+          "p50_ms": 2.1705739999902107,
+          "p95_ms": 8.28878500000485,
+          "p99_ms": 35.303701000003684,
+          "server_mean_ms": 1.38
         },
         {
           "clients": 4,
-          "seconds": 20.01,
-          "ok": 4743,
+          "seconds": 20.04,
+          "ok": 10011,
           "errors": 0,
           "error_examples": [],
-          "rps": 237.0,
-          "p50_ms": 12.336978999996973,
-          "p95_ms": 40.25593000000072,
-          "p99_ms": 44.525032999999326,
-          "server_mean_ms": 4.07
+          "rps": 499.5,
+          "p50_ms": 4.758465999998407,
+          "p95_ms": 34.39085200000136,
+          "p99_ms": 40.347280999995405,
+          "server_mean_ms": 1.42
         },
         {
           "clients": 8,
-          "seconds": 20.03,
-          "ok": 4960,
+          "seconds": 20.02,
+          "ok": 10020,
           "errors": 0,
           "error_examples": [],
-          "rps": 247.7,
-          "p50_ms": 25.808362999981682,
-          "p95_ms": 55.150292999996964,
-          "p99_ms": 58.95818299998723,
-          "server_mean_ms": 3.86
+          "rps": 500.6,
+          "p50_ms": 11.063534000001596,
+          "p95_ms": 43.474773999989225,
+          "p99_ms": 49.11682699999176,
+          "server_mean_ms": 1.41
         },
         {
           "clients": 16,
-          "seconds": 20.09,
-          "ok": 4423,
+          "seconds": 20.02,
+          "ok": 10000,
           "errors": 0,
           "error_examples": [],
-          "rps": 220.2,
-          "p50_ms": 75.89249400001563,
-          "p95_ms": 91.30499500000155,
-          "p99_ms": 127.19566000001237,
-          "server_mean_ms": 4.39
+          "rps": 499.6,
+          "p50_ms": 25.072509000011678,
+          "p95_ms": 61.044863000006444,
+          "p99_ms": 77.35427000000072,
+          "server_mean_ms": 1.42
         },
         {
           "clients": 32,
-          "seconds": 20.16,
-          "ok": 4859,
+          "seconds": 20.07,
+          "ok": 9854,
           "errors": 0,
           "error_examples": [],
-          "rps": 241.0,
-          "p50_ms": 123.95894799999496,
-          "p95_ms": 179.86913999999388,
-          "p99_ms": 247.8599370000154,
-          "server_mean_ms": 3.96
+          "rps": 491.1,
+          "p50_ms": 68.54200500001184,
+          "p95_ms": 96.29716300000268,
+          "p99_ms": 140.13475099997663,
+          "server_mean_ms": 1.49
         }
       ],
       "sustained": {
         "clients": 1,
         "seconds": 20.0,
-        "ok": 5399,
+        "ok": 11073,
         "errors": 0,
         "error_examples": [],
-        "rps": 269.9,
-        "p50_ms": 3.4938259999961474,
-        "p95_ms": 5.506140000008486,
-        "p99_ms": 7.161224000000743,
-        "server_mean_ms": 2.52
+        "rps": 553.6,
+        "p50_ms": 1.4364879999959612,
+        "p95_ms": 4.261679999999046,
+        "p99_ms": 6.115053999998565,
+        "server_mean_ms": 0.96
       },
-      "usd_per_1m": 0.011
+      "usd_per_1m": 0.005
     },
     {
-      "model": "minilm_ft_teacher",
+      "model": "minilm_ft_oe_10k_teacher",
       "cpus": 2.0,
       "mode": "default",
       "health": {
         "ok": true,
         "loaded": [
-          "minilm_ft_teacher"
+          "minilm_ft_oe_10k_teacher"
         ],
         "cpus": 2,
         "concurrency": 2,
         "threads_per_inference": 1
       },
-      "run_id": "36330067782",
+      "run_id": "39100700078",
       "host": {
         "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
         "cpu_count": 4,
-        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
-        "runner": "GitHub Actions 1000000302"
+        "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+        "runner": "GitHub Actions 1000000343"
       },
       "seconds_per_level": 20,
       "levels": [
         {
           "clients": 1,
           "seconds": 20.0,
-          "ok": 5699,
+          "ok": 11181,
           "errors": 0,
           "error_examples": [],
-          "rps": 284.9,
-          "p50_ms": 3.284830000012562,
-          "p95_ms": 5.074934999981906,
-          "p99_ms": 6.658438000016531,
-          "server_mean_ms": 2.36
+          "rps": 559.0,
+          "p50_ms": 1.4272819999803232,
+          "p95_ms": 4.229505000012068,
+          "p99_ms": 6.00221999999917,
+          "server_mean_ms": 0.95
         },
         {
           "clients": 2,
           "seconds": 20.0,
-          "ok": 8753,
+          "ok": 17797,
           "errors": 0,
           "error_examples": [],
-          "rps": 437.6,
-          "p50_ms": 4.270251000008329,
-          "p95_ms": 6.595216999983222,
-          "p99_ms": 8.394473000009839,
-          "server_mean_ms": 2.9
+          "rps": 889.8,
+          "p50_ms": 1.7825369999968643,
+          "p95_ms": 5.112318999977106,
+          "p99_ms": 7.269331000003376,
+          "server_mean_ms": 1.11
         },
         {
           "clients": 4,
           "seconds": 20.0,
-          "ok": 9951,
+          "ok": 18417,
           "errors": 0,
           "error_examples": [],
-          "rps": 497.4,
-          "p50_ms": 6.817884000014374,
-          "p95_ms": 18.95728399995278,
-          "p99_ms": 23.707829000017,
-          "server_mean_ms": 3.65
+          "rps": 920.8,
+          "p50_ms": 3.4515840000040043,
+          "p95_ms": 9.590499000012187,
+          "p99_ms": 15.623414000003777,
+          "server_mean_ms": 1.42
         },
         {
           "clients": 8,
-          "seconds": 20.02,
-          "ok": 9030,
+          "seconds": 20.01,
+          "ok": 18282,
           "errors": 0,
           "error_examples": [],
-          "rps": 451.0,
-          "p50_ms": 15.689414999997098,
-          "p95_ms": 32.79593499996736,
-          "p99_ms": 40.22819400000799,
-          "server_mean_ms": 4.14
+          "rps": 913.4,
+          "p50_ms": 7.27176899999904,
+          "p95_ms": 20.414036999994778,
+          "p99_ms": 26.680427000002283,
+          "server_mean_ms": 1.55
         },
         {
           "clients": 16,
           "seconds": 20.02,
-          "ok": 9291,
+          "ok": 18147,
           "errors": 0,
           "error_examples": [],
-          "rps": 464.0,
-          "p50_ms": 31.636882999976024,
-          "p95_ms": 63.00712800003794,
-          "p99_ms": 80.7441409999683,
-          "server_mean_ms": 4.04
+          "rps": 906.6,
+          "p50_ms": 15.532086000007439,
+          "p95_ms": 35.48810899997079,
+          "p99_ms": 49.03291200002968,
+          "server_mean_ms": 1.59
         },
         {
           "clients": 32,
-          "seconds": 20.05,
-          "ok": 9238,
+          "seconds": 20.03,
+          "ok": 17790,
           "errors": 0,
           "error_examples": [],
-          "rps": 460.7,
-          "p50_ms": 69.65220699999009,
-          "p95_ms": 127.24442400002545,
-          "p99_ms": 170.14003700001012,
-          "server_mean_ms": 4.05
+          "rps": 888.4,
+          "p50_ms": 33.964487999980975,
+          "p95_ms": 72.8412800000342,
+          "p99_ms": 97.41954500003658,
+          "server_mean_ms": 1.61
         }
       ],
       "sustained": {
         "clients": 4,
         "seconds": 20.0,
-        "ok": 9951,
+        "ok": 18417,
         "errors": 0,
         "error_examples": [],
-        "rps": 497.4,
-        "p50_ms": 6.817884000014374,
-        "p95_ms": 18.95728399995278,
-        "p99_ms": 23.707829000017,
-        "server_mean_ms": 3.65
+        "rps": 920.8,
+        "p50_ms": 3.4515840000040043,
+        "p95_ms": 9.590499000012187,
+        "p99_ms": 15.623414000003777,
+        "server_mean_ms": 1.42
       },
-      "usd_per_1m": 0.012
+      "usd_per_1m": 0.006
     },
     {
-      "model": "minilm_ft_teacher",
+      "model": "minilm_ft_oe_10k_teacher",
       "cpus": 1.0,
       "mode": "serial",
       "health": {
         "ok": true,
         "loaded": [
-          "minilm_ft_teacher"
+          "minilm_ft_oe_10k_teacher"
         ],
         "cpus": 1,
         "concurrency": 1,
         "threads_per_inference": 1
       },
-      "run_id": "36330067782",
+      "run_id": "39100700078",
       "host": {
         "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
         "cpu_count": 4,
-        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
-        "runner": "GitHub Actions 1000000302"
+        "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+        "runner": "GitHub Actions 1000000343"
       },
       "seconds_per_level": 20,
       "levels": [
         {
           "clients": 1,
           "seconds": 20.0,
-          "ok": 5290,
+          "ok": 10976,
           "errors": 0,
           "error_examples": [],
-          "rps": 264.5,
-          "p50_ms": 3.558227999974406,
-          "p95_ms": 5.447883999977421,
-          "p99_ms": 7.21488300001738,
-          "server_mean_ms": 2.57
+          "rps": 548.7,
+          "p50_ms": 1.4609020000193595,
+          "p95_ms": 4.29501500002516,
+          "p99_ms": 6.149741000001541,
+          "server_mean_ms": 0.97
         },
         {
           "clients": 2,
           "seconds": 20.0,
-          "ok": 4789,
+          "ok": 10036,
           "errors": 0,
           "error_examples": [],
-          "rps": 239.4,
-          "p50_ms": 5.9492199999908735,
-          "p95_ms": 31.84347999996362,
-          "p99_ms": 35.43597800000953,
-          "server_mean_ms": 4.07
+          "rps": 501.8,
+          "p50_ms": 2.1654050000279312,
+          "p95_ms": 8.327034999979332,
+          "p99_ms": 34.987820000026204,
+          "server_mean_ms": 1.39
         },
         {
           "clients": 4,
           "seconds": 20.01,
-          "ok": 4548,
+          "ok": 10013,
           "errors": 0,
           "error_examples": [],
-          "rps": 227.3,
-          "p50_ms": 13.177171999984694,
-          "p95_ms": 40.96723199995722,
-          "p99_ms": 47.21286500000588,
-          "server_mean_ms": 4.24
+          "rps": 500.4,
+          "p50_ms": 4.781659000002492,
+          "p95_ms": 33.326140000042415,
+          "p99_ms": 40.493176000040876,
+          "server_mean_ms": 1.42
         },
         {
           "clients": 8,
-          "seconds": 20.02,
-          "ok": 4716,
+          "seconds": 20.01,
+          "ok": 10122,
           "errors": 0,
           "error_examples": [],
-          "rps": 235.5,
-          "p50_ms": 27.17610299998796,
-          "p95_ms": 55.64798899996504,
-          "p99_ms": 61.264986000026056,
-          "server_mean_ms": 4.06
+          "rps": 505.8,
+          "p50_ms": 10.823488000028192,
+          "p95_ms": 43.038795000029495,
+          "p99_ms": 49.52055600000449,
+          "server_mean_ms": 1.43
         },
         {
           "clients": 16,
-          "seconds": 20.07,
-          "ok": 4548,
+          "seconds": 20.04,
+          "ok": 10058,
           "errors": 0,
           "error_examples": [],
-          "rps": 226.6,
-          "p50_ms": 73.7599189999969,
-          "p95_ms": 90.8485219999875,
-          "p99_ms": 128.65968800002747,
-          "server_mean_ms": 4.23
+          "rps": 501.8,
+          "p50_ms": 24.922594999964076,
+          "p95_ms": 60.52281799998127,
+          "p99_ms": 74.53481900000725,
+          "server_mean_ms": 1.44
         },
         {
           "clients": 32,
-          "seconds": 20.13,
-          "ok": 4643,
+          "seconds": 20.03,
+          "ok": 9990,
           "errors": 0,
           "error_examples": [],
-          "rps": 230.6,
-          "p50_ms": 132.79239799999232,
-          "p95_ms": 177.23913599996877,
-          "p99_ms": 300.7033540000066,
-          "server_mean_ms": 4.18
+          "rps": 498.7,
+          "p50_ms": 67.48443999998699,
+          "p95_ms": 95.87597799998093,
+          "p99_ms": 122.92045600003121,
+          "server_mean_ms": 1.44
         }
       ],
       "sustained": {
         "clients": 1,
         "seconds": 20.0,
-        "ok": 5290,
+        "ok": 10976,
         "errors": 0,
         "error_examples": [],
-        "rps": 264.5,
-        "p50_ms": 3.558227999974406,
-        "p95_ms": 5.447883999977421,
-        "p99_ms": 7.21488300001738,
-        "server_mean_ms": 2.57
+        "rps": 548.7,
+        "p50_ms": 1.4609020000193595,
+        "p95_ms": 4.29501500002516,
+        "p99_ms": 6.149741000001541,
+        "server_mean_ms": 0.97
       },
-      "usd_per_1m": 0.011
+      "usd_per_1m": 0.005
     },
     {
-      "model": "minilm_ft_teacher",
+      "model": "minilm_ft_oe_10k_teacher",
       "cpus": 2.0,
       "mode": "serial",
       "health": {
         "ok": true,
         "loaded": [
-          "minilm_ft_teacher"
+          "minilm_ft_oe_10k_teacher"
         ],
         "cpus": 2,
         "concurrency": 1,
         "threads_per_inference": 2
       },
-      "run_id": "36330067782",
+      "run_id": "39100700078",
       "host": {
         "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
         "cpu_count": 4,
-        "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
-        "runner": "GitHub Actions 1000000302"
+        "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+        "runner": "GitHub Actions 1000000343"
       },
       "seconds_per_level": 20,
       "levels": [
         {
           "clients": 1,
           "seconds": 20.0,
-          "ok": 6027,
+          "ok": 12076,
           "errors": 0,
           "error_examples": [],
-          "rps": 301.3,
-          "p50_ms": 3.1391389999839703,
-          "p95_ms": 4.449387999954979,
-          "p99_ms": 5.5670410000061565,
-          "server_mean_ms": 1.99
+          "rps": 603.8,
+          "p50_ms": 1.3607510000497314,
+          "p95_ms": 3.5000209999793697,
+          "p99_ms": 4.736395000008997,
+          "server_mean_ms": 0.77
         },
         {
           "clients": 2,
           "seconds": 20.0,
-          "ok": 6237,
+          "ok": 12812,
           "errors": 0,
           "error_examples": [],
-          "rps": 311.8,
-          "p50_ms": 5.115638999996008,
-          "p95_ms": 21.314142999983687,
-          "p99_ms": 25.066309999999703,
-          "server_mean_ms": 3.04
+          "rps": 640.6,
+          "p50_ms": 2.09028199998329,
+          "p95_ms": 6.303212999966945,
+          "p99_ms": 19.55585199999632,
+          "server_mean_ms": 1.1
         },
         {
           "clients": 4,
-          "seconds": 20.01,
-          "ok": 6080,
+          "seconds": 20.0,
+          "ok": 12367,
           "errors": 0,
           "error_examples": [],
-          "rps": 303.9,
-          "p50_ms": 10.742729000014606,
-          "p95_ms": 29.32473199996366,
-          "p99_ms": 33.89382699998578,
-          "server_mean_ms": 3.14
+          "rps": 618.2,
+          "p50_ms": 4.8671280000007755,
+          "p95_ms": 20.702045000007274,
+          "p99_ms": 25.746736000030523,
+          "server_mean_ms": 1.19
         },
         {
           "clients": 8,
-          "seconds": 20.02,
-          "ok": 5868,
+          "seconds": 20.01,
+          "ok": 12387,
           "errors": 0,
           "error_examples": [],
-          "rps": 293.1,
-          "p50_ms": 23.58198199999606,
-          "p95_ms": 44.24309000000903,
-          "p99_ms": 57.6450720000139,
-          "server_mean_ms": 3.24
+          "rps": 619.1,
+          "p50_ms": 10.492988999999397,
+          "p95_ms": 29.718200999980127,
+          "p99_ms": 35.7987650000382,
+          "server_mean_ms": 1.19
         },
         {
           "clients": 16,
-          "seconds": 20.06,
-          "ok": 5699,
+          "seconds": 20.02,
+          "ok": 12339,
           "errors": 0,
           "error_examples": [],
-          "rps": 284.2,
-          "p50_ms": 57.90882500002681,
-          "p95_ms": 73.63757600001009,
-          "p99_ms": 105.20183199992061,
-          "server_mean_ms": 3.35
+          "rps": 616.5,
+          "p50_ms": 22.59518500000013,
+          "p95_ms": 48.53659599996263,
+          "p99_ms": 65.93759400004728,
+          "server_mean_ms": 1.19
         },
         {
           "clients": 32,
-          "seconds": 20.1,
-          "ok": 5848,
+          "seconds": 20.05,
+          "ok": 12261,
           "errors": 0,
           "error_examples": [],
-          "rps": 291.0,
-          "p50_ms": 106.90482199993312,
-          "p95_ms": 141.51104500001566,
-          "p99_ms": 212.66774500008978,
-          "server_mean_ms": 3.26
+          "rps": 611.5,
+          "p50_ms": 52.588694000064606,
+          "p95_ms": 91.57266599993363,
+          "p99_ms": 120.84825499994167,
+          "server_mean_ms": 1.22
         }
       ],
       "sustained": {
         "clients": 2,
         "seconds": 20.0,
-        "ok": 6237,
+        "ok": 12812,
         "errors": 0,
         "error_examples": [],
-        "rps": 311.8,
-        "p50_ms": 5.115638999996008,
-        "p95_ms": 21.314142999983687,
-        "p99_ms": 25.066309999999703,
-        "server_mean_ms": 3.04
+        "rps": 640.6,
+        "p50_ms": 2.09028199998329,
+        "p95_ms": 6.303212999966945,
+        "p99_ms": 19.55585199999632,
+        "server_mean_ms": 1.1
       },
-      "usd_per_1m": 0.019
+      "usd_per_1m": 0.009
     }
   ]
 }

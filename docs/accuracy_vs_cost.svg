@@ -1,0 +1,52 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 500' width='900' height='500' font-family='ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif' role='img' aria-labelledby='t d'>
+<title id='t'>Accuracy against cost for every system</title>
+<desc id='d'>Accuracy on 3,080 Banking77 test queries against dollars per million requests, log scale. TF-IDF + LR: 0.812 at $0.01; TinyBERT: 0.796 at $0.01; MiniLM, fine-tuned, 3k labels: 0.847 at $0.03; MiniLM, 10k labels (served): 0.859 at $0.03; MiniLM, frozen: 0.848 at $0.08; DistilBERT: 0.839 at $0.08; MiniLM → LLM below 0.8: 0.872 at $27.40; TF-IDF → MiniLM → LLM, cheapest match: 0.863 at $5.26; LLM alone: 0.867 at $216.15.</desc>
+<rect width='900' height='500' fill='#fcfcfb'/>
+<text x='70' y='34' font-size='20' font-weight='600' fill='#1f1f1e'>Accuracy against cost for every system</text>
+<circle cx='75' cy='59' r='5' fill='#2a78d6'/>
+<text x='85' y='64' font-size='13' fill='#52514e'>Students alone</text>
+<circle cx='205.8' cy='59' r='5' fill='#1baf7a'/>
+<text x='215.8' y='64' font-size='13' fill='#52514e'>Cascades (student, then LLM)</text>
+<circle cx='437.4' cy='59' r='5' fill='#eb6834'/>
+<text x='447.4' y='64' font-size='13' fill='#52514e'>LLM alone</text>
+<line x1='70' x2='870' y1='430.0' y2='430.0' stroke='#e6e5e0' stroke-width='1'/>
+<text x='60' y='434.0' font-size='12' fill='#8a8984' text-anchor='end'>0.78</text>
+<line x1='70' x2='870' y1='363.2' y2='363.2' stroke='#e6e5e0' stroke-width='1'/>
+<text x='60' y='367.2' font-size='12' fill='#8a8984' text-anchor='end'>0.80</text>
+<line x1='70' x2='870' y1='296.4' y2='296.4' stroke='#e6e5e0' stroke-width='1'/>
+<text x='60' y='300.4' font-size='12' fill='#8a8984' text-anchor='end'>0.82</text>
+<line x1='70' x2='870' y1='229.6' y2='229.6' stroke='#e6e5e0' stroke-width='1'/>
+<text x='60' y='233.6' font-size='12' fill='#8a8984' text-anchor='end'>0.84</text>
+<line x1='70' x2='870' y1='162.8' y2='162.8' stroke='#e6e5e0' stroke-width='1'/>
+<text x='60' y='166.8' font-size='12' fill='#8a8984' text-anchor='end'>0.86</text>
+<line x1='70' x2='870' y1='96.0' y2='96.0' stroke='#e6e5e0' stroke-width='1'/>
+<text x='60' y='100.0' font-size='12' fill='#8a8984' text-anchor='end'>0.88</text>
+<text x='70.0' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$0.001</text>
+<text x='203.3' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$0.01</text>
+<text x='336.7' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$0.1</text>
+<text x='470.0' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$1</text>
+<text x='603.3' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$10</text>
+<text x='736.7' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$100</text>
+<text x='870.0' y='452' font-size='12' fill='#8a8984' text-anchor='middle'>$1000</text>
+<text x='870' y='476' font-size='12' fill='#8a8984' text-anchor='end'>$ per 1M requests (log scale)</text>
+<text x='60' y='82' font-size='12' fill='#8a8984' text-anchor='end'>accuracy</text>
+<g><title>TF-IDF + LR: accuracy 0.812, $0.01 per 1M</title><circle cx='214.7' cy='323.1' r='6' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='202.7' y='328.1' font-size='13' fill='#1f1f1e' text-anchor='end'>TF-IDF + LR</text>
+<g><title>TinyBERT: accuracy 0.796, $0.01 per 1M</title><circle cx='223.3' cy='375.1' r='6' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='211.3' y='380.1' font-size='13' fill='#1f1f1e' text-anchor='end'>TinyBERT</text>
+<g><title>MiniLM, fine-tuned, 3k labels: accuracy 0.847, $0.03 per 1M</title><circle cx='259.8' cy='207.0' r='6' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='247.8' y='212.0' font-size='13' fill='#1f1f1e' text-anchor='end'>MiniLM, fine-tuned, 3k labels</text>
+<g><title>MiniLM, 10k labels (served): accuracy 0.859, $0.03 per 1M</title><circle cx='257.9' cy='164.8' r='6' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='245.9' y='154.8' font-size='13' fill='#1f1f1e' text-anchor='end'>MiniLM, 10k labels (served)</text>
+<g><title>MiniLM, frozen: accuracy 0.848, $0.08 per 1M</title><circle cx='320.3' cy='201.6' r='6' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='332.3' y='195.6' font-size='13' fill='#1f1f1e' text-anchor='start'>MiniLM, frozen</text>
+<g><title>DistilBERT: accuracy 0.839, $0.08 per 1M</title><circle cx='321.9' cy='233.1' r='6' fill='#2a78d6' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='333.9' y='247.1' font-size='13' fill='#1f1f1e' text-anchor='start'>DistilBERT</text>
+<g><title>MiniLM → LLM below 0.8: accuracy 0.872, $27.40 per 1M</title><circle cx='661.7' cy='121.4' r='6' fill='#1baf7a' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='661.7' y='107.4' font-size='13' fill='#1f1f1e' text-anchor='end'>MiniLM → LLM below 0.8</text>
+<g><title>TF-IDF → MiniLM → LLM, cheapest match: accuracy 0.863, $5.26 per 1M</title><circle cx='566.1' cy='152.4' r='6' fill='#1baf7a' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='554.1' y='157.4' font-size='13' fill='#1f1f1e' text-anchor='end'>TF-IDF → MiniLM → LLM, cheapest match</text>
+<g><title>LLM alone: accuracy 0.867, $216.15 per 1M</title><circle cx='781.3' cy='138.7' r='6' fill='#eb6834' stroke='#fcfcfb' stroke-width='2'/></g>
+<text x='781.3' y='162.7' font-size='13' fill='#1f1f1e' text-anchor='middle'>LLM alone</text>
+<text x='70' y='492' font-size='11' fill='#8a8984'>Banking77, 3,080 held-out queries vs human labels. Students never see a human label (3,000 LLM labels; served: 10,003, int8). scripts/readme_chart.py</text>
+</svg>

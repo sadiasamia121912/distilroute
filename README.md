@@ -15,6 +15,19 @@ results on questions teams actually have: how much accuracy distillation costs, 
 call the LLM, whether the student knows a message is not its job, and which tickets are worth
 paying the LLM to label.
 
+![Accuracy against cost for every system: the distilled MiniLM sits near the LLM's accuracy at thousands of times less cost; cascades match or beat the LLM for a fraction of it](docs/accuracy_vs_cost.svg)
+
+**Key results** (details and intervals under [What was found](#what-was-found)):
+
+- The served 22M-parameter student reaches **0.859** vs the LLM's **0.867**, at 4 ms and
+  ~$0.03 per 1M requests instead of $216, trained on LLM labels only.
+- Escalating its unsure 14 % to the LLM gives **0.872**, at least as good as the LLM alone.
+- It flags **98 %** of off-topic messages, and a new intent shows up in the traffic mix.
+- **1,000 targeted human checks** of the LLM's labels lift a student clearly above its teacher
+  (simulated reviewer; a run with a real one is in progress).
+- **Weak spot:** typos (three per message cost 30 pt); the fix exists and its trade-off is
+  measured.
+
 ## The table
 
 The student never sees a human label: the served model trains on **all 10,003 teacher-labelled
@@ -25,7 +38,7 @@ experiment was first compared at. Every accuracy is against the human labels on 
 | model | params | teacher labels | accuracy | macro-F1 | p50 / p95 latency (CPU) | $ per 1M requests |
 |---|---:|---:|---:|---:|---:|---:|
 | **Teacher**: gpt-oss-120b, zero-shot (Groq) | 120B | — | **0.867** | 0.864 | API | 216.15 (1 query / call) · 26.62 (batched 20) |
-| **MiniLM-L6 fine-tuned + outlier exposure, int8 ONNX** ← served | 22M | 10,003 | **0.863** | 0.860 | **4.0 / 7.9 ms** | **0.03** |
+| **MiniLM-L6 fine-tuned + outlier exposure, int8 ONNX** ← served | 22M | 10,003 | **0.859** (fp32 0.863) | 0.860 (fp32) | **4.0 / 7.9 ms** | **0.03** |
 | MiniLM-L6 fine-tuned, int8 ONNX | 22M | 10,003 | 0.862 | 0.858 | 4.0 / 7.6 ms | 0.03 |
 | MiniLM-L6 fine-tuned, int8 ONNX | 22M | 3,000 | 0.847 | 0.845 | 4.0 / 8.1 ms | 0.03 |
 | MiniLM-L6 frozen + logistic head | 22M | 3,000 | 0.848 | 0.846 | 12.6 / 16.7 ms | 0.08 |
@@ -40,11 +53,12 @@ experiment was first compared at. Every accuracy is against the human labels on 
   on-demand price, one request at a time: an upper bound, and $0 on hardware you already own.
 - **Latency** is one query at a time, in-process, on a consumer CPU (`scripts/bench_latency.py`,
   every row re-measured on one machine on 2026-10-17; the previous machine was ~30 % faster).
-  **Measured under load** (finding 10), the served container on 2 CPUs sustains **497 requests
-  per second**, which puts its cost at **$0.012 per 1M**, below the estimate above.
-- **Accuracy of the fine-tuned rows is the fp32 model's;** latency and cost are the int8 graph's,
-  which is what gets served. int8 costs 0.0–0.7 pt: the served MiniLM scores **0.859** through
-  the serving code (DistilBERT 0.838, TinyBERT 0.792).
+  **Measured under load** (finding 10), the served container on 2 CPUs sustains **497–921 requests
+  per second** depending on the runner's CPU, which puts its cost at **$0.006–0.012 per 1M**,
+  below the estimate above.
+- **The served row's accuracy is the int8 graph through the serving code;** the other
+  fine-tuned rows show the fp32 model's, with latency and cost from their int8 graphs. int8
+  costs 0.0–0.7 pt (served MiniLM 0.863 → 0.859, DistilBERT 0.838, TinyBERT 0.792).
 - **The three-tier row** picks its thresholds on one half of the test split and is scored on the
   other (5 random halvings, mean ± half-range), so it is never tuned on the queries it is scored
   on; it matches the LLM to within that noise, and the cost varies widely between halvings
@@ -173,13 +187,15 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
    single-question long tickets get an invented second intent. A 10,003-label model *without*
    outlier exposure, briefly served, invented one in 41 % even at 0.95, which is why the served
    model has it. [docs/stress.md](docs/stress.md)
-10. **Load-tested, the router costs $0.012 per 1M requests.** The Docker image on a Linux
-    runner, real queries, 1–32 concurrent clients, no errors: 270 req/s on 1 CPU, 497 on 2. Two
-    service fixes came out of it: size onnxruntime's thread pool to the container's CPU quota
-    (it had been throttled into a 53–79 ms p95 at a single client), then run one single-thread
-    inference per CPU (1.6× the throughput of one multi-thread inference at a time, compared on
-    the same runner; runner CPUs changed between runs and moved the model's speed 3×). Measured
-    on the first served model; the current one has the same architecture and graph size.
+10. **Load-tested, the router costs about a cent per 1M requests.** The Docker image with the
+    served model on a Linux runner, real queries, 1–32 concurrent clients, no errors: **554 req/s
+    on 1 CPU, 921 on 2, $0.005–0.006 per 1M** (AMD EPYC runner, 2026-10-18). The first served
+    model, same architecture and graph size, did 270 / 497 req/s ($0.011–0.012) on an Intel Xeon
+    runner: GitHub's runner CPU, not the model, accounts for the 2× (model time 1.0 vs 2.5 ms),
+    so the honest figure is **$0.005–0.012**. Two service fixes came out of it: size
+    onnxruntime's thread pool to the container's CPU quota (it had been throttled into a
+    53–79 ms p95 at a single client), then run one single-thread inference per CPU (1.4–1.6× the
+    throughput of one multi-thread inference at a time, each compared on one runner).
     [docs/load_test.md](docs/load_test.md)
 
 ## Protocol
@@ -255,6 +271,12 @@ Labelling more data needs a free key (no card): copy `.env.example` to `.env`, s
   queries, v2 still leads v1 by **+3.5 pt** (95 % +0.0 to +7.0), so the choice holds up but
   cannot be confirmed beyond noise ([docs/descriptions_check.md](docs/descriptions_check.md)).
   Both are disclosed choices, not a strict zero-shot protocol.
+- **One test split served for evaluation and for choices.** Banking77 has no separate
+  validation split, so which model is served and the `also` threshold were also decided on
+  test-split results (the cascade thresholds are not: they are picked on one half and scored on
+  the other). The guard is that each swap rule was written down before the run it judged
+  (RUNBOOK §3), and the candidates differed by less than test noise, so any optimism is under
+  ~1 pt; a fresh validation split would remove it.
 - **Benchmark text, not tickets.** Banking77 queries are short (median 47 characters), English,
   one intent each and one snapshot in time. Long tickets, two questions in one message and new
   intents are simulated (findings 8 and 9) with rule-built text and held-out intents, not real
