@@ -251,8 +251,10 @@ Labelling more data needs a free key (no card): copy `.env.example` to `.env`, s
   queries, but 33 of the 77 descriptions were rewritten after reading three training queries per
   intent, because some names mislead (`get_physical_card` is about PINs). On the 200-query gate
   that took the teacher from 0.885 to 0.905. The prompt settings (descriptions, reasoning effort,
-  batch size, top-3) were also chosen on those 200 *test* queries. Both are disclosed choices, not
-  a strict zero-shot protocol.
+  batch size, top-3) were also chosen on those 200 *test* queries. Re-run on 200 fresh *train*
+  queries, v2 still leads v1 by **+3.5 pt** (95 % +0.0 to +7.0), so the choice holds up but
+  cannot be confirmed beyond noise ([docs/descriptions_check.md](docs/descriptions_check.md)).
+  Both are disclosed choices, not a strict zero-shot protocol.
 - **Benchmark text, not tickets.** Banking77 queries are short (median 47 characters), English,
   one intent each and one snapshot in time. Long tickets, two questions in one message and new
   intents are simulated (findings 8 and 9) with rule-built text and held-out intents, not real
