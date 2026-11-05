@@ -26,11 +26,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from distilroute.data import LABELS, MODELS, RESULTS, ROOT, load_labels, load_split  # noqa: E402
+from distilroute.students import MAX_TOKENS  # noqa: E402
 
 SERVED = "minilm_ft_oe_10k_teacher"  # model-v3, 2026-10-17
 EXAMPLE = "I still have not received my new card"
 THRESHOLD = 0.8  # the cascade threshold of 1b.2 / 6.5
-MAX_LENGTH = 64
+MAX_LENGTH = MAX_TOKENS  # as the service reads: at 64, long tickets fall to 0.013 (docs/stress.md)
 GITHUB = "https://github.com/sadiasamia121912/distilroute"
 OUT = ROOT / "build" / "hf"
 
@@ -240,7 +241,8 @@ router.route("{EXAMPLE}")
 ```
 
 `pip install onnxruntime tokenizers numpy huggingface_hub`. The tokenizer truncates at
-{MAX_LENGTH} tokens, as in training.
+{MAX_LENGTH} tokens, as the service does: the model was trained on 64, but cutting there loses a
+question at the end of a long ticket ([stress test]({GITHUB}/blob/main/docs/stress.md)).
 
 **Confidence is calibrated** (temperature scaling, T = {j(MODELS / SERVED / "meta.json")["temperature"]:.3f} in
 `config.json`, fitted on a held-out slice of the teacher labels), so a threshold means what it
