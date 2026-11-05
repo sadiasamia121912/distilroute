@@ -35,7 +35,7 @@ WIDTH, HEIGHT = 1200, 627  # LinkedIn landscape, 1.91 : 1
 
 NOTE = (
     "Banking77 support messages, 77 queues. Accuracy on 3,080 held-out messages against human "
-    "labels; students trained on 3,000 LLM labels only. distilroute"
+    "labels; students trained on LLM labels only (3,000, or all 10,003 where marked). distilroute"
 )
 ONLY_FIRST_FIGURE = """
 <script>document.documentElement.dataset.theme = "light";</script>

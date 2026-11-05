@@ -318,6 +318,31 @@ run while `jobs.py` labels.
 
 ## Session log
 
+**2026-11-06 (optional items judged)**
+
+- **aug+OE at `ALSO_THRESHOLD` 0.95: closed, model-v3 stays served.** Already measured in
+  `docs/stress.md`: found 41 % / invented 1 % at 0.95, vs v3's 50 % / 2 % at 0.9. A stricter
+  threshold buys back the invented-`also` rate but cannot pass RUNBOOK §3: int8 0.862 is not
+  *above* 0.862, and 120-word tickets with the filter stay at 0.79–0.81 vs v3's 0.83–0.85
+  (the threshold does not touch them). No run needed.
+- **Phase 5 is not covered by CLINC150 yet.** `docs/clinc150/results.md` has the teacher on
+  1,500 / 4,500 test queries (intent-sorted, so not a random sample) and empty cascade
+  columns; the README uses CLINC150 only as out-of-scope traffic. Finishing it needs ~3,000
+  more teacher labels (free Groq key in `.env`, `jobs.py` over a few days), then
+  `DISTILROUTE_DATASET=clinc150` through `evaluate.py` / `cascade.py`. **Started the same day:**
+  new Groq key, `jobs.py` steps "remaining clinc150 test labels (5)" (same seed-0 order the first
+  1,500 came from, checked) and "clinc150 results on the full test split (5)". After it lands:
+  the CLINC150 paragraph of `docs/case-study/template.html` (still says the training labels are
+  "still to come") and a README transfer finding.
+- **HF release fix (7.4):** `build_hf_release.py` shipped `max_length` 64 while the service reads
+  512 (`students.MAX_TOKENS`) — the Space and `route.py` would have scored 0.013 on a question
+  ending a 120-word ticket. Now imports `MAX_TOKENS`; built `route.py` matches the service on 301
+  messages (300 test + one long ticket), 0 differ. Build passes; publishing still needs `hf auth login`.
+- **4.2 post** (`portfolio-notes/linkedin_post_distilroute.md`) moved to model-v3 numbers, with a
+  placeholder for the 7.1 result; `pareto_linkedin.png` re-rendered (it predated the 10k point)
+  with a corrected source note (`post_image.py`).
+- **7.1:** the user does the remaining 195 rows.
+
 **2026-10-18 (HANDOFF — start here next session)**
 
 - **Colab run (aug + OE, seed 1 of model-v3) unpacked and judged.** `minilm_ft_aug_oe_10k_teacher`

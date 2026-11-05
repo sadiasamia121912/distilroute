@@ -105,6 +105,24 @@ STEPS = [
         done=lambda: (ROOT / "results" / "clinc150" / "minilm_frozen_teacher.json").exists(),
         env=CLINC,
     ),
+    # Phase 5 (2026-11-06): the first 1,500 of the same seed-0 order are done; the rest makes
+    # the CLINC150 teacher number and cascade columns cover the whole test split
+    label_step(
+        "remaining clinc150 test labels (5)",
+        "groq",
+        LABELS / "clinc150" / "test.jsonl",
+        4500,
+        ["--split", "test", "--seed", "0", "--top-k", "3"],
+        env=CLINC,
+    ),
+    Step(
+        "clinc150 results on the full test split (5)",
+        "groq",
+        [[PY, "scripts/evaluate.py"]],
+        done=lambda: "full 4,500-query test split"
+        in (ROOT / "docs" / "clinc150" / "results.md").read_text(encoding="utf-8"),
+        env=CLINC,
+    ),
     Step(
         "teacher latency (3.2)",
         "groq",
