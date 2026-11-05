@@ -194,7 +194,7 @@ free tier costs a day.
 
 ## Phase 5 — Stretch: prove it is a method, not a banking demo  (optional, ~1 day)
 
-- [ ] Second dataset from a very different domain (toxic-comment detection or news topics),
+- [x] _(2026-11-06, done as CLINC150 — 150 intents over 10 domains, same scripts, teacher on all 4,500 test queries 0.889, frozen MiniLM keeps 97 %, cascade at 0.8 above the LLM: README finding 11. A different *task* (toxicity, news topics) is still untested.)_ Second dataset from a very different domain (toxic-comment detection or news topics),
   run through the *same* scripts with only a download script + descriptions file added;
   second results table. Answers "does this only work for banking?" with a number.
 - **Scope, on the record:** distillation into a fixed-label classifier covers "read a short
@@ -342,6 +342,15 @@ run while `jobs.py` labels.
   placeholder for the 7.1 result; `pareto_linkedin.png` re-rendered (it predated the 10k point)
   with a corrected source note (`post_image.py`).
 - **7.1:** the user does the remaining 195 rows.
+- **Phase 5 closed:** CLINC150 teacher on all 4,500 test queries **0.889** (0.901 on the first
+  1,500); README finding 11. A project review the same day found and fixed: the browser demo cut
+  messages at 64 tokens (now 512, with a long-ticket self-check, republished); the teacher prompt
+  was Banking77's on every dataset (now `data.DOMAINS`, Banking77's prompt byte-identical, tested;
+  `scripts/domain_check.py` shows the banking line cost CLINC150 nothing: 0.886 vs 0.886 on the
+  first 140 of 200, the rest queued in `jobs.py`); `model=teacher` was routable whenever a `.env`
+  existed, even with an empty key (now needs a non-empty key *and* `DISTILROUTE_SERVE_TEACHER=1`);
+  `latency_ms` left out the `also` sentence routing; stale PROJECT.md status, START_HERE open work,
+  evaluate.py's "intent-sorted" caption and the case study's CLINC150 paragraph.
 
 **2026-10-18 (HANDOFF — start here next session)**
 

@@ -171,59 +171,32 @@ distilroute/
 └── docs/PROJECT.md             this file
 ```
 
-## 10. Status (updated 2026-09-23 — handoff to a new machine, see ROADMAP session log)
+## 10. Status (updated 2026-11-06)
+
+Sections 1–9 are the plan as written on 2026-09-17; the results are in the
+[README](../README.md) and [START_HERE.md](START_HERE.md), and every decision since is in the
+ROADMAP session log. In short:
 
 **Done**
-- Data downloaded and checked; repo, 24 tests, lint.
-- Teacher client: strict parsing, v2 intent descriptions (revised from train examples after
-  v1 exposed misleading intent names), top-3 ranked answers, providers Groq / OpenRouter /
-  NVIDIA / Gemini, resumable labeller hardened against free-endpoint failure modes.
-- Teacher configuration study on 200 queries: v1 0.885 → v2 0.905; top-3 keeps top-1 and puts
-  gold in the list 96 % of the time; batch 50/100 lose 2 points (rejected); second teacher
-  nemotron-550b 0.835 (rejected). Final: gpt-oss-120b, v2, top-3, batch 20.
-- `scripts/teacher_report.py` → `docs/teacher.md`; `scripts/evaluate.py` → `docs/results.md`
-  (accuracy, macro-F1, agreement, ECE, cascade preview) from a shared run contract.
-- Students on gold (supervised reference): TF-IDF + LR **0.913** (1.8 ms); frozen
-  MiniLM-L6 + LR **0.930** (11.5 ms), no fine-tuning; SetFit few-shot 16/intent **0.867**.
-- Data-efficiency curve on gold (`scripts/data_curve.py`): frozen MiniLM 0.84 at 1k random
-  labels, 0.92 at 5k; TF-IDF 0.74 / 0.89 at the same sizes.
-- `scripts/finetune.py` (DistilBERT / MiniLM / TinyBERT, hard or soft top-3 targets, ONNX +
-  int8 export) and the Colab notebook that runs it; smoke-tested on CPU.
-- Serving: `distilroute/serve.py` (FastAPI `POST /route`, `model=` switch, lazy loading) over
-  one loader per model kind; `scripts/bench_latency.py` → `results/latency.json`.
-- Cost per 1M requests (`scripts/cost.py`, paid list prices): teacher **$220** one ticket per
-  call ($28 batched), MiniLM frozen **$0.07**, TF-IDF $0.01 on a t3.small.
-- Calibration (`distilroute/calibration.py`): temperature fit on a 10 % training-pool holdout,
-  never on test; ECE 0.074 → 0.011 for MiniLM. Threshold cascade: escalate below 0.8
-  confidence → 14 % to the teacher, 97.5 % accuracy on what the student keeps.
-- Train subset labelled (3,000 random rows, 0 unparsed). Teacher on it: **0.848** vs gold.
-- **Distillation gap on 3k labels:** frozen MiniLM 0.848 on teacher labels vs ~0.90 on gold
-  (data curve) — the student matches its teacher; TF-IDF 0.812 vs 0.86.
-- **Found and fixed a protocol flaw (2026-09-21):** the intent-sorted test CSV meant every
-  teacher batch was one intent, inflating the teacher's test accuracy to 0.948 (0.98 vs 0.905
-  on the same 200 queries, sorted vs shuffled). The labeller now always shuffles; the test
-  split was relabelled 2026-09-23. The train labels were shuffled and stand.
-- **Teacher (honest): 0.867 accuracy, 0.864 macro-F1, gold in top-3 for 94.7 %.** Every
-  gold-trained student beats it (MiniLM frozen 0.927, DistilBERT 0.918, TF-IDF 0.910); the
-  student distilled from 3k teacher labels reaches 0.848, within 2 pts of its teacher.
-- **Consequence for the cascade:** escalating a gold-trained student's least-confident 20 % to
-  the teacher *lowers* accuracy (0.927 → 0.917), because the LLM is the weaker of the two. It
-  still helps the teacher-trained student (0.848 → 0.871). The deployable lesson is to measure
-  the teacher on held-out data before building an escalation path to it.
+- Teacher: gpt-oss-120b on Groq, v2 descriptions, top-3, batch 20, shuffled batches. **0.867**
+  on the 3,080-query test split after the batch-context leak was found and fixed (0.948 sorted).
+  All 10,003 training queries labelled. A second teacher (gemini-3.5-flash) scores the same on
+  the 200-query gate.
+- Students on CPU and Colab (TF-IDF, frozen MiniLM, SetFit, fine-tuned MiniLM / DistilBERT /
+  TinyBERT, int8 ONNX). **Served: `model-v3`**, MiniLM-L6 fine-tuned on all 10,003 teacher
+  labels with outlier exposure, int8 **0.859** through the serving code, 4 ms per query.
+- Calibration, the threshold cascade (**0.872**, at least as good as the LLM, 14 % escalated),
+  multi-tier cascades with thresholds chosen on held-out halves, bootstrap intervals, seeds.
+- Out-of-scope detection, new-intent detection with a traffic monitor (`GET /monitor`), noise
+  robustness, long and two-question tickets (`also`), simulated human correction, active and
+  diverse label selection.
+- Service: FastAPI, Docker image built and called in CI, load-tested on GitHub's runners
+  (**$0.005–0.012 per 1M** requests). In-browser demo and a case-study page.
+- Second dataset (Phase 5): CLINC150, 150 intents in 10 domains, teacher on all 4,500 test
+  queries (**0.889**); the same three patterns as Banking77 (`docs/clinc150/results.md`).
 
-**Paused with**
-- The labeller running as a detached process (log: `logs/label_test.log`). It survives the
-  assistant session but not a reboot; restarting is safe, it resumes from the checkpoint:
-  `.\.venv\Scripts\python.exe scripts/label.py --split test --descriptions --top-k 3`
-- `models/` holds `tfidf_lr_gold` and `minilm_frozen_gold` (gitignored, rebuilt by the
-  scripts); the service serves both: `uvicorn distilroute.serve:app --port 8000`.
-
-**Next, in order**
-1. Colab: `notebooks/finetune_colab.ipynb` on a T4 with the gold rows (zip the checkout for
-   cell 1 until the repo is public). Unzip the download into the checkout, run
-   `scripts/evaluate.py` and `scripts/bench_latency.py`.
-2. Test labels complete → `scripts/teacher_report.py` (the real teacher ceiling), the cascade
-   table fills in, teacher latency (`bench_latency.py --teacher 30`, once the labeller is idle).
-3. `label.py --split train --limit 3000 --seed 0` → every student with `--labels teacher`
-   (baseline, setfit_student, data_curve, finetune on Colab) → the distillation gap.
-4. Dockerfile (3.4, needs Docker installed), README table (4.1).
+**Open**
+- 7.1: a real person reviews the 200 least-believed teacher labels (`scripts/review.py`),
+  replacing the simulated human of finding 5.
+- 7.4: the Hugging Face release and Space (`scripts/build_hf_release.py`, needs `hf auth login`).
+- 4.2 / 7.7: share the demo and case study, then the posts.

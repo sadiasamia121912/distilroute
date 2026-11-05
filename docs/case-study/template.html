@@ -490,11 +490,15 @@ function render() {
     if (C.complete) {
       const kb = B.runs.minilm_frozen_teacher.acc / B.teacher, kc = C.runs.minilm_frozen_teacher.acc / C.teacher;
       out.textContent = `The student keeps ${pct(kc)} of its teacher on CLINC150 against ${pct(kb)} on Banking77. A student trained on an LLM's labels lands close to the LLM on both, and the gap to human labels is the teacher's own error rate passing through.`;
+      const dc = D.domain_check;
+      if (dc) out.textContent += ` One slip, found afterwards: CLINC150's prompt still opened with Banking77's line ("a banking app's support inbox"). Relabelling ${dc.n} of its test messages with its own line scored ${f3(dc.domain)} against ${f3(dc.banking)}, the same answer on ${pct(dc.same_answer)} of them, so the numbers stand.`;
     } else {
       out.textContent = `The same LLM scores higher on CLINC150 than on Banking77 (${f3(C.teacher)} against ${f3(B.teacher)}), with a smaller prompt: CLINC150's intent names say more on their own. The students trained on its labels are still to come: the free tier's daily limit is delivering the 3,000 training labels, and the empty cells fill in on the next build.`;
     }
     const note = document.createElement("p"); note.className = "num"; note.style.color = "var(--muted)";
-    note.textContent = `Teacher accuracy on ${C.n_teacher.toLocaleString("en-US")} of CLINC150's ${C.n_test.toLocaleString("en-US")} test messages (a random subset, to save free-tier calls); students on all ${C.n_test.toLocaleString("en-US")}. Banking77: all ${B.n_test.toLocaleString("en-US")}.`;
+    note.textContent = C.n_teacher >= C.n_test
+      ? `Teacher and students on all ${C.n_test.toLocaleString("en-US")} of CLINC150's test messages; Banking77: all ${B.n_test.toLocaleString("en-US")}.`
+      : `Teacher accuracy on ${C.n_teacher.toLocaleString("en-US")} of CLINC150's ${C.n_test.toLocaleString("en-US")} test messages (a random subset, to save free-tier calls); students on all ${C.n_test.toLocaleString("en-US")}. Banking77: all ${B.n_test.toLocaleString("en-US")}.`;
     dom.append(out, note);
   } else {
     const d = document.createElement("div"); d.className = "pending";

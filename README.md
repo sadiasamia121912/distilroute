@@ -27,6 +27,8 @@ paying the LLM to label.
   (simulated reviewer; a run with a real one is in progress).
 - **Weak spot:** typos (three per message cost 30 pt); the fix exists and its trade-off is
   measured.
+- **It transfers:** on CLINC150 (150 intents, 10 domains) the same scripts give the same
+  results, with no code changes.
 
 ## The table
 
@@ -197,6 +199,17 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
     53–79 ms p95 at a single client), then run one single-thread inference per CPU (1.4–1.6× the
     throughput of one multi-thread inference at a time, each compared on one runner).
     [docs/load_test.md](docs/load_test.md)
+11. **It is not a banking trick: the same results hold on a second dataset.** CLINC150 (150
+    intents across 10 domains, from travel to small talk, 4,500 test messages) ran through the
+    same scripts with one environment variable and no code changes. The LLM scores **0.889**;
+    a frozen MiniLM on 3,000 of its labels keeps **97 %** of that (0.862; 98 % on Banking77);
+    escalating its unsure 20 % to the LLM gives **0.893**, above the LLM alone; and a student
+    on human labels (0.954) is *hurt* by escalation (0.932 at 30 %), because there the LLM is
+    the weaker of the two, exactly as on Banking77. One slip: CLINC150's prompt still opened
+    with Banking77's "banking app's support inbox" line. Relabelling a random sample of its test
+    messages with its own line made no measurable difference, so the numbers stand.
+    [docs/clinc150/results.md](docs/clinc150/results.md),
+    [docs/clinc150/domain_check.md](docs/clinc150/domain_check.md)
 
 ## Protocol
 

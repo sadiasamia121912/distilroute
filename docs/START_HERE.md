@@ -37,12 +37,11 @@ Every number on these pages is written by the script next to it; none is typed b
 
 ## Open work
 
-- **Typo augmentation at 10,003 labels** — 1.6 and 7.3 are done (the served model is the
-  10,003-label MiniLM with outlier exposure, `model-v3`); the next Colab run adds
-  `--augment typo1,typo3` to it, the one weakness more labels did not fix.
-- **7.1** — a real person checks the teacher's least-believed labels (`scripts/review.py`),
+- **7.1** — a real person checks the teacher's 200 least-believed labels (`scripts/review.py`),
   replacing the simulated human of finding 5.
-- **7.4** — a live endpoint as a free Hugging Face Space.
-- **7.5** — done: gemini-3.5-flash 0.910 vs gpt-oss-120b 0.905 on the 200-query gate
-  ([second_teacher.md](second_teacher.md)).
+- **7.4** — a live endpoint as a free Hugging Face Space (`scripts/build_hf_release.py`).
 - **7.7** — the write-up and posts, with the numbers above.
+
+Closed since the last update: typo augmentation on the served recipe (measured, not served:
+README finding 4), the second teacher (7.5), and the second dataset (Phase 5, CLINC150 on its
+full test split).

@@ -247,9 +247,9 @@ def main() -> None:
             + (
                 f"the full {len(t):,}-query test split."
                 if t_cov >= 1
-                else f"the {len(t):,} test queries labelled so far ({t_cov:.0%} — intent-sorted, "
-                "so partial coverage is not a random sample). Agreement below is measured on "
-                "those rows."
+                else f"the {len(t):,} test queries labelled so far ({t_cov:.0%}; the labeller "
+                "works in a seeded shuffle, so they are a random sample). Agreement below is "
+                "measured on those rows."
             ),
             "",
         ]

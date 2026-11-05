@@ -161,6 +161,7 @@ def main() -> None:
         },
         "robustness": None,
         "second_domain": None,
+        "domain_check": None,
     }
 
     rob = RESULTS / "robustness.json"
@@ -194,6 +195,10 @@ def main() -> None:
                 "names only",
             ),
         ]
+
+    check = ROOT / "results" / "clinc150" / "domain_check.json"  # scripts/domain_check.py
+    if check.exists():
+        data["domain_check"] = json.loads(check.read_text())
 
     template = (PAGE / "template.html").read_text(encoding="utf-8")
     page = template.replace("/*__DATA__*/null", json.dumps(data, separators=(",", ":")))
