@@ -150,3 +150,26 @@ def test_also_is_empty_below_the_threshold_and_for_one_sentence(client, monkeypa
     assert client.post("/route", json={"text": "My card never came. Top up?"}).json()["also"] == []
     monkeypatch.setenv("DISTILROUTE_ALSO_THRESHOLD", "0.5")
     assert client.post("/route", json={"text": "my card never came"}).json()["also"] == []
+
+
+def test_teacher_is_not_routable_unless_switched_on(monkeypatch):
+    listed = {"fake_gold": {"kind": "tfidf"}, students.TEACHER: {"kind": students.TEACHER}}
+    monkeypatch.setattr(students, "available", lambda: listed)
+    monkeypatch.setattr(students, "load", lambda name: FakeRouter())
+    monkeypatch.delenv("DISTILROUTE_MODEL", raising=False)
+    monkeypatch.delenv("DISTILROUTE_SERVE_TEACHER", raising=False)
+    serve._loaded.clear()
+    c = TestClient(serve.app)
+    assert students.TEACHER not in c.get("/models").json()["available"]
+    assert c.post("/route", json={"text": "x", "model": students.TEACHER}).status_code == 404
+    monkeypatch.setenv("DISTILROUTE_SERVE_TEACHER", "1")
+    assert students.TEACHER in c.get("/models").json()["available"]
+
+
+def test_teacher_needs_a_non_empty_key(monkeypatch, tmp_path):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.setattr(students, "ROOT", tmp_path)
+    (tmp_path / ".env").write_text("GROQ_API_KEY=            # get one at console.groq.com\n")
+    assert not students.teacher_key_set()
+    (tmp_path / ".env").write_text("GROQ_API_KEY= gsk_abc\n")
+    assert students.teacher_key_set()

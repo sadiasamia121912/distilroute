@@ -23,7 +23,7 @@ from pathlib import Path
 import numpy as np
 
 from distilroute.calibration import apply_temperature
-from distilroute.data import DESCRIPTIONS, MODELS, ROOT, categories
+from distilroute.data import DESCRIPTIONS, DOMAIN, MODELS, ROOT, categories
 
 TEACHER = "teacher"
 
@@ -168,6 +168,7 @@ class TeacherRouter(Router):
             descriptions={k: v for k, v in raw.items() if not k.startswith("_")},
             reasoning_effort="low",
             top_k=3,
+            domain=DOMAIN,
         )
 
     def route(self, text: str) -> Routed:
@@ -185,9 +186,20 @@ def available() -> dict[str, dict]:
         meta = json.loads(meta_path.read_text())
         if meta.get("kind") in LOADERS:
             out[meta["name"]] = meta
-    if os.environ.get("GROQ_API_KEY") or (ROOT / ".env").exists():
+    if teacher_key_set():
         out[TEACHER] = {"kind": TEACHER, "name": TEACHER}
     return out
+
+
+def teacher_key_set() -> bool:
+    """A non-empty GROQ_API_KEY in the environment or in .env (an empty .env line is not a key)."""
+    if os.environ.get("GROQ_API_KEY"):
+        return True
+    try:
+        from dotenv import dotenv_values
+    except ImportError:  # the service image has neither python-dotenv nor a .env
+        return False
+    return bool((dotenv_values(ROOT / ".env").get("GROQ_API_KEY") or "").strip())
 
 
 def load(name: str) -> Router:

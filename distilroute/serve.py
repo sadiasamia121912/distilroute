@@ -5,9 +5,10 @@
          -d '{"text": "my card still has not arrived", "model": "minilm_frozen_gold"}'
 
 `GET /models` lists what is loadable (every models/<name>/ from the student scripts, plus
-`teacher` when a key is configured). Models load lazily on first use and stay resident. The
-default model is `DISTILROUTE_MODEL` or the first student found, so the Docker image (student
-only, no torch) works with no flags.
+`teacher` when a key is configured *and* `DISTILROUTE_SERVE_TEACHER=1`: every call to it is a
+paid LLM call, and the service has no authentication, so it is off unless asked for). Models
+load lazily on first use and stay resident. The default model is `DISTILROUTE_MODEL` or the
+first student found, so the Docker image (student only, no torch) works with no flags.
 
 Each model runs at most `DISTILROUTE_CONCURRENCY` inferences at once (default: the CPUs the
 container may use, `students.cpu_limit`), each on `students.inference_threads` threads (default
@@ -57,6 +58,16 @@ class RouteResponse(BaseModel):
     latency_ms: float
 
 
+def teacher_served() -> bool:
+    return os.environ.get("DISTILROUTE_SERVE_TEACHER") == "1"
+
+
+def routable() -> dict[str, dict]:
+    return {
+        n: m for n, m in students.available().items() if n != students.TEACHER or teacher_served()
+    }
+
+
 def default_model() -> str:
     if os.environ.get("DISTILROUTE_MODEL"):
         return os.environ["DISTILROUTE_MODEL"]
@@ -68,7 +79,7 @@ def default_model() -> str:
 
 def get_router(name: str) -> students.Router:
     if name not in _loaded:
-        if name not in students.available():
+        if name not in routable():
             raise HTTPException(404, f"unknown model {name!r}; see GET /models")
         with _load_lock:  # concurrent first requests load the model once
             if name not in _loaded:
@@ -86,7 +97,7 @@ def get_router(name: str) -> students.Router:
 
 @app.get("/models")
 def models() -> dict:
-    return {"default": default_model(), "available": list(students.available())}
+    return {"default": default_model(), "available": list(routable())}
 
 
 @app.post("/route", response_model=RouteResponse)
@@ -96,12 +107,12 @@ def route(req: RouteRequest) -> RouteResponse:
     with _slots[name]:  # at most one inference per CPU; the rest queue here
         t0 = time.perf_counter()
         r = router.route(req.text)
-        ms = (time.perf_counter() - t0) * 1000
         also = (
             []
             if router.kind == students.TEACHER  # one paid LLM call per sentence: no
             else multi.also_intents(router.route, req.text, r.intent, also_threshold())
         )
+        ms = (time.perf_counter() - t0) * 1000  # the whole answer, sentence routing included
     if name in _monitors:
         _monitors[name].add(r.intent)
     return RouteResponse(
