@@ -272,7 +272,7 @@ function makeTokenizer(vocabList) {
     return pieces;
   }
   return (text) => {
-    const body = words(normalize(text)).flatMap(wordpiece).slice(0, 62);
+    const body = words(normalize(text)).flatMap(wordpiece).slice(0, 510);  // 512 with [CLS]/[SEP], as the service reads
     return [CLS, ...body, SEP];
   };
 }

@@ -47,6 +47,11 @@ CHECKS = [
     "whats the weather like in paris tomorrow",
     "I think someone has my card details, pls freeze it",
     "ATM swallowed my card",
+    # long enough to pass 64 tokens: the page must read past them like the service (512)
+    "Hi there, I hope you are all doing well this week. I have been a customer for a few years now "
+    "and I am generally very happy with the app, the support team and how easy it is to move money "
+    "around. I also like the card design. Anyway, I ordered a new card two weeks ago and it still "
+    "has not arrived, can you tell me where it is?",
 ]
 OUT = ROOT / "demo"
 
@@ -94,7 +99,6 @@ def main() -> None:
     checks = []
     for text in CHECKS:
         routed = router.route(text)
-        router.tokenizer.enable_truncation(max_length=64)  # the page's tokenizer stops at 64
         ids = router.tokenizer.encode(text).ids
         checks.append(
             {"text": text, "ids": ids, "intent": routed.intent, "conf": round(routed.confidence, 4)}
