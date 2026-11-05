@@ -351,6 +351,11 @@ run while `jobs.py` labels.
   existed, even with an empty key (now needs a non-empty key *and* `DISTILROUTE_SERVE_TEACHER=1`);
   `latency_ms` left out the `also` sentence routing; stale PROJECT.md status, START_HERE open work,
   evaluate.py's "intent-sorted" caption and the case study's CLINC150 paragraph.
+- **Self-improving router** (`scripts/self_improving.py` → `docs/self_improving.md`, README
+  finding 12): retrained weekly on its own escalations from a 500-label cold start, the frozen
+  MiniLM reaches 0.852 vs 0.859 labelling everything, with 31 % of the LLM calls (2,901 vs 9,500),
+  and fewer calls than never retraining (4,888). Offline, existing labels only. Next: the same
+  loop with drift or a held-out intent arriving mid-stream (the monitor of finding 8 + this).
 
 **2026-10-18 (HANDOFF — start here next session)**
 

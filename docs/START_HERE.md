@@ -20,6 +20,7 @@ This page says where each answer lives and what is still open.
 | What does it take under real load? | [load_test.md](load_test.md) | `scripts/load_test.py`, `.github/workflows/load-test.yml` |
 | Does it transfer to another dataset? | [clinc150/](clinc150/) | the same scripts, `DISTILROUTE_DATASET=clinc150` |
 | Do more teacher labels help? | [teacher5000/](teacher5000/) | `scripts/retrain_check.py` |
+| Does the cascade teach the student for free? | [self_improving.md](self_improving.md) | `scripts/self_improving.py` |
 | The whole story, for a reader | [case-study/](case-study/) | `scripts/build_case_study.py` |
 
 Every number on these pages is written by the script next to it; none is typed by hand.

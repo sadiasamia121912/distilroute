@@ -29,6 +29,8 @@ paying the LLM to label.
   measured.
 - **It transfers:** on CLINC150 (150 intents, 10 domains) the same scripts give the same
   results, with no code changes.
+- **It improves itself:** retrained on its own escalations, the student nears the
+  label-everything ceiling with 31 % of the LLM calls.
 
 ## The table
 
@@ -210,6 +212,15 @@ Full tables (calibration, cascade thresholds, data curves, every variant tried):
     messages with its own line made no measurable difference, so the numbers stand.
     [docs/clinc150/results.md](docs/clinc150/results.md),
     [docs/clinc150/domain_check.md](docs/clinc150/domain_check.md)
+12. **The cascade teaches the student for free.** Every escalated message comes back with the
+    LLM's answer, paid for to serve the customer, so it can be kept as a label. Replaying the
+    training split as 9 weeks of live traffic from a 500-label cold start, a frozen MiniLM
+    retrained weekly on its own escalations goes from 0.704 to **0.852**, within 0.7 pt of
+    labelling every message (0.859), with **31 % of the LLM calls** (2,901 vs 9,500). It even
+    makes *fewer* calls than never retraining (2,901 vs 4,888), because a static student keeps
+    escalating half its traffic, and it beats the same number of random labels by 1.3 pt. Live
+    escalation falls from 48 % to 20–23 % a week. Simulated: no drift, the frozen student standing in
+    for the fine-tuned one. [docs/self_improving.md](docs/self_improving.md)
 
 ## Protocol
 

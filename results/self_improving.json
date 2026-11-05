@@ -1,0 +1,1503 @@
+{
+  "dataset": "banking77",
+  "bootstrap": 500,
+  "week": 1000,
+  "threshold": 0.8,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_test": 3080,
+  "teacher_test_acc": 0.8672077922077922,
+  "arms": {
+    "static": [
+      {
+        "week": 0,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.47933333333333333,
+        "llm_calls_total": 979.3333333333334,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 1,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.496,
+        "llm_calls_total": 1475.3333333333333,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 2,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.49933333333333335,
+        "llm_calls_total": 1974.6666666666667,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 3,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.4916666666666667,
+        "llm_calls_total": 2466.3333333333335,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 4,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.4776666666666667,
+        "llm_calls_total": 2944.0,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 5,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.49333333333333335,
+        "llm_calls_total": 3437.3333333333335,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 6,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.48,
+        "llm_calls_total": 3917.3333333333335,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 7,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.48466666666666663,
+        "llm_calls_total": 4402.0,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 8,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.486,
+        "llm_calls_total": 4888.0,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 9,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "student_sd": 0.011437095076729752
+      }
+    ],
+    "escalations": [
+      {
+        "week": 0,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.47933333333333333,
+        "llm_calls_total": 979.3333333333334,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 1,
+        "labels": 979.3333333333334,
+        "student": 0.800974025974026,
+        "cascade": 0.8658008658008658,
+        "test_escalated": 0.30097402597402595,
+        "live_escalated": 0.31266666666666665,
+        "llm_calls_total": 1292.0,
+        "student_sd": 0.0021699066727016683
+      },
+      {
+        "week": 2,
+        "labels": 1292.0,
+        "student": 0.8202380952380953,
+        "cascade": 0.8676406926406927,
+        "test_escalated": 0.2676406926406926,
+        "live_escalated": 0.2783333333333333,
+        "llm_calls_total": 1570.3333333333333,
+        "student_sd": 0.0084095853593344
+      },
+      {
+        "week": 3,
+        "labels": 1570.3333333333333,
+        "student": 0.8329004329004329,
+        "cascade": 0.8676406926406927,
+        "test_escalated": 0.2248917748917749,
+        "live_escalated": 0.247,
+        "llm_calls_total": 1817.3333333333333,
+        "student_sd": 0.0032068251926469994
+      },
+      {
+        "week": 4,
+        "labels": 1817.3333333333333,
+        "student": 0.8398268398268399,
+        "cascade": 0.871103896103896,
+        "test_escalated": 0.21883116883116882,
+        "live_escalated": 0.21166666666666667,
+        "llm_calls_total": 2029.0,
+        "student_sd": 0.004509235206926339
+      },
+      {
+        "week": 5,
+        "labels": 2029.0,
+        "student": 0.8428571428571429,
+        "cascade": 0.873051948051948,
+        "test_escalated": 0.22034632034632037,
+        "live_escalated": 0.22466666666666668,
+        "llm_calls_total": 2253.6666666666665,
+        "student_sd": 0.0037396434076127955
+      },
+      {
+        "week": 6,
+        "labels": 2253.6666666666665,
+        "student": 0.84491341991342,
+        "cascade": 0.8721861471861473,
+        "test_escalated": 0.20108225108225108,
+        "live_escalated": 0.22066666666666665,
+        "llm_calls_total": 2474.3333333333335,
+        "student_sd": 0.0011036838774010323
+      },
+      {
+        "week": 7,
+        "labels": 2474.3333333333335,
+        "student": 0.8492424242424242,
+        "cascade": 0.8718614718614718,
+        "test_escalated": 0.17391774891774892,
+        "live_escalated": 0.19800000000000004,
+        "llm_calls_total": 2672.3333333333335,
+        "student_sd": 0.0015533225210397432
+      },
+      {
+        "week": 8,
+        "labels": 2672.3333333333335,
+        "student": 0.8493506493506494,
+        "cascade": 0.8728354978354979,
+        "test_escalated": 0.21125541125541125,
+        "live_escalated": 0.22833333333333336,
+        "llm_calls_total": 2900.6666666666665,
+        "student_sd": 0.0007013788634640673
+      },
+      {
+        "week": 9,
+        "labels": 2900.6666666666665,
+        "student": 0.8520562770562771,
+        "cascade": 0.8728354978354979,
+        "test_escalated": 0.1989177489177489,
+        "student_sd": 0.0017650980985173088
+      }
+    ],
+    "random": [
+      {
+        "week": 0,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.47933333333333333,
+        "llm_calls_total": 1236.6666666666667,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 1,
+        "labels": 979.3333333333334,
+        "student": 0.7783549783549785,
+        "cascade": 0.8587662337662337,
+        "test_escalated": 0.30995670995670993,
+        "live_escalated": 0.311,
+        "llm_calls_total": 1796.0,
+        "student_sd": 0.011160312533763398
+      },
+      {
+        "week": 2,
+        "labels": 1292.0,
+        "student": 0.7980519480519481,
+        "cascade": 0.8633116883116884,
+        "test_escalated": 0.3054112554112554,
+        "live_escalated": 0.3116666666666667,
+        "llm_calls_total": 2348.6666666666665,
+        "student_sd": 0.0070288021130430626
+      },
+      {
+        "week": 3,
+        "labels": 1570.3333333333333,
+        "student": 0.8130952380952382,
+        "cascade": 0.8672077922077923,
+        "test_escalated": 0.30443722943722945,
+        "live_escalated": 0.3056666666666667,
+        "llm_calls_total": 2872.0,
+        "student_sd": 0.008434618081557856
+      },
+      {
+        "week": 4,
+        "labels": 1817.3333333333333,
+        "student": 0.8225108225108224,
+        "cascade": 0.8673160173160173,
+        "test_escalated": 0.26071428571428573,
+        "live_escalated": 0.249,
+        "llm_calls_total": 3317.3333333333335,
+        "student_sd": 0.006812166658812214
+      },
+      {
+        "week": 5,
+        "labels": 2029.0,
+        "student": 0.829004329004329,
+        "cascade": 0.8691558441558441,
+        "test_escalated": 0.23571428571428568,
+        "live_escalated": 0.23299999999999998,
+        "llm_calls_total": 3761.6666666666665,
+        "student_sd": 0.005073899640576245
+      },
+      {
+        "week": 6,
+        "labels": 2253.6666666666665,
+        "student": 0.8321428571428572,
+        "cascade": 0.8693722943722944,
+        "test_escalated": 0.23841991341991342,
+        "live_escalated": 0.24466666666666667,
+        "llm_calls_total": 4217.666666666667,
+        "student_sd": 0.005221791377409048
+      },
+      {
+        "week": 7,
+        "labels": 2474.3333333333335,
+        "student": 0.8388528138528139,
+        "cascade": 0.8693722943722944,
+        "test_escalated": 0.22792207792207794,
+        "live_escalated": 0.229,
+        "llm_calls_total": 4637.666666666667,
+        "student_sd": 0.0018044731602308603
+      },
+      {
+        "week": 8,
+        "labels": 2672.3333333333335,
+        "student": 0.837987012987013,
+        "cascade": 0.8692640692640693,
+        "test_escalated": 0.2067099567099567,
+        "live_escalated": 0.217,
+        "llm_calls_total": 5075.666666666667,
+        "student_sd": 0.004002866235694175
+      },
+      {
+        "week": 9,
+        "labels": 2900.6666666666665,
+        "student": 0.8391774891774891,
+        "cascade": 0.8702380952380953,
+        "test_escalated": 0.21720779220779218,
+        "student_sd": 0.0033145871928817244
+      }
+    ],
+    "everything": [
+      {
+        "week": 0,
+        "labels": 500.0,
+        "student": 0.704004329004329,
+        "cascade": 0.8537878787878787,
+        "test_escalated": 0.491991341991342,
+        "live_escalated": 0.47933333333333333,
+        "llm_calls_total": 1500.0,
+        "student_sd": 0.011437095076729752
+      },
+      {
+        "week": 1,
+        "labels": 1500.0,
+        "student": 0.8063852813852814,
+        "cascade": 0.8673160173160174,
+        "test_escalated": 0.2812770562770563,
+        "live_escalated": 0.27699999999999997,
+        "llm_calls_total": 2500.0,
+        "student_sd": 0.0019540552040333004
+      },
+      {
+        "week": 2,
+        "labels": 2500.0,
+        "student": 0.837012987012987,
+        "cascade": 0.8719696969696971,
+        "test_escalated": 0.2341991341991342,
+        "live_escalated": 0.23466666666666666,
+        "llm_calls_total": 3500.0,
+        "student_sd": 0.0010603851700360081
+      },
+      {
+        "week": 3,
+        "labels": 3500.0,
+        "student": 0.8436147186147186,
+        "cascade": 0.8704545454545455,
+        "test_escalated": 0.19231601731601733,
+        "live_escalated": 0.20466666666666666,
+        "llm_calls_total": 4500.0,
+        "student_sd": 0.0013076889581812197
+      },
+      {
+        "week": 4,
+        "labels": 4500.0,
+        "student": 0.8493506493506494,
+        "cascade": 0.871969696969697,
+        "test_escalated": 0.17413419913419914,
+        "live_escalated": 0.17366666666666666,
+        "llm_calls_total": 5500.0,
+        "student_sd": 0.0020014331178470905
+      },
+      {
+        "week": 5,
+        "labels": 5500.0,
+        "student": 0.8511904761904763,
+        "cascade": 0.8724025974025974,
+        "test_escalated": 0.18647186147186146,
+        "live_escalated": 0.18600000000000003,
+        "llm_calls_total": 6500.0,
+        "student_sd": 0.0011036838774010323
+      },
+      {
+        "week": 6,
+        "labels": 6500.0,
+        "student": 0.8535714285714285,
+        "cascade": 0.8729437229437229,
+        "test_escalated": 0.17824675324675324,
+        "live_escalated": 0.19566666666666666,
+        "llm_calls_total": 7500.0,
+        "student_sd": 0.0007952888775269949
+      },
+      {
+        "week": 7,
+        "labels": 7500.0,
+        "student": 0.8562770562770563,
+        "cascade": 0.8727272727272727,
+        "test_escalated": 0.17532467532467533,
+        "live_escalated": 0.19633333333333333,
+        "llm_calls_total": 8500.0,
+        "student_sd": 0.0028345889293742016
+      },
+      {
+        "week": 8,
+        "labels": 8500.0,
+        "student": 0.8587662337662337,
+        "cascade": 0.8724025974025974,
+        "test_escalated": 0.18311688311688312,
+        "live_escalated": 0.20333333333333334,
+        "llm_calls_total": 9500.0,
+        "student_sd": 0.001738352641148167
+      },
+      {
+        "week": 9,
+        "labels": 9500.0,
+        "student": 0.858982683982684,
+        "cascade": 0.8726190476190476,
+        "test_escalated": 0.17067099567099567,
+        "student_sd": 0.0010713739108887098
+      }
+    ]
+  },
+  "runs": [
+    {
+      "static": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.457,
+          "llm_calls_total": 957
+        },
+        {
+          "week": 1,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.448,
+          "llm_calls_total": 1405
+        },
+        {
+          "week": 2,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.464,
+          "llm_calls_total": 1869
+        },
+        {
+          "week": 3,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.468,
+          "llm_calls_total": 2337
+        },
+        {
+          "week": 4,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.452,
+          "llm_calls_total": 2789
+        },
+        {
+          "week": 5,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.489,
+          "llm_calls_total": 3278
+        },
+        {
+          "week": 6,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.433,
+          "llm_calls_total": 3711
+        },
+        {
+          "week": 7,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.442,
+          "llm_calls_total": 4153
+        },
+        {
+          "week": 8,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.467,
+          "llm_calls_total": 4620
+        },
+        {
+          "week": 9,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623
+        }
+      ],
+      "escalations": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.457,
+          "llm_calls_total": 957
+        },
+        {
+          "week": 1,
+          "labels": 957,
+          "student": 0.8003246753246753,
+          "cascade": 0.8675324675324675,
+          "test_escalated": 0.30746753246753245,
+          "live_escalated": 0.323,
+          "llm_calls_total": 1280
+        },
+        {
+          "week": 2,
+          "labels": 1280,
+          "student": 0.8107142857142857,
+          "cascade": 0.862987012987013,
+          "test_escalated": 0.26785714285714285,
+          "live_escalated": 0.261,
+          "llm_calls_total": 1541
+        },
+        {
+          "week": 3,
+          "labels": 1541,
+          "student": 0.8373376623376624,
+          "cascade": 0.8655844155844156,
+          "test_escalated": 0.23636363636363636,
+          "live_escalated": 0.265,
+          "llm_calls_total": 1806
+        },
+        {
+          "week": 4,
+          "labels": 1806,
+          "student": 0.8357142857142857,
+          "cascade": 0.8678571428571429,
+          "test_escalated": 0.21136363636363636,
+          "live_escalated": 0.223,
+          "llm_calls_total": 2029
+        },
+        {
+          "week": 5,
+          "labels": 2029,
+          "student": 0.8435064935064935,
+          "cascade": 0.8698051948051948,
+          "test_escalated": 0.22077922077922077,
+          "live_escalated": 0.231,
+          "llm_calls_total": 2260
+        },
+        {
+          "week": 6,
+          "labels": 2260,
+          "student": 0.8438311688311688,
+          "cascade": 0.8707792207792208,
+          "test_escalated": 0.18701298701298702,
+          "live_escalated": 0.211,
+          "llm_calls_total": 2471
+        },
+        {
+          "week": 7,
+          "labels": 2471,
+          "student": 0.8506493506493507,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.16785714285714284,
+          "live_escalated": 0.189,
+          "llm_calls_total": 2660
+        },
+        {
+          "week": 8,
+          "labels": 2660,
+          "student": 0.8503246753246754,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.20844155844155843,
+          "live_escalated": 0.227,
+          "llm_calls_total": 2887
+        },
+        {
+          "week": 9,
+          "labels": 2887,
+          "student": 0.8509740259740259,
+          "cascade": 0.8720779220779221,
+          "test_escalated": 0.19545454545454546
+        }
+      ],
+      "random": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.457,
+          "llm_calls_total": 1216
+        },
+        {
+          "week": 1,
+          "labels": 957,
+          "student": 0.7876623376623376,
+          "cascade": 0.8613636363636363,
+          "test_escalated": 0.31623376623376626,
+          "live_escalated": 0.308,
+          "llm_calls_total": 1786
+        },
+        {
+          "week": 2,
+          "labels": 1280,
+          "student": 0.8074675324675324,
+          "cascade": 0.8626623376623377,
+          "test_escalated": 0.3012987012987013,
+          "live_escalated": 0.316,
+          "llm_calls_total": 2325
+        },
+        {
+          "week": 3,
+          "labels": 1541,
+          "student": 0.825,
+          "cascade": 0.8646103896103896,
+          "test_escalated": 0.2818181818181818,
+          "live_escalated": 0.285,
+          "llm_calls_total": 2844
+        },
+        {
+          "week": 4,
+          "labels": 1806,
+          "student": 0.8301948051948052,
+          "cascade": 0.8642857142857143,
+          "test_escalated": 0.22662337662337662,
+          "live_escalated": 0.21,
+          "llm_calls_total": 3265
+        },
+        {
+          "week": 5,
+          "labels": 2029,
+          "student": 0.8347402597402598,
+          "cascade": 0.8662337662337662,
+          "test_escalated": 0.20909090909090908,
+          "live_escalated": 0.228,
+          "llm_calls_total": 3707
+        },
+        {
+          "week": 6,
+          "labels": 2260,
+          "student": 0.8373376623376624,
+          "cascade": 0.8665584415584415,
+          "test_escalated": 0.1961038961038961,
+          "live_escalated": 0.215,
+          "llm_calls_total": 4125
+        },
+        {
+          "week": 7,
+          "labels": 2471,
+          "student": 0.8405844155844155,
+          "cascade": 0.8685064935064936,
+          "test_escalated": 0.2064935064935065,
+          "live_escalated": 0.221,
+          "llm_calls_total": 4527
+        },
+        {
+          "week": 8,
+          "labels": 2660,
+          "student": 0.8425324675324676,
+          "cascade": 0.8678571428571429,
+          "test_escalated": 0.18961038961038962,
+          "live_escalated": 0.199,
+          "llm_calls_total": 4947
+        },
+        {
+          "week": 9,
+          "labels": 2887,
+          "student": 0.8438311688311688,
+          "cascade": 0.8678571428571429,
+          "test_escalated": 0.16493506493506493
+        }
+      ],
+      "everything": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.687987012987013,
+          "cascade": 0.8431818181818181,
+          "test_escalated": 0.4623376623376623,
+          "live_escalated": 0.457,
+          "llm_calls_total": 1500
+        },
+        {
+          "week": 1,
+          "labels": 1500,
+          "student": 0.8090909090909091,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.2961038961038961,
+          "live_escalated": 0.29,
+          "llm_calls_total": 2500
+        },
+        {
+          "week": 2,
+          "labels": 2500,
+          "student": 0.8383116883116883,
+          "cascade": 0.8698051948051948,
+          "test_escalated": 0.2422077922077922,
+          "live_escalated": 0.244,
+          "llm_calls_total": 3500
+        },
+        {
+          "week": 3,
+          "labels": 3500,
+          "student": 0.8454545454545455,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.17272727272727273,
+          "live_escalated": 0.19,
+          "llm_calls_total": 4500
+        },
+        {
+          "week": 4,
+          "labels": 4500,
+          "student": 0.8516233766233766,
+          "cascade": 0.8704545454545455,
+          "test_escalated": 0.1616883116883117,
+          "live_escalated": 0.167,
+          "llm_calls_total": 5500
+        },
+        {
+          "week": 5,
+          "labels": 5500,
+          "student": 0.8522727272727273,
+          "cascade": 0.8707792207792208,
+          "test_escalated": 0.18766233766233767,
+          "live_escalated": 0.206,
+          "llm_calls_total": 6500
+        },
+        {
+          "week": 6,
+          "labels": 6500,
+          "student": 0.8525974025974026,
+          "cascade": 0.8707792207792208,
+          "test_escalated": 0.1685064935064935,
+          "live_escalated": 0.185,
+          "llm_calls_total": 7500
+        },
+        {
+          "week": 7,
+          "labels": 7500,
+          "student": 0.8532467532467533,
+          "cascade": 0.8714285714285714,
+          "test_escalated": 0.17564935064935064,
+          "live_escalated": 0.201,
+          "llm_calls_total": 8500
+        },
+        {
+          "week": 8,
+          "labels": 8500,
+          "student": 0.8564935064935065,
+          "cascade": 0.8714285714285714,
+          "test_escalated": 0.18474025974025973,
+          "live_escalated": 0.208,
+          "llm_calls_total": 9500
+        },
+        {
+          "week": 9,
+          "labels": 9500,
+          "student": 0.8587662337662337,
+          "cascade": 0.8724025974025974,
+          "test_escalated": 0.16818181818181818
+        }
+      ]
+    },
+    {
+      "static": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.555,
+          "llm_calls_total": 1055
+        },
+        {
+          "week": 1,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.566,
+          "llm_calls_total": 1621
+        },
+        {
+          "week": 2,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.572,
+          "llm_calls_total": 2193
+        },
+        {
+          "week": 3,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.539,
+          "llm_calls_total": 2732
+        },
+        {
+          "week": 4,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.537,
+          "llm_calls_total": 3269
+        },
+        {
+          "week": 5,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.544,
+          "llm_calls_total": 3813
+        },
+        {
+          "week": 6,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.528,
+          "llm_calls_total": 4341
+        },
+        {
+          "week": 7,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.546,
+          "llm_calls_total": 4887
+        },
+        {
+          "week": 8,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.531,
+          "llm_calls_total": 5418
+        },
+        {
+          "week": 9,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792
+        }
+      ],
+      "escalations": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.555,
+          "llm_calls_total": 1055
+        },
+        {
+          "week": 1,
+          "labels": 1055,
+          "student": 0.7987012987012987,
+          "cascade": 0.8678571428571429,
+          "test_escalated": 0.31753246753246755,
+          "live_escalated": 0.317,
+          "llm_calls_total": 1372
+        },
+        {
+          "week": 2,
+          "labels": 1372,
+          "student": 0.8311688311688312,
+          "cascade": 0.8720779220779221,
+          "test_escalated": 0.2655844155844156,
+          "live_escalated": 0.294,
+          "llm_calls_total": 1666
+        },
+        {
+          "week": 3,
+          "labels": 1666,
+          "student": 0.8298701298701299,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.19967532467532467,
+          "live_escalated": 0.217,
+          "llm_calls_total": 1883
+        },
+        {
+          "week": 4,
+          "labels": 1883,
+          "student": 0.8461038961038961,
+          "cascade": 0.8720779220779221,
+          "test_escalated": 0.2275974025974026,
+          "live_escalated": 0.198,
+          "llm_calls_total": 2081
+        },
+        {
+          "week": 5,
+          "labels": 2081,
+          "student": 0.8470779220779221,
+          "cascade": 0.8746753246753247,
+          "test_escalated": 0.20616883116883117,
+          "live_escalated": 0.218,
+          "llm_calls_total": 2299
+        },
+        {
+          "week": 6,
+          "labels": 2299,
+          "student": 0.8444805194805195,
+          "cascade": 0.8737012987012988,
+          "test_escalated": 0.21785714285714286,
+          "live_escalated": 0.238,
+          "llm_calls_total": 2537
+        },
+        {
+          "week": 7,
+          "labels": 2537,
+          "student": 0.85,
+          "cascade": 0.875,
+          "test_escalated": 0.18084415584415584,
+          "live_escalated": 0.207,
+          "llm_calls_total": 2744
+        },
+        {
+          "week": 8,
+          "labels": 2744,
+          "student": 0.849025974025974,
+          "cascade": 0.8753246753246753,
+          "test_escalated": 0.19805194805194806,
+          "live_escalated": 0.211,
+          "llm_calls_total": 2955
+        },
+        {
+          "week": 9,
+          "labels": 2955,
+          "student": 0.8545454545454545,
+          "cascade": 0.8727272727272727,
+          "test_escalated": 0.18831168831168832
+        }
+      ],
+      "random": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.555,
+          "llm_calls_total": 1303
+        },
+        {
+          "week": 1,
+          "labels": 1055,
+          "student": 0.7847402597402597,
+          "cascade": 0.8603896103896104,
+          "test_escalated": 0.31396103896103894,
+          "live_escalated": 0.309,
+          "llm_calls_total": 1857
+        },
+        {
+          "week": 2,
+          "labels": 1372,
+          "student": 0.7961038961038961,
+          "cascade": 0.8626623376623377,
+          "test_escalated": 0.28214285714285714,
+          "live_escalated": 0.3,
+          "llm_calls_total": 2414
+        },
+        {
+          "week": 3,
+          "labels": 1666,
+          "student": 0.8064935064935065,
+          "cascade": 0.8668831168831169,
+          "test_escalated": 0.28993506493506493,
+          "live_escalated": 0.295,
+          "llm_calls_total": 2901
+        },
+        {
+          "week": 4,
+          "labels": 1883,
+          "student": 0.8237012987012987,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.2753246753246753,
+          "live_escalated": 0.267,
+          "llm_calls_total": 3350
+        },
+        {
+          "week": 5,
+          "labels": 2081,
+          "student": 0.8298701298701299,
+          "cascade": 0.8711038961038962,
+          "test_escalated": 0.24675324675324675,
+          "live_escalated": 0.237,
+          "llm_calls_total": 3793
+        },
+        {
+          "week": 6,
+          "labels": 2299,
+          "student": 0.8340909090909091,
+          "cascade": 0.8733766233766234,
+          "test_escalated": 0.2551948051948052,
+          "live_escalated": 0.242,
+          "llm_calls_total": 4263
+        },
+        {
+          "week": 7,
+          "labels": 2537,
+          "student": 0.8396103896103896,
+          "cascade": 0.8707792207792208,
+          "test_escalated": 0.2590909090909091,
+          "live_escalated": 0.27,
+          "llm_calls_total": 4732
+        },
+        {
+          "week": 8,
+          "labels": 2744,
+          "student": 0.8386363636363636,
+          "cascade": 0.8691558441558441,
+          "test_escalated": 0.21168831168831168,
+          "live_escalated": 0.216,
+          "llm_calls_total": 5149
+        },
+        {
+          "week": 9,
+          "labels": 2955,
+          "student": 0.8363636363636363,
+          "cascade": 0.8707792207792208,
+          "test_escalated": 0.25097402597402596
+        }
+      ],
+      "everything": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7100649350649351,
+          "cascade": 0.8597402597402597,
+          "test_escalated": 0.5542207792207792,
+          "live_escalated": 0.555,
+          "llm_calls_total": 1500
+        },
+        {
+          "week": 1,
+          "labels": 1500,
+          "student": 0.8045454545454546,
+          "cascade": 0.8665584415584415,
+          "test_escalated": 0.29253246753246753,
+          "live_escalated": 0.282,
+          "llm_calls_total": 2500
+        },
+        {
+          "week": 2,
+          "labels": 2500,
+          "student": 0.837012987012987,
+          "cascade": 0.8727272727272727,
+          "test_escalated": 0.22954545454545455,
+          "live_escalated": 0.247,
+          "llm_calls_total": 3500
+        },
+        {
+          "week": 3,
+          "labels": 3500,
+          "student": 0.8425324675324676,
+          "cascade": 0.8717532467532467,
+          "test_escalated": 0.19707792207792207,
+          "live_escalated": 0.212,
+          "llm_calls_total": 4500
+        },
+        {
+          "week": 4,
+          "labels": 4500,
+          "student": 0.8467532467532467,
+          "cascade": 0.8701298701298701,
+          "test_escalated": 0.17045454545454544,
+          "live_escalated": 0.171,
+          "llm_calls_total": 5500
+        },
+        {
+          "week": 5,
+          "labels": 5500,
+          "student": 0.8516233766233766,
+          "cascade": 0.8724025974025974,
+          "test_escalated": 0.17467532467532468,
+          "live_escalated": 0.165,
+          "llm_calls_total": 6500
+        },
+        {
+          "week": 6,
+          "labels": 6500,
+          "student": 0.8545454545454545,
+          "cascade": 0.8746753246753247,
+          "test_escalated": 0.17532467532467533,
+          "live_escalated": 0.19,
+          "llm_calls_total": 7500
+        },
+        {
+          "week": 7,
+          "labels": 7500,
+          "student": 0.8555194805194806,
+          "cascade": 0.8730519480519481,
+          "test_escalated": 0.17012987012987013,
+          "live_escalated": 0.195,
+          "llm_calls_total": 8500
+        },
+        {
+          "week": 8,
+          "labels": 8500,
+          "student": 0.8590909090909091,
+          "cascade": 0.8724025974025974,
+          "test_escalated": 0.17792207792207793,
+          "live_escalated": 0.185,
+          "llm_calls_total": 9500
+        },
+        {
+          "week": 9,
+          "labels": 9500,
+          "student": 0.8577922077922078,
+          "cascade": 0.8730519480519481,
+          "test_escalated": 0.16948051948051948
+        }
+      ]
+    },
+    {
+      "static": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.426,
+          "llm_calls_total": 926
+        },
+        {
+          "week": 1,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.474,
+          "llm_calls_total": 1400
+        },
+        {
+          "week": 2,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.462,
+          "llm_calls_total": 1862
+        },
+        {
+          "week": 3,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.468,
+          "llm_calls_total": 2330
+        },
+        {
+          "week": 4,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.444,
+          "llm_calls_total": 2774
+        },
+        {
+          "week": 5,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.447,
+          "llm_calls_total": 3221
+        },
+        {
+          "week": 6,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.479,
+          "llm_calls_total": 3700
+        },
+        {
+          "week": 7,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.466,
+          "llm_calls_total": 4166
+        },
+        {
+          "week": 8,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.46,
+          "llm_calls_total": 4626
+        },
+        {
+          "week": 9,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844
+        }
+      ],
+      "escalations": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.426,
+          "llm_calls_total": 926
+        },
+        {
+          "week": 1,
+          "labels": 926,
+          "student": 0.8038961038961039,
+          "cascade": 0.862012987012987,
+          "test_escalated": 0.2779220779220779,
+          "live_escalated": 0.298,
+          "llm_calls_total": 1224
+        },
+        {
+          "week": 2,
+          "labels": 1224,
+          "student": 0.8188311688311688,
+          "cascade": 0.8678571428571429,
+          "test_escalated": 0.2694805194805195,
+          "live_escalated": 0.28,
+          "llm_calls_total": 1504
+        },
+        {
+          "week": 3,
+          "labels": 1504,
+          "student": 0.8314935064935065,
+          "cascade": 0.8681818181818182,
+          "test_escalated": 0.23863636363636365,
+          "live_escalated": 0.259,
+          "llm_calls_total": 1763
+        },
+        {
+          "week": 4,
+          "labels": 1763,
+          "student": 0.8376623376623377,
+          "cascade": 0.8733766233766234,
+          "test_escalated": 0.21753246753246752,
+          "live_escalated": 0.214,
+          "llm_calls_total": 1977
+        },
+        {
+          "week": 5,
+          "labels": 1977,
+          "student": 0.837987012987013,
+          "cascade": 0.8746753246753247,
+          "test_escalated": 0.2340909090909091,
+          "live_escalated": 0.225,
+          "llm_calls_total": 2202
+        },
+        {
+          "week": 6,
+          "labels": 2202,
+          "student": 0.8464285714285714,
+          "cascade": 0.8720779220779221,
+          "test_escalated": 0.19837662337662337,
+          "live_escalated": 0.213,
+          "llm_calls_total": 2415
+        },
+        {
+          "week": 7,
+          "labels": 2415,
+          "student": 0.8470779220779221,
+          "cascade": 0.8714285714285714,
+          "test_escalated": 0.17305194805194804,
+          "live_escalated": 0.198,
+          "llm_calls_total": 2613
+        },
+        {
+          "week": 8,
+          "labels": 2613,
+          "student": 0.8487012987012987,
+          "cascade": 0.874025974025974,
+          "test_escalated": 0.22727272727272727,
+          "live_escalated": 0.247,
+          "llm_calls_total": 2860
+        },
+        {
+          "week": 9,
+          "labels": 2860,
+          "student": 0.8506493506493507,
+          "cascade": 0.8737012987012988,
+          "test_escalated": 0.21298701298701297
+        }
+      ],
+      "random": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.426,
+          "llm_calls_total": 1191
+        },
+        {
+          "week": 1,
+          "labels": 926,
+          "student": 0.7626623376623377,
+          "cascade": 0.8545454545454545,
+          "test_escalated": 0.29967532467532465,
+          "live_escalated": 0.316,
+          "llm_calls_total": 1745
+        },
+        {
+          "week": 2,
+          "labels": 1224,
+          "student": 0.7905844155844156,
+          "cascade": 0.8646103896103896,
+          "test_escalated": 0.3327922077922078,
+          "live_escalated": 0.319,
+          "llm_calls_total": 2307
+        },
+        {
+          "week": 3,
+          "labels": 1504,
+          "student": 0.8077922077922078,
+          "cascade": 0.8701298701298701,
+          "test_escalated": 0.34155844155844156,
+          "live_escalated": 0.337,
+          "llm_calls_total": 2871
+        },
+        {
+          "week": 4,
+          "labels": 1763,
+          "student": 0.8136363636363636,
+          "cascade": 0.8685064935064936,
+          "test_escalated": 0.2801948051948052,
+          "live_escalated": 0.27,
+          "llm_calls_total": 3337
+        },
+        {
+          "week": 5,
+          "labels": 1977,
+          "student": 0.8224025974025974,
+          "cascade": 0.8701298701298701,
+          "test_escalated": 0.2512987012987013,
+          "live_escalated": 0.234,
+          "llm_calls_total": 3785
+        },
+        {
+          "week": 6,
+          "labels": 2202,
+          "student": 0.825,
+          "cascade": 0.8681818181818182,
+          "test_escalated": 0.26396103896103895,
+          "live_escalated": 0.277,
+          "llm_calls_total": 4265
+        },
+        {
+          "week": 7,
+          "labels": 2415,
+          "student": 0.8363636363636363,
+          "cascade": 0.8688311688311688,
+          "test_escalated": 0.21818181818181817,
+          "live_escalated": 0.196,
+          "llm_calls_total": 4654
+        },
+        {
+          "week": 8,
+          "labels": 2613,
+          "student": 0.8327922077922078,
+          "cascade": 0.8707792207792208,
+          "test_escalated": 0.21883116883116882,
+          "live_escalated": 0.236,
+          "llm_calls_total": 5131
+        },
+        {
+          "week": 9,
+          "labels": 2860,
+          "student": 0.8373376623376624,
+          "cascade": 0.8720779220779221,
+          "test_escalated": 0.2357142857142857
+        }
+      ],
+      "everything": [
+        {
+          "week": 0,
+          "labels": 500,
+          "student": 0.7139610389610389,
+          "cascade": 0.8584415584415584,
+          "test_escalated": 0.4594155844155844,
+          "live_escalated": 0.426,
+          "llm_calls_total": 1500
+        },
+        {
+          "week": 1,
+          "labels": 1500,
+          "student": 0.8055194805194805,
+          "cascade": 0.8662337662337662,
+          "test_escalated": 0.2551948051948052,
+          "live_escalated": 0.259,
+          "llm_calls_total": 2500
+        },
+        {
+          "week": 2,
+          "labels": 2500,
+          "student": 0.8357142857142857,
+          "cascade": 0.8733766233766234,
+          "test_escalated": 0.23084415584415585,
+          "live_escalated": 0.213,
+          "llm_calls_total": 3500
+        },
+        {
+          "week": 3,
+          "labels": 3500,
+          "student": 0.8428571428571429,
+          "cascade": 0.8704545454545455,
+          "test_escalated": 0.20714285714285716,
+          "live_escalated": 0.212,
+          "llm_calls_total": 4500
+        },
+        {
+          "week": 4,
+          "labels": 4500,
+          "student": 0.8496753246753247,
+          "cascade": 0.8753246753246753,
+          "test_escalated": 0.19025974025974027,
+          "live_escalated": 0.183,
+          "llm_calls_total": 5500
+        },
+        {
+          "week": 5,
+          "labels": 5500,
+          "student": 0.8496753246753247,
+          "cascade": 0.874025974025974,
+          "test_escalated": 0.19707792207792207,
+          "live_escalated": 0.187,
+          "llm_calls_total": 6500
+        },
+        {
+          "week": 6,
+          "labels": 6500,
+          "student": 0.8535714285714285,
+          "cascade": 0.8733766233766234,
+          "test_escalated": 0.19090909090909092,
+          "live_escalated": 0.212,
+          "llm_calls_total": 7500
+        },
+        {
+          "week": 7,
+          "labels": 7500,
+          "student": 0.8600649350649351,
+          "cascade": 0.8737012987012988,
+          "test_escalated": 0.18019480519480519,
+          "live_escalated": 0.193,
+          "llm_calls_total": 8500
+        },
+        {
+          "week": 8,
+          "labels": 8500,
+          "student": 0.8607142857142858,
+          "cascade": 0.8733766233766234,
+          "test_escalated": 0.18668831168831168,
+          "live_escalated": 0.217,
+          "llm_calls_total": 9500
+        },
+        {
+          "week": 9,
+          "labels": 9500,
+          "student": 0.8603896103896104,
+          "cascade": 0.8724025974025974,
+          "test_escalated": 0.17435064935064934
+        }
+      ]
+    }
+  ]
+}
