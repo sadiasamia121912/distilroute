@@ -318,7 +318,7 @@ run while `jobs.py` labels.
 
 ## Session log
 
-**2026-11-06 (optional items judged)**
+**2026-11-06 (HANDOFF — start here next session)**
 
 - **aug+OE at `ALSO_THRESHOLD` 0.95: closed, model-v3 stays served.** Already measured in
   `docs/stress.md`: found 41 % / invented 1 % at 0.95, vs v3's 50 % / 2 % at 0.9. A stricter
@@ -357,7 +357,18 @@ run while `jobs.py` labels.
   and fewer calls than never retraining (4,888). Offline, existing labels only. Next: the same
   loop with drift or a held-out intent arriving mid-stream (the monitor of finding 8 + this).
 
-**2026-10-18 (HANDOFF — start here next session)**
+**Next session, in order:** (1) `jobs.py` once: finishes the CLINC150 prompt-domain gate
+(160 / 200) and re-runs `domain_check.py`; commit + push the step. (2) **user:** the 7.1 review,
+**100 rows** is enough (`review.py`, 5 done; the simulated curve at 200 checks is 0.858, still
+below the teacher, so rows 101-200 add little) → `review.py --report`. Gold stays hidden until
+then: the user asked which of their first answers were wrong and is choosing between waiting
+for the report (recommended) and seeing them now with that disclosed in the 7.1 doc.
+(3) **user:** `hf auth login`; confirm the HF username (the release was built as
+`sadiasamia121912`, unconfirmed) → `build_hf_release.py --publish`. (4) Share the demo and case
+study (Share menu), add finding 12 to the LinkedIn draft, post. Optional: a drift / new-intent
+variant of `self_improving.py`; make `cost.py` per-dataset so `cascade.py` runs on CLINC150.
+
+**2026-10-18 (HANDOFF)**
 
 - **Colab run (aug + OE, seed 1 of model-v3) unpacked and judged.** `minilm_ft_aug_oe_10k_teacher`
   (copy of `teacher10003/minilm_ft_aug_oe_teacher` under its own name, like v3) through the
