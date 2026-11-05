@@ -26,7 +26,7 @@ import requests
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from distilroute.data import DESCRIPTIONS, LABELS, RAW, ROOT  # noqa: E402
+from distilroute.data import DESCRIPTIONS, DOMAIN, DOMAINS, LABELS, RAW, ROOT  # noqa: E402
 from distilroute.perturb import KINDS, perturb  # noqa: E402
 from distilroute.teacher import RateLimited, Teacher, TeacherError  # noqa: E402
 
@@ -110,6 +110,12 @@ def main() -> None:
     add("--reasoning", default="low", choices=["low", "medium", "high"], help="gpt-oss only")
     add("--top-k", type=int, default=1, help="ask for a ranked top-k list (soft labels)")
     add(
+        "--domain",
+        default=None,
+        help="who the messages are sent to: a data.DOMAINS key or free text (default: the "
+        "dataset's own; `banking` reproduces CLINC150's published labels)",
+    )
+    add(
         "--perturb",
         choices=KINDS,
         default=None,
@@ -148,6 +154,8 @@ def main() -> None:
         desc = {k: v for k, v in raw.items() if not k.startswith("_")}
         missing = [n for n in labels if n not in desc]
         assert not missing, f"no description for {missing}"
+    aliases = {"banking": DOMAINS["banking77"], **DOMAINS}
+    domain = aliases.get(args.domain, args.domain) if args.domain else DOMAIN
     teacher = Teacher(
         labels=labels,
         provider=args.provider,
@@ -155,6 +163,7 @@ def main() -> None:
         descriptions=desc,
         reasoning_effort=args.reasoning,
         top_k=args.top_k,
+        domain=domain,
     )
     print(
         f"teacher: {args.provider} / {teacher.model}, batch {args.batch_size}, "
@@ -212,6 +221,7 @@ def main() -> None:
                     "model": teacher.model,
                     "reasoning": args.reasoning,
                     "descriptions": desc_version,
+                    "domain": teacher.domain,
                     "ts": ts,
                 }
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")

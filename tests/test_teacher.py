@@ -170,3 +170,32 @@ def test_empty_batch_answer_is_reasked_once_as_a_batch():
     res = t.label_batch(["a", "b"])
     assert [r.label for r in res] == ["card_arrival", "exchange_rate"]
     assert len(calls) == 2 and calls[1]["messages"][1]["content"] == "1. a\n2. b"
+
+
+def test_banking77_prompt_is_the_one_every_label_was_made_with():
+    """The per-dataset domain (2026-11-06) must not change a single Banking77 prompt byte."""
+    from distilroute.data import DOMAINS
+
+    names = json.loads(open("data/raw/categories.json", encoding="utf-8").read())
+    for k in (1, 3):
+        t = Teacher(
+            labels=names, provider="groq", transport=fake({}), top_k=k, domain=DOMAINS["banking77"]
+        )
+        system, _ = t.build_messages(["x"])
+        assert system.startswith("You route customer messages sent to a banking app's support")
+        if k == 1:
+            assert 'e.g. {"1": "card_arrival", "2": "lost_or_stolen_card"}. ' in system
+        else:
+            assert (
+                'e.g. {"1": ["card_arrival", "card_delivery_estimate", "get_physical_card"]}'
+                in system
+            )
+
+
+def test_other_datasets_get_their_own_domain_and_examples():
+    labels = ["weather", "book_flight", "recipe", "uber", "timer"]
+    t = Teacher(labels=labels, provider="groq", transport=fake({}), top_k=3, domain="an assistant")
+    system, _ = t.build_messages(["x"])
+    assert "sent to an assistant." in system
+    assert "banking" not in system and "card_arrival" not in system
+    assert 'e.g. {"1": ["weather", "recipe", "uber"]}' in system

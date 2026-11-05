@@ -68,6 +68,17 @@ PROVIDERS: dict[str, dict] = {
 }
 
 
+BANKING_DOMAIN = "a banking app's support inbox"
+# The answer-format examples in the prompt. Banking77 keeps the names every published label was
+# made with; any other label set shows its own first names, never another dataset's.
+BANKING_EXAMPLES = [
+    "card_arrival",
+    "lost_or_stolen_card",
+    "card_delivery_estimate",
+    "get_physical_card",
+]
+
+
 @dataclass
 class LabelResult:
     text: str
@@ -86,6 +97,7 @@ class Teacher:
     descriptions: dict[str, str] | None = None  # intent -> one line; still no example queries
     reasoning_effort: str = "low"  # only sent to reasoning models (gpt-oss)
     top_k: int = 1  # >1 asks for a ranked list per query (soft labels for distillation)
+    domain: str = BANKING_DOMAIN  # who the messages are sent to (data.DOMAINS, per dataset)
     transport: Transport | None = None
     calls: int = field(default=0, init=False)
     tokens_in: int = field(default=0, init=False)
@@ -115,17 +127,18 @@ class Teacher:
             )
         else:
             intents = "\n".join(f"- {name}" for name in self.labels)
+        ex = BANKING_EXAMPLES if set(BANKING_EXAMPLES) <= set(self.labels) else self.labels[:4]
         system = (
-            "You route customer messages sent to a banking app's support inbox. "
+            f"You route customer messages sent to {self.domain}. "
             "Assign each message exactly one intent from this list, using the name verbatim:\n"
             f"{intents}\n\n"
             + (
                 "Reply with a single JSON object mapping each message number (as a string) to its "
-                'intent name, e.g. {"1": "card_arrival", "2": "lost_or_stolen_card"}. '
+                f'intent name, e.g. {{"1": "{ex[0]}", "2": "{ex[1]}"}}. '
                 if self.top_k == 1
                 else "Reply with a single JSON object mapping each message number (as a string) "
                 f"to a list of the {self.top_k} most likely intent names, most likely first, "
-                'e.g. {"1": ["card_arrival", "card_delivery_estimate", "get_physical_card"]}. '
+                f'e.g. {{"1": ["{ex[0]}", "{ex[2]}", "{ex[3]}"]}}. '
             )
             + "No other text."
         )

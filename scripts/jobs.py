@@ -119,8 +119,40 @@ STEPS = [
         "clinc150 results on the full test split (5)",
         "groq",
         [[PY, "scripts/evaluate.py"]],
-        done=lambda: "full 4,500-query test split"
-        in (ROOT / "docs" / "clinc150" / "results.md").read_text(encoding="utf-8"),
+        done=lambda: (
+            "full 4,500-query test split"
+            in (ROOT / "docs" / "clinc150" / "results.md").read_text(encoding="utf-8")
+        ),
+        env=CLINC,
+    ),
+    # the CLINC150 labels above were made with Banking77's prompt line; the same first 200
+    # relabelled with CLINC150's own (data.DOMAINS) measure what that cost
+    label_step(
+        "clinc150 prompt-domain gate (5)",
+        "groq",
+        LABELS / "clinc150" / "test.gate_domain.jsonl",
+        200,
+        [
+            "--split",
+            "test",
+            "--seed",
+            "0",
+            "--limit",
+            "200",
+            "--top-k",
+            "3",
+            "--run",
+            "gate_domain",
+        ],
+        env=CLINC,
+    ),
+    Step(
+        "clinc150 prompt-domain check (5)",
+        "groq",
+        [[PY, "scripts/domain_check.py"]],
+        done=lambda: json_has(
+            ROOT / "results" / "clinc150" / "domain_check.json", lambda d: d["n"] >= 200
+        ),
         env=CLINC,
     ),
     Step(

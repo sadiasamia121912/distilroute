@@ -50,6 +50,14 @@ RESULTS = outputs(ROOT / "results")
 MODELS = outputs(ROOT / "models")
 DOCS = outputs(ROOT / "docs")
 DESCRIPTIONS = scoped(ROOT / "data") / "intent_descriptions.json"
+# Who the messages are sent to, for the teacher's prompt. CLINC150's labels so far were made with
+# the banking line (added 2026-11-06; `label.py --domain banking` reproduces them).
+DOMAINS = {
+    "banking77": "a banking app's support inbox",
+    "clinc150": "a general-purpose virtual assistant (banking, credit cards, travel, home, auto, "
+    "kitchen and dining, work, utilities, small talk)",
+}
+DOMAIN = DOMAINS.get(DATASET, "a support inbox")
 
 
 def rel(path: Path) -> str:
