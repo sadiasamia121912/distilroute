@@ -320,6 +320,10 @@ run while `jobs.py` labels.
 
 **2026-11-06 (HANDOFF — start here next session)**
 
+- **Later the same day: CLINC150 prompt-domain gate done (200 / 200).** Banking line 0.890, own
+  line 0.875, −1.5 pt (95 % −4.5 to +1.5), same answer on 95.5 %: still no measurable
+  difference, published numbers stand. Case study rebuilt. Next-session item (1) is done; start at (2).
+
 - **aug+OE at `ALSO_THRESHOLD` 0.95: closed, model-v3 stays served.** Already measured in
   `docs/stress.md`: found 41 % / invented 1 % at 0.95, vs v3's 50 % / 2 % at 0.9. A stricter
   threshold buys back the invented-`also` rate but cannot pass RUNBOOK §3: int8 0.862 is not
